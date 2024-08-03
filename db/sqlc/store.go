@@ -20,7 +20,7 @@ func NewStore(db *pgxpool.Pool) *Store {
 	}
 }
 
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *Store) ExecTx(ctx context.Context, fn func(*Queries) error) error {
 	txOptions := &pgx.TxOptions{}
 	tx, err := store.db.BeginTx(ctx, *txOptions)
 	if err != nil {
