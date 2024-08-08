@@ -41,7 +41,7 @@ jobs:
       run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz | tar xvz
           mkdir -p ~/bin
-          mv migrate ~/bin/migrate
+          mv migrate ~/bin/
           echo "~/bin" >> $GITHUB_PATH
           which migrate
 
