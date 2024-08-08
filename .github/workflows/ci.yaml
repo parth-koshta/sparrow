@@ -39,11 +39,10 @@ jobs:
 
     - name: Install golang-migrate
       run: |
-          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz | tar xvz
-          mkdir -p ~/bin
-          mv migrate ~/bin/
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz | tar -xz -C ~/bin migrate
           echo "~/bin" >> $GITHUB_PATH
           which migrate
+          migrate -version
 
     - name: Migrations
       run: make migrateup
