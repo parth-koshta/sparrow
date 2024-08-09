@@ -1,3 +1,5 @@
+MIGRATION_DIR=db/migration
+
 postgres:
 	docker run --name postgres16 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
 
@@ -7,11 +9,15 @@ createdb:
 dropdb:
 	docker exec -it postgres16 dropdb sparrow-dev
 
+migratecreate:
+	@read -p "Enter migration name: " name; \
+	migrate create -ext sql -dir $(MIGRATION_DIR) -seq $$name
+
 migrateup:
-	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose up
+	migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose up
 
 migratedown:
-	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose down
+	migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose down
 
 sqlc:
 	sqlc generate
@@ -19,4 +25,4 @@ sqlc:
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test
+.PHONY: postgres createdb dropdb migratecreate migrateup migratedown sqlc test
