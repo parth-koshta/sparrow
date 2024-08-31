@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/mocks"
-	"github.com/parth-koshta/sparrow/util"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -56,17 +55,6 @@ func TestGetUserApi(t *testing.T) {
 
 	// Check the response
 	require.Equal(t, http.StatusOK, recorder.Code)
+	mockStore.AssertNumberOfCalls(t, "GetUserByID", 1)
 	mockStore.AssertExpectations(t)
-}
-
-func randomUser() db.User {
-	return db.User{
-		ID: util.GenerateRandomUUID(),
-		Username: pgtype.Text{
-			String: "testuser",
-			Valid:  true,
-		},
-		Email:        util.GenerateRandomEmail(),
-		PasswordHash: util.GenerateRandomPasswordHash(),
-	}
 }
