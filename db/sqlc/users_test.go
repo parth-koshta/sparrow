@@ -2,23 +2,18 @@ package db
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
-	"math/rand"
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/parth-koshta/sparrow/util"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateUser(t *testing.T) {
 	runTestInTransaction(t, func(testQueries *Queries) {
 		arg := CreateUserParams{
-			Email:        generateRandomEmail(),
-			PasswordHash: generateRandomPasswordHash(),
+			Email:        util.GenerateRandomEmail(),
+			PasswordHash: util.GenerateRandomPasswordHash(),
 		}
 		user, err := testQueries.CreateUser(context.Background(), arg)
 		require.NoError(t, err)
@@ -35,8 +30,8 @@ func TestCreateUser(t *testing.T) {
 func TestGetUserByEmail(t *testing.T) {
 	runTestInTransaction(t, func(testQueries *Queries) {
 		arg := CreateUserParams{
-			Email:        generateRandomEmail(),
-			PasswordHash: generateRandomPasswordHash(),
+			Email:        util.GenerateRandomEmail(),
+			PasswordHash: util.GenerateRandomPasswordHash(),
 		}
 		createdUser, err := testQueries.CreateUser(context.Background(), arg)
 		require.NoError(t, err)
@@ -55,8 +50,8 @@ func TestGetUserByEmail(t *testing.T) {
 func TestGetUserByID(t *testing.T) {
 	runTestInTransaction(t, func(testQueries *Queries) {
 		arg := CreateUserParams{
-			Email:        generateRandomEmail(),
-			PasswordHash: generateRandomPasswordHash(),
+			Email:        util.GenerateRandomEmail(),
+			PasswordHash: util.GenerateRandomPasswordHash(),
 		}
 		createdUser, err := testQueries.CreateUser(context.Background(), arg)
 		require.NoError(t, err)
@@ -77,8 +72,8 @@ func TestListUsers(t *testing.T) {
 		// Create users
 		for i := 0; i < 5; i++ {
 			arg := CreateUserParams{
-				Email:        generateRandomEmail(),
-				PasswordHash: generateRandomPasswordHash(),
+				Email:        util.GenerateRandomEmail(),
+				PasswordHash: util.GenerateRandomPasswordHash(),
 			}
 			_, err := testQueries.CreateUser(context.Background(), arg)
 			require.NoError(t, err)
@@ -113,31 +108,22 @@ func TestListUsers(t *testing.T) {
 	})
 }
 
-func generateRandomUUID() pgtype.UUID {
-	id := uuid.New()
-	return pgtype.UUID{Bytes: id, Valid: true}
-}
-
 func runTestInTransaction(t *testing.T, testFunc func(*Queries)) {
-	tx, err := testQueries.db.Begin(context.Background())
+	store := NewStore(testDBPool)
+	sqlStore, ok := store.(*SQLStore)
+	require.True(t, ok)
+
+	// Begin a transaction
+	tx, err := sqlStore.db.Begin(context.Background())
 	require.NoError(t, err)
-	defer tx.Rollback(context.Background())
 
-	// Override testQueries to use the transaction
-	testQueries := New(tx)
-	testFunc(testQueries)
-}
+	// Create a Queries object tied to this transaction
+	q := New(tx)
 
-func generateRandomEmail() string {
-	randomInt := rand.Intn(1000)
-	return fmt.Sprintf("user%d@gmail.com", randomInt)
-}
+	// Run the test function
+	testFunc(q)
 
-func generateRandomPasswordHash() pgtype.Text {
-	randomInt := rand.Intn(1000)
-	randomPassword := fmt.Sprintf("password%d", randomInt)
-	hash := sha256.New()
-	hash.Write([]byte(randomPassword))
-	passwordHash := hex.EncodeToString(hash.Sum(nil))
-	return pgtype.Text{String: passwordHash, Valid: true}
+	// Rollback the transaction after the test is complete
+	err = tx.Rollback(context.Background())
+	require.NoError(t, err)
 }
