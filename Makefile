@@ -23,8 +23,6 @@ migrateup:
 	fi
 	@if [ -z "$$GITHUB_ACTIONS" ]; then \
 		$(MAKE) dumpschema; \
-	else \
-		echo "Skipping dumpschema in GitHub Actions"; \
 	fi
 
 migratedown:
@@ -35,8 +33,6 @@ migratedown:
 	fi
 	@if [ -z "$$GITHUB_ACTIONS" ]; then \
 		$(MAKE) dumpschema; \
-	else \
-		echo "Skipping dumpschema in GitHub Actions"; \
 	fi
 
 sqlc:
