@@ -14,10 +14,18 @@ migratecreate:
 	migrate create -ext sql -dir $(MIGRATION_DIR) -seq $$name
 
 migrateup:
-	migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose up
+	@if [ -z "$(n)" ]; then \
+		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose up; \
+	else \
+		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose up $(n); \
+	fi
 
 migratedown:
-	migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose down
+	@if [ -z "$(n)" ]; then \
+		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose down; \
+	else \
+		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose down $(n); \
+	fi
 
 sqlc:
 	sqlc generate
