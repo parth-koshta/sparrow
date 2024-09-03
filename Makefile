@@ -1,13 +1,14 @@
 MIGRATION_DIR=db/migration
+POSTGRES_CONTAINER=postgres16
 
 postgres:
-	docker run --name postgres16 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
+	docker run --name $(POSTGRES_CONTAINER) -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
 
 createdb:
-	docker exec -it postgres16 createdb --username=root --owner=root sparrow-dev
+	docker exec -it $(POSTGRES_CONTAINER) createdb --username=root --owner=root sparrow-dev
 
 dropdb:
-	docker exec -it postgres16 dropdb sparrow-dev
+	docker exec -it $(POSTGRES_CONTAINER) dropdb sparrow-dev
 
 migratecreate:
 	@read -p "Enter migration name: " name; \
@@ -33,8 +34,10 @@ sqlc:
 	sqlc generate
 
 dumpschema:
-	docker exec -it postgres16 pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev
-	docker cp postgres16:/tmp/schema.sql db/schema.sql
+	@if docker ps -q -f name=$(POSTGRES_CONTAINER) > /dev/null; then \
+		docker exec -it $(POSTGRES_CONTAINER) pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev
+		docker cp $(POSTGRES_CONTAINER):/tmp/schema.sql db/schema.sql
+	fi
 
 test:
 	go test -v -cover ./...
