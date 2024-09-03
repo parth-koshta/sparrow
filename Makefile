@@ -35,8 +35,10 @@ sqlc:
 
 dumpschema:
 	@if docker ps -q -f name=$(POSTGRES_CONTAINER) > /dev/null; then \
-		docker exec -it $(POSTGRES_CONTAINER) pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev
-		docker cp $(POSTGRES_CONTAINER):/tmp/schema.sql db/schema.sql
+		docker exec $(POSTGRES_CONTAINER) pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev; \
+		docker cp $(POSTGRES_CONTAINER):/tmp/schema.sql db/schema.sql; \
+	else \
+		echo "Container $(POSTGRES_CONTAINER) does not exist. Skipping pg_dump."; \
 	fi
 
 test:
