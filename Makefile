@@ -1,6 +1,5 @@
 MIGRATION_DIR=db/migration
 POSTGRES_CONTAINER=postgres16
-GITHUB_ACTIONS=$(GITHUB_ACTIONS)
 
 postgres:
 	docker run --name $(POSTGRES_CONTAINER) -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
