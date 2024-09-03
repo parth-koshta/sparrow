@@ -43,6 +43,9 @@ jobs:
           sudo mv migrate /usr/bin/migrate
           which migrate
           migrate -version
+      
+    - name: List Docker Containers
+      run: docker ps -a
 
     - name: Migrations
       run: make migrateup
