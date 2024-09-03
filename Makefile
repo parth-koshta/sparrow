@@ -19,6 +19,7 @@ migrateup:
 	else \
 		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose up $(n); \
 	fi
+	@$(MAKE) dumpschema
 
 migratedown:
 	@if [ -z "$(n)" ]; then \
@@ -26,9 +27,14 @@ migratedown:
 	else \
 		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose down $(n); \
 	fi
+	@$(MAKE) dumpschema
 
 sqlc:
 	sqlc generate
+
+dumpschema:
+	docker exec -it postgres16 pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev
+	docker cp postgres16:/tmp/schema.sql db/schema.sql
 
 test:
 	go test -v -cover ./...
