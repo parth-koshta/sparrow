@@ -43,6 +43,14 @@ jobs:
           sudo mv migrate /usr/bin/migrate
           which migrate
           migrate -version
+    
+    - name: List running containers
+      run: docker ps
+
+    - name: Wait for PostgreSQL container to start
+      run: |
+        echo "Waiting for PostgreSQL to be ready..."
+        sleep 15
 
     - name: Migrations
       run: make migrateup
