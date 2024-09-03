@@ -120,7 +120,7 @@ CREATE TABLE public.socialaccounts (
 
 CREATE TABLE public.users (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    username character varying(255),
+    username character varying(255) NOT NULL,
     email character varying(255) NOT NULL,
     password_hash character varying(255),
     created_at timestamp without time zone DEFAULT now() NOT NULL,
