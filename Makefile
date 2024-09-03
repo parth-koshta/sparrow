@@ -1,5 +1,6 @@
 MIGRATION_DIR=db/migration
 POSTGRES_CONTAINER=postgres16
+GITHUB_ACTIONS=$(GITHUB_ACTIONS)
 
 postgres:
 	docker run --name $(POSTGRES_CONTAINER) -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
@@ -20,7 +21,11 @@ migrateup:
 	else \
 		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose up $(n); \
 	fi
-	@$(MAKE) dumpschema
+	@if [ -z "$$GITHUB_ACTIONS" ]; then \
+		$(MAKE) dumpschema; \
+	else \
+		echo "Skipping dumpschema in GitHub Actions"; \
+	fi
 
 migratedown:
 	@if [ -z "$(n)" ]; then \
@@ -28,19 +33,18 @@ migratedown:
 	else \
 		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose down $(n); \
 	fi
-	@$(MAKE) dumpschema
+	@if [ -z "$$GITHUB_ACTIONS" ]; then \
+		$(MAKE) dumpschema; \
+	else \
+		echo "Skipping dumpschema in GitHub Actions"; \
+	fi
 
 sqlc:
 	sqlc generate
 
 dumpschema:
-	@if docker ps -q -f name=$(POSTGRES_CONTAINER) > /dev/null; then \
-		echo "Container $(POSTGRES_CONTAINER) exists. Running pg_dump..."; \
-		docker exec $(POSTGRES_CONTAINER) pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev; \
-		docker cp $(POSTGRES_CONTAINER):/tmp/schema.sql db/schema.sql; \
-	else \
-		echo "Container $(POSTGRES_CONTAINER) does not exist. Skipping pg_dump."; \
-	fi
+	docker exec -it postgres16 pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev
+	docker cp postgres16:/tmp/schema.sql db/schema.sql
 
 test:
 	go test -v -cover ./...
