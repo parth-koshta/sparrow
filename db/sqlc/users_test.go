@@ -5,15 +5,21 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/parth-koshta/sparrow/util"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateUser(t *testing.T) {
+	hashedPassword, err := util.HashPassword(util.GenerateRandomPassword().String)
+	require.NoError(t, err)
 	runTestInTransaction(t, func(testQueries *Queries) {
 		arg := CreateUserParams{
-			Email:        util.GenerateRandomEmail(),
-			PasswordHash: util.GenerateRandomPasswordHash(),
+			Email: util.GenerateRandomEmail(),
+			PasswordHash: pgtype.Text{
+				String: hashedPassword,
+				Valid:  true,
+			},
 		}
 		user, err := testQueries.CreateUser(context.Background(), arg)
 		require.NoError(t, err)
@@ -31,7 +37,7 @@ func TestGetUserByEmail(t *testing.T) {
 	runTestInTransaction(t, func(testQueries *Queries) {
 		arg := CreateUserParams{
 			Email:        util.GenerateRandomEmail(),
-			PasswordHash: util.GenerateRandomPasswordHash(),
+			PasswordHash: util.GenerateRandomPassword(),
 		}
 		createdUser, err := testQueries.CreateUser(context.Background(), arg)
 		require.NoError(t, err)
@@ -51,7 +57,7 @@ func TestGetUserByID(t *testing.T) {
 	runTestInTransaction(t, func(testQueries *Queries) {
 		arg := CreateUserParams{
 			Email:        util.GenerateRandomEmail(),
-			PasswordHash: util.GenerateRandomPasswordHash(),
+			PasswordHash: util.GenerateRandomPassword(),
 		}
 		createdUser, err := testQueries.CreateUser(context.Background(), arg)
 		require.NoError(t, err)
@@ -73,7 +79,7 @@ func TestListUsers(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			arg := CreateUserParams{
 				Email:        util.GenerateRandomEmail(),
-				PasswordHash: util.GenerateRandomPasswordHash(),
+				PasswordHash: util.GenerateRandomPassword(),
 			}
 			_, err := testQueries.CreateUser(context.Background(), arg)
 			require.NoError(t, err)

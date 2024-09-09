@@ -45,22 +45,22 @@ func (_m *Querier) CreateUser(ctx context.Context, arg db.CreateUserParams) (db.
 }
 
 // GetUserByEmail provides a mock function with given fields: ctx, email
-func (_m *Querier) GetUserByEmail(ctx context.Context, email string) (db.GetUserByEmailRow, error) {
+func (_m *Querier) GetUserByEmail(ctx context.Context, email string) (db.User, error) {
 	ret := _m.Called(ctx, email)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserByEmail")
 	}
 
-	var r0 db.GetUserByEmailRow
+	var r0 db.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (db.GetUserByEmailRow, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (db.User, error)); ok {
 		return rf(ctx, email)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) db.GetUserByEmailRow); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) db.User); ok {
 		r0 = rf(ctx, email)
 	} else {
-		r0 = ret.Get(0).(db.GetUserByEmailRow)
+		r0 = ret.Get(0).(db.User)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {

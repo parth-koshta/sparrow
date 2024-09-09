@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -8,11 +10,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
+	"github.com/parth-koshta/sparrow/util"
 )
 
 type createUserRequest struct {
-	Email    string `json:"email" binding:"required"`
+	Email    string `json:"email" binding:"required,min=6"`
 	Password string `json:"password" binding:"required"`
+}
+
+type userResponse struct {
+	ID        pgtype.UUID
+	Username  pgtype.Text
+	Email     string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -22,14 +33,18 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	passwordHash := pgtype.Text{
-		String: req.Password,
-		Valid:  true,
+	hashedPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
 	arg := db.CreateUserParams{
-		Email:        req.Email,
-		PasswordHash: passwordHash,
+		Email: req.Email,
+		PasswordHash: pgtype.Text{
+			String: hashedPassword,
+			Valid:  true,
+		},
 	}
 
 	user, err := server.store.CreateUser(ctx, arg)
@@ -39,7 +54,13 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, &userResponse{
+		ID:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	})
 }
 
 type getUserRequest struct {
@@ -97,4 +118,61 @@ func (server *Server) listUsers(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, users)
+}
+
+type loginUserRequest struct {
+	Email    string `json:"email" binding:"required,min=6"`
+	Password string `json:"password" binding:"required"`
+}
+
+type loginUserResponse struct {
+	Token string       `json:"token"`
+	User  userResponse `json:"user"`
+}
+
+func (server *Server) loginUser(ctx *gin.Context) {
+	var req loginUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// Get the user from the database
+	user, err := server.store.GetUserByEmail(ctx, req.Email)
+	fmt.Println("USERRRR 1", user)
+	if err != nil {
+		fmt.Println("USERRRR  error", err)
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// Check if the password is correct
+	err = util.CheckPassword(user.PasswordHash.String, req.Password)
+	if err != nil {
+		fmt.Println("Chechpassword failed", err)
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	// Generate a new access token
+	accessToken, err := server.tokenMaker.CreateToken(user.Email, server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// Return the access token
+	ctx.JSON(http.StatusOK, &loginUserResponse{
+		Token: accessToken,
+		User: userResponse{
+			ID:        user.ID,
+			Username:  user.Username,
+			Email:     user.Email,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		},
+	})
 }

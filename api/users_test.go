@@ -19,7 +19,7 @@ func TestGetUserApi(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	mockStore := mocks.NewStore(t)
-	server := NewServer(mockStore)
+	server := newTestServer(t, mockStore)
 
 	// Generate a random UUID for testing
 	testUUID := uuid.New()
@@ -45,6 +45,8 @@ func TestGetUserApi(t *testing.T) {
 
 	// Create a test request
 	req, err := http.NewRequest(http.MethodGet, "/users/"+testUUID.String(), nil)
+	// set auth header
+	addAuthorization(t, req, server.tokenMaker, authorizationTypeBearer, "user", server.config.AccessTokenDuration)
 	require.NoError(t, err)
 
 	// Create a response recorder

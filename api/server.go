@@ -3,23 +3,39 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
+	"github.com/parth-koshta/sparrow/token"
+	"github.com/parth-koshta/sparrow/util"
 )
 
 type Server struct {
-	store  db.Store
-	router *gin.Engine
+	store      db.Store
+	tokenMaker token.Maker
+	config     util.Config
+	router     *gin.Engine
 }
 
-func NewServer(store db.Store) *Server {
-	server := &Server{store: store}
-	router := gin.Default()
+func NewServer(store db.Store, config util.Config) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, err
+	}
 
-	router.GET("/users/:id", server.getUser)
+	server := &Server{store: store, tokenMaker: tokenMaker, config: config}
+	server.setupRouter()
+
+	return server, nil
+}
+
+func (server *Server) setupRouter() {
+	router := gin.Default()
+	router.POST("/users/login", server.loginUser)
 	router.POST("/users", server.createUser)
-	router.GET("/users", server.listUsers)
+
+	authenticatedRouter := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	authenticatedRouter.GET("/users", server.listUsers)
+	authenticatedRouter.GET("/users/:id", server.getUser)
 
 	server.router = router
-	return server
 }
 
 func (server *Server) Start(address string) error {
