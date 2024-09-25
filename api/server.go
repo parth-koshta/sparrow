@@ -35,6 +35,36 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.GET("/users", server.listUsers)
 	authenticatedRouter.GET("/users/:id", server.getUser)
 
+	authenticatedRouter.POST("/drafts", server.createDraft)
+	authenticatedRouter.GET("/drafts/:id", server.getDraft)
+	authenticatedRouter.PUT("/drafts/:id", server.updateDraft)
+	authenticatedRouter.DELETE("/drafts/:id", server.deleteDraft)
+	authenticatedRouter.GET("/drafts/user/:id", server.listDraftsByUserID)
+
+	authenticatedRouter.POST("/prompts", server.createPrompt)
+	authenticatedRouter.GET("/prompts/:id", server.getPrompt)
+	authenticatedRouter.PUT("/prompts/:id", server.updatePrompt)
+	authenticatedRouter.DELETE("/prompts/:id", server.deletePrompt)
+	authenticatedRouter.GET("/prompts/user/:id", server.listPromptsByUserID)
+
+	authenticatedRouter.POST("/suggestions", server.createPostSuggestion)
+	authenticatedRouter.GET("/suggestions/:id", server.getPostSuggestion)
+	authenticatedRouter.PUT("/suggestions/:id", server.updatePostSuggestion)
+	authenticatedRouter.DELETE("/suggestions/:id", server.deletePostSuggestion)
+	authenticatedRouter.GET("/suggestions/prompt/:id", server.listPostSuggestionsByPromptID)
+
+	authenticatedRouter.POST("/socialaccounts", server.createSocialAccount)
+	authenticatedRouter.GET("/socialaccounts/:id", server.getSocialAccount)
+	authenticatedRouter.PUT("/socialaccounts/:id", server.updateSocialAccount)
+	authenticatedRouter.DELETE("/socialaccounts/:id", server.deleteSocialAccount)
+	authenticatedRouter.GET("/socialaccounts/user/:id", server.listSocialAccountsByUserID)
+
+	authenticatedRouter.POST("/posts", server.createScheduledPost)
+	authenticatedRouter.GET("/posts/:id", server.getScheduledPost)
+	authenticatedRouter.PUT("/posts/:id", server.updateScheduledPost)
+	authenticatedRouter.DELETE("/posts/:id", server.deleteScheduledPost)
+	authenticatedRouter.GET("/posts/user/:id", server.listScheduledPostsByUserID)
+
 	server.router = router
 }
 
