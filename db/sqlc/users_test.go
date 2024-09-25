@@ -114,22 +114,22 @@ func TestListUsers(t *testing.T) {
 	})
 }
 
-func runTestInTransaction(t *testing.T, testFunc func(*Queries)) {
-	store := NewStore(testDBPool)
-	sqlStore, ok := store.(*SQLStore)
-	require.True(t, ok)
+// func runTestInTransaction(t *testing.T, testFunc func(*Queries)) {
+// 	store := NewStore(testDBPool)
+// 	sqlStore, ok := store.(*SQLStore)
+// 	require.True(t, ok)
 
-	// Begin a transaction
-	tx, err := sqlStore.db.Begin(context.Background())
-	require.NoError(t, err)
+// 	// Begin a transaction
+// 	tx, err := sqlStore.db.Begin(context.Background())
+// 	require.NoError(t, err)
 
-	// Create a Queries object tied to this transaction
-	q := New(tx)
+// 	// Create a Queries object tied to this transaction
+// 	q := New(tx)
 
-	// Run the test function
-	testFunc(q)
+// 	// Run the test function
+// 	testFunc(q)
 
-	// Rollback the transaction after the test is complete
-	err = tx.Rollback(context.Background())
-	require.NoError(t, err)
-}
+// 	// Rollback the transaction after the test is complete
+// 	err = tx.Rollback(context.Background())
+// 	require.NoError(t, err)
+// }

@@ -50,4 +50,7 @@ server:
 mock:
 	mockery --all
 
-.PHONY: postgres createdb dropdb migratecreate migrateup migratedown sqlc test server mock
+generate:
+	make sqlc; make dumpschema; make mock
+
+.PHONY: postgres createdb dropdb migratecreate migrateup migratedown sqlc test server mock generate

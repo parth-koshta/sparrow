@@ -9,7 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/parth-koshta/sparrow/util"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -78,4 +81,89 @@ func TestMain(m *testing.M) {
 	mainConn.Close()
 
 	os.Exit(code)
+}
+
+func runTestInTransaction(t *testing.T, testFunc func(*Queries)) {
+	store := NewStore(testDBPool)
+	sqlStore, ok := store.(*SQLStore)
+	require.True(t, ok)
+
+	// Begin a transaction
+	tx, err := sqlStore.db.Begin(context.Background())
+	require.NoError(t, err)
+
+	// Create a Queries object tied to this transaction
+	q := New(tx)
+
+	// Run the test function
+	testFunc(q)
+
+	// Rollback the transaction after the test is complete
+	err = tx.Rollback(context.Background())
+	require.NoError(t, err)
+}
+
+func createRandomUser(t *testing.T, testQueries *Queries) User {
+	arg := CreateUserParams{
+		Email:        util.GenerateRandomEmail(),
+		PasswordHash: util.GenerateRandomPassword(),
+	}
+	user, err := testQueries.CreateUser(context.Background(), arg)
+	require.NoError(t, err)
+	return user
+}
+
+func createRandomPrompt(t *testing.T, testQueries *Queries, userID pgtype.UUID) Prompt {
+	arg := CreatePromptParams{
+		UserID:     userID,
+		PromptText: "Example prompt text",
+	}
+	prompt, err := testQueries.CreatePrompt(context.Background(), arg)
+	require.NoError(t, err)
+	return prompt
+}
+
+func createRandomPostSuggestion(t *testing.T, testQueries *Queries, promptID pgtype.UUID) Postsuggestion {
+	arg := CreatePostSuggestionParams{
+		PromptID:       promptID,
+		SuggestionText: "Example suggestion text",
+	}
+	suggestion, err := testQueries.CreatePostSuggestion(context.Background(), arg)
+	require.NoError(t, err)
+	return suggestion
+}
+
+func createRandomDraft(t *testing.T, testQueries *Queries, userID pgtype.UUID, suggestionID pgtype.UUID) Draft {
+	arg := CreateDraftParams{
+		UserID:       userID,
+		SuggestionID: suggestionID,
+		DraftText:    "Example draft text",
+	}
+	draft, err := testQueries.CreateDraft(context.Background(), arg)
+	require.NoError(t, err)
+	return draft
+}
+
+func createRandomScheduledPost(t *testing.T, testQueries *Queries, userID pgtype.UUID, draftID pgtype.UUID) Scheduledpost {
+	arg := CreateScheduledPostParams{
+		UserID:        userID,
+		DraftID:       draftID,
+		ScheduledTime: pgtype.Timestamp{Time: time.Now().Add(24 * time.Hour), Valid: true},
+		Status:        "scheduled",
+	}
+	post, err := testQueries.CreateScheduledPost(context.Background(), arg)
+	require.NoError(t, err)
+	return post
+}
+
+func createRandomSocialAccount(t *testing.T, testQueries *Queries, userID pgtype.UUID) Socialaccount {
+	arg := CreateSocialAccountParams{
+		UserID:      userID,
+		Platform:    "ExamplePlatform",
+		AccountName: "ExampleAccountName",
+		AccessToken: "ExampleAccessToken",
+	}
+	socialAccount, err := testQueries.CreateSocialAccount(context.Background(), arg)
+	require.NoError(t, err)
+	return socialAccount
 }

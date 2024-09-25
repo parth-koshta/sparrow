@@ -87,9 +87,9 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDR
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, username, email, password_hash, created_at, updated_at 
-FROM users 
-ORDER BY created_at DESC 
+SELECT id, username, email, password_hash, created_at, updated_at
+FROM users
+ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
 `
 
