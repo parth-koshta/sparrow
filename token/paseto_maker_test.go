@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/parth-koshta/sparrow/util"
 	"github.com/stretchr/testify/require"
 )
@@ -12,12 +14,17 @@ func TestPasetoMaker(t *testing.T) {
 	maker, err := NewPasetoMaker(util.GenerateRandomString().String)
 	require.NoError(t, err)
 
-	username := util.GenerateRandomPassword().String
+	testUUID := uuid.New()
+	testPgxUUID := pgtype.UUID{
+		Bytes: testUUID,
+		Valid: true,
+	}
+	email := util.GenerateRandomEmail()
 	duration := time.Minute
 	issueAt := time.Now()
 	expiredAt := issueAt.Add(duration)
 
-	token, err := maker.CreateToken(username, duration)
+	token, err := maker.CreateToken(testPgxUUID, email, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
@@ -26,7 +33,7 @@ func TestPasetoMaker(t *testing.T) {
 	require.NotEmpty(t, payload)
 
 	require.NotZero(t, payload.ID)
-	require.Equal(t, username, payload.Username)
+	require.Equal(t, email, payload.Email)
 	require.WithinDuration(t, issueAt, payload.IssuedAt, time.Second)
 	require.WithinDuration(t, expiredAt, payload.ExpiredAt, time.Second)
 }
@@ -35,10 +42,14 @@ func TestExpiredPasetoToken(t *testing.T) {
 	maker, err := NewPasetoMaker(util.GenerateRandomString().String)
 	require.NoError(t, err)
 
-	username := util.GenerateRandomString().String
+	email := util.GenerateRandomEmail()
 	duration := -time.Minute
-
-	token, err := maker.CreateToken(username, duration)
+	testUUID := uuid.New()
+	testPgxUUID := pgtype.UUID{
+		Bytes: testUUID,
+		Valid: true,
+	}
+	token, err := maker.CreateToken(testPgxUUID, email, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 

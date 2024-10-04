@@ -46,7 +46,7 @@ func TestGetUserApi(t *testing.T) {
 	// Create a test request
 	req, err := http.NewRequest(http.MethodGet, "/users/"+testUUID.String(), nil)
 	// set auth header
-	addAuthorization(t, req, server.tokenMaker, authorizationTypeBearer, "user", server.config.AccessTokenDuration)
+	addAuthorization(t, req, server.tokenMaker, authorizationTypeBearer, testPgxUUID, "user", server.config.AccessTokenDuration)
 	require.NoError(t, err)
 
 	// Create a response recorder

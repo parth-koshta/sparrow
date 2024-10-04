@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 var (
@@ -13,20 +13,20 @@ var (
 )
 
 type Payload struct {
-	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
-	IssuedAt  time.Time `json:"issuedAt"`
-	ExpiredAt time.Time `json:"expiredAt"`
+	ID        pgtype.UUID `json:"id"`
+	Email     string      `json:"email"`
+	IssuedAt  time.Time   `json:"issuedAt"`
+	ExpiredAt time.Time   `json:"expiredAt"`
 }
 
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		return nil, err
-	}
+func NewPayload(id pgtype.UUID, email string, duration time.Duration) (*Payload, error) {
+	// id, err := uuid.NewRandom()
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return &Payload{
 		ID:        id,
-		Username:  username,
+		Email:     email,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}, nil
