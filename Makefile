@@ -2,7 +2,7 @@ MIGRATION_DIR=db/migration
 POSTGRES_CONTAINER=postgres16
 
 postgres:
-	docker run --name $(POSTGRES_CONTAINER) -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
+	docker run --name $(POSTGRES_CONTAINER) --network=sparrow-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
 
 createdb:
 	docker exec -it $(POSTGRES_CONTAINER) createdb --username=root --owner=root sparrow-dev
