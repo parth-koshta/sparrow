@@ -163,9 +163,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	// Get the user from the database
 	user, err := server.store.GetUserByEmail(ctx, req.Email)
-	fmt.Println("USERRRR 1", user)
 	if err != nil {
-		fmt.Println("USERRRR  error", err)
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 		}
@@ -176,7 +174,6 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	// Check if the password is correct
 	err = util.CheckPassword(user.PasswordHash.String, req.Password)
 	if err != nil {
-		fmt.Println("Chechpassword failed", err)
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
