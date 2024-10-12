@@ -1,1 +1,1 @@
-Sparrow service: written in Go
+Sparrow api: written in Go
