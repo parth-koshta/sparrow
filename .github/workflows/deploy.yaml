@@ -23,7 +23,13 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::050752639725:role/deployment
+        role-session-name: GitHub_to_AWS_via_FederatedOIDC
         aws-region: ap-south-1
+      
+    # Hello from AWS: WhoAmI
+    - name: Sts GetCallerIdentity
+      run: |
+        aws sts get-caller-identity
       
     - name: Login to Amazon ECR
       id: login-ecr
