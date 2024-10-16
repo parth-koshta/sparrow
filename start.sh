@@ -4,7 +4,10 @@ set -e
 
 echo "Checking if /app/app.env exists"
 if [ -f /app/app.env ]; then
-    echo "File /app/app.env exists. Sourcing the environment variables."
+    echo "File /app/app.env exists. Displaying its contents:"
+    cat /app/app.env
+
+    echo "Sourcing the environment variables."
     source /app/app.env
     echo "source: $DB_SOURCE"
 else
