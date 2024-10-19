@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sparrow-api-deployment
+  labels:
+    app: sparrow-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sparrow-api
+  template:
+    metadata:
+      labels:
+        app: sparrow-api
+    spec:
+      containers:
+      - name: sparrow-api
+        image: 050752639725.dkr.ecr.ap-south-1.amazonaws.com/core/sparrow:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
