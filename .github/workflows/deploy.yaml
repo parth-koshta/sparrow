@@ -50,8 +50,11 @@ jobs:
         REPOSITORY: core/sparrow
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t latest .
+        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
         docker push -a $REGISTRY/$REPOSITORY
+
+    - name: Update kubectl configuration
+      run: aws eks update-kubeconfig --name sparrow-eks --region ap-south-1
 
     - name: Deploy to EKS
       run: |
