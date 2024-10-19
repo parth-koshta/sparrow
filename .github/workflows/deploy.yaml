@@ -56,6 +56,9 @@ jobs:
     - name: Update kubectl configuration
       run: aws eks update-kubeconfig --name sparrow --region ap-south-1
 
+    - name: Verify Kubernetes Access
+      run: kubectl get nodes
+
     - name: Deploy to EKS
       run: |
         kubectl apply -f eks/aws-auth.yaml
