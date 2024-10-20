@@ -55,11 +55,14 @@ jobs:
     - name: Update kubectl configuration
       run: aws eks update-kubeconfig --name sparrow --region ap-south-1
     
-    - name: Unset AWS environment variables
-      run: |
-        unset AWS_ACCESS_KEY_ID
-        unset AWS_SECRET_ACCESS_KEY
-        unset AWS_SESSION_TOKEN
+    - name: Check AWS environment variables
+    run: |
+      echo "Checking AWS environment variables..."
+      if [ -z "$AWS_ACCESS_KEY_ID" ]; then
+        echo "AWS_ACCESS_KEY_ID is not set."
+      else
+        echo "AWS_ACCESS_KEY_ID is set."
+      fi
 
     - name: Print kubeconfig
       run: cat ~/.kube/config
