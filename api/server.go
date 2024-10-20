@@ -93,7 +93,6 @@ func (server *Server) initializeSentry() error {
 		Dsn:              "https://c1b68ed689e46da2852f882751206e84@o4508154405847040.ingest.us.sentry.io/4508154407550976",
 		EnableTracing:    true,
 		TracesSampleRate: 1.0,
-		Debug:            true,
 	})
 
 	return err
