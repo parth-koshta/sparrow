@@ -25,27 +25,6 @@ jobs:
         role-to-assume: arn:aws:iam::050752639725:role/deployment
         role-session-name: GitHub_to_AWS_via_FederatedOIDC
         aws-region: ap-south-1
-
-    - name: Check AWS environment variables
-      run: |
-        echo "Checking AWS environment variables..."
-        if [ -z "$AWS_ACCESS_KEY_ID" ]; then
-          echo "AWS_ACCESS_KEY_ID is not set."
-        else
-          echo "AWS_ACCESS_KEY_ID is set."
-        fi
-
-        if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-          echo "AWS_SECRET_ACCESS_KEY is not set."
-        else
-          echo "AWS_SECRET_ACCESS_KEY is set."
-        fi
-
-        if [ -z "$AWS_SESSION_TOKEN" ]; then
-          echo "AWS_SESSION_TOKEN is not set."
-        else
-          echo "AWS_SESSION_TOKEN is set."
-        fi
   
     - name: Install kubectl matching server version
       uses: azure/setup-kubectl@v4
@@ -78,6 +57,27 @@ jobs:
 
     - name: Print kubeconfig
       run: cat ~/.kube/config
+    
+    - name: Check AWS environment variables
+      run: |
+        echo "Checking AWS environment variables..."
+        if [ -z "$AWS_ACCESS_KEY_ID" ]; then
+          echo "AWS_ACCESS_KEY_ID is not set."
+        else
+          echo "AWS_ACCESS_KEY_ID is set."
+        fi
+
+        if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+          echo "AWS_SECRET_ACCESS_KEY is not set."
+        else
+          echo "AWS_SECRET_ACCESS_KEY is set."
+        fi
+
+        if [ -z "$AWS_SESSION_TOKEN" ]; then
+          echo "AWS_SESSION_TOKEN is not set."
+        else
+          echo "AWS_SESSION_TOKEN is set."
+        fi
 
     - name: Verify authentication
       run: kubectl get nodes
