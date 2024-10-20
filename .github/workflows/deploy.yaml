@@ -29,10 +29,9 @@ jobs:
     - name: Install kubectl matching server version
       uses: azure/setup-kubectl@v4
       with:
-        version: 'v1.30.2'
+        version: 'v1.31.1'
       id: install
       
-    # Hello from AWS: WhoAmI
     - name: Sts GetCallerIdentity
       run: |
         aws sts get-caller-identity
@@ -56,9 +55,11 @@ jobs:
     - name: Update kubectl configuration
       run: aws eks update-kubeconfig --name sparrow --region ap-south-1
 
-    # Print the kubeconfig contents for debugging
     - name: Print kubeconfig
       run: cat ~/.kube/config
+
+    - name: Verify authentication
+      run: kubectl get nodes
 
     - name: Deploy to EKS
       run: |
