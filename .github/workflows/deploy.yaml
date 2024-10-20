@@ -19,10 +19,22 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v3
 
-    - name: Install kubctl
+    # - name: Install kubctl
+    #   uses: azure/setup-kubectl@v4
+    #   with:
+    #     version: 'v1.31.1'
+    #   id: install
+    
+    - name: Get Kubernetes Server Version
+      id: get-server-version
+      run: |
+        aws eks describe-cluster --name sparrow --region ap-south-1 \
+        --query 'cluster.version' --output text
+
+    - name: Install kubectl matching server version
       uses: azure/setup-kubectl@v4
       with:
-        version: 'v1.31.1'
+        version: ${{ steps.get-server-version.outputs.stdout }}
       id: install
 
     - name: Configure AWS credentials
