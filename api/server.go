@@ -1,7 +1,10 @@
 package api
 
 import (
+	"github.com/getsentry/sentry-go"
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
+
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/token"
 	"github.com/parth-koshta/sparrow/util"
@@ -21,6 +24,12 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 	}
 
 	server := &Server{store: store, tokenMaker: tokenMaker, config: config}
+
+	err = server.initializeSentry()
+	if err != nil {
+		return nil, err
+	}
+
 	server.setupRouter()
 
 	return server, nil
@@ -28,6 +37,9 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
+
+	router.Use(sentrygin.New(sentrygin.Options{Repanic: true}))
+
 	router.POST("/users/login", server.loginUser)
 	router.POST("/users", server.createUser)
 
@@ -74,4 +86,15 @@ func (server *Server) Start(address string) error {
 
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
+}
+
+func (server *Server) initializeSentry() error {
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn:              "https://c1b68ed689e46da2852f882751206e84@o4508154405847040.ingest.us.sentry.io/4508154407550976",
+		EnableTracing:    true,
+		TracesSampleRate: 1.0,
+		Debug:            true,
+	})
+
+	return err
 }
