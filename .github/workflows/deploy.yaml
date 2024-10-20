@@ -25,16 +25,11 @@ jobs:
         role-to-assume: arn:aws:iam::050752639725:role/deployment
         role-session-name: GitHub_to_AWS_via_FederatedOIDC
         aws-region: ap-south-1
-
-    - name: Get Kubernetes Server Version
-      id: get-server-version
-      run: |
-        echo "KUBERNETES_SERVER_VERSION=$(aws eks describe-cluster --name sparrow --region ap-south-1 --query 'cluster.version' --output text)" >> $GITHUB_ENV
-
+  
     - name: Install kubectl matching server version
       uses: azure/setup-kubectl@v4
       with:
-        version: ${{ env.KUBERNETES_SERVER_VERSION }} # Install server version of kubectl
+        version: 'v1.31'
       id: install
       
     # Hello from AWS: WhoAmI
