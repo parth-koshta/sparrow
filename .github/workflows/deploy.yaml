@@ -54,15 +54,6 @@ jobs:
 
     - name: Update kubectl configuration
       run: aws eks update-kubeconfig --name sparrow --region ap-south-1
-    
-    - name: Check AWS environment variables
-    run: |
-      echo "Checking AWS environment variables...nn"
-      if [ -z "$AWS_ACCESS_KEY_ID" ]; then
-        echo "AWS_ACCESS_KEY_ID is not set."
-      else
-        echo "AWS_ACCESS_KEY_ID is set."
-      fi
 
     - name: Print kubeconfig
       run: cat ~/.kube/config
