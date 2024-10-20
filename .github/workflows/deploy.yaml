@@ -80,7 +80,7 @@ jobs:
         fi
 
     - name: Verify authentication
-      run: kubectl get nodes
+      run: kubectl get nodes --v=8
 
     - name: Deploy to EKS
       run: |
