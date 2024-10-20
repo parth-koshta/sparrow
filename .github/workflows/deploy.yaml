@@ -11,7 +11,7 @@ permissions:
 jobs:
 
   deploy:
-    name: Build and push image to ECR
+    name: Build & Deploy
     runs-on: ubuntu-latest
 
     steps:
