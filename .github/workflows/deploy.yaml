@@ -57,7 +57,7 @@ jobs:
     
     - name: Check AWS environment variables
     run: |
-      echo "Checking AWS environment variables..."
+      echo "Checking AWS environment variables...nn"
       if [ -z "$AWS_ACCESS_KEY_ID" ]; then
         echo "AWS_ACCESS_KEY_ID is not set."
       else
