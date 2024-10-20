@@ -5,16 +5,18 @@ import (
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 
+	"github.com/parth-koshta/sparrow/client"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/token"
 	"github.com/parth-koshta/sparrow/util"
 )
 
 type Server struct {
-	store      db.Store
-	tokenMaker token.Maker
-	config     util.Config
-	router     *gin.Engine
+	store          db.Store
+	tokenMaker     token.Maker
+	config         util.Config
+	router         *gin.Engine
+	linkedInClient *client.LinkedInClient
 }
 
 func NewServer(store db.Store, config util.Config) (*Server, error) {
@@ -23,7 +25,9 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 		return nil, err
 	}
 
-	server := &Server{store: store, tokenMaker: tokenMaker, config: config}
+	linkedInClient := client.NewLinkedInClient(config.LinkedInClientID, config.LinkedInClientSecret, config.LinkedInRedirectURL)
+
+	server := &Server{store: store, tokenMaker: tokenMaker, config: config, linkedInClient: linkedInClient}
 
 	err = server.initializeSentry()
 	if err != nil {
