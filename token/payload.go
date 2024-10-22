@@ -20,10 +20,6 @@ type Payload struct {
 }
 
 func NewPayload(id pgtype.UUID, email string, duration time.Duration) (*Payload, error) {
-	// id, err := uuid.NewRandom()
-	// if err != nil {
-	// 	return nil, err
-	// }
 	return &Payload{
 		ID:        id,
 		Email:     email,

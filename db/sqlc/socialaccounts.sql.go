@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createSocialAccount = `-- name: CreateSocialAccount :one
+const CreateSocialAccount = `-- name: CreateSocialAccount :one
 INSERT INTO socialaccounts (
   user_id, platform, account_name, access_token
 ) VALUES (
@@ -28,7 +28,7 @@ type CreateSocialAccountParams struct {
 }
 
 func (q *Queries) CreateSocialAccount(ctx context.Context, arg CreateSocialAccountParams) (Socialaccount, error) {
-	row := q.db.QueryRow(ctx, createSocialAccount,
+	row := q.db.QueryRow(ctx, CreateSocialAccount,
 		arg.UserID,
 		arg.Platform,
 		arg.AccountName,
@@ -47,14 +47,14 @@ func (q *Queries) CreateSocialAccount(ctx context.Context, arg CreateSocialAccou
 	return i, err
 }
 
-const deleteSocialAccount = `-- name: DeleteSocialAccount :one
+const DeleteSocialAccount = `-- name: DeleteSocialAccount :one
 DELETE FROM socialaccounts
 WHERE id = $1
 RETURNING id, user_id, platform, account_name, access_token, created_at, updated_at
 `
 
 func (q *Queries) DeleteSocialAccount(ctx context.Context, id pgtype.UUID) (Socialaccount, error) {
-	row := q.db.QueryRow(ctx, deleteSocialAccount, id)
+	row := q.db.QueryRow(ctx, DeleteSocialAccount, id)
 	var i Socialaccount
 	err := row.Scan(
 		&i.ID,
@@ -131,7 +131,7 @@ func (q *Queries) ListSocialAccountsByUserID(ctx context.Context, arg ListSocial
 	return items, nil
 }
 
-const updateSocialAccount = `-- name: UpdateSocialAccount :one
+const UpdateSocialAccount = `-- name: UpdateSocialAccount :one
 UPDATE socialaccounts
 SET platform = $2,
     account_name = $3,
@@ -149,7 +149,7 @@ type UpdateSocialAccountParams struct {
 }
 
 func (q *Queries) UpdateSocialAccount(ctx context.Context, arg UpdateSocialAccountParams) (Socialaccount, error) {
-	row := q.db.QueryRow(ctx, updateSocialAccount,
+	row := q.db.QueryRow(ctx, UpdateSocialAccount,
 		arg.ID,
 		arg.Platform,
 		arg.AccountName,

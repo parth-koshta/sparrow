@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createDraft = `-- name: CreateDraft :one
+const CreateDraft = `-- name: CreateDraft :one
 INSERT INTO drafts (
   user_id, suggestion_id, draft_text
 ) VALUES (
@@ -27,7 +27,7 @@ type CreateDraftParams struct {
 }
 
 func (q *Queries) CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft, error) {
-	row := q.db.QueryRow(ctx, createDraft, arg.UserID, arg.SuggestionID, arg.DraftText)
+	row := q.db.QueryRow(ctx, CreateDraft, arg.UserID, arg.SuggestionID, arg.DraftText)
 	var i Draft
 	err := row.Scan(
 		&i.ID,

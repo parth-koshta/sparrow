@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createScheduledPost = `-- name: CreateScheduledPost :one
+const CreateScheduledPost = `-- name: CreateScheduledPost :one
 INSERT INTO scheduledposts (
   user_id, draft_id, scheduled_time, status
 ) VALUES (
@@ -28,7 +28,7 @@ type CreateScheduledPostParams struct {
 }
 
 func (q *Queries) CreateScheduledPost(ctx context.Context, arg CreateScheduledPostParams) (Scheduledpost, error) {
-	row := q.db.QueryRow(ctx, createScheduledPost,
+	row := q.db.QueryRow(ctx, CreateScheduledPost,
 		arg.UserID,
 		arg.DraftID,
 		arg.ScheduledTime,
@@ -47,14 +47,14 @@ func (q *Queries) CreateScheduledPost(ctx context.Context, arg CreateScheduledPo
 	return i, err
 }
 
-const deleteScheduledPost = `-- name: DeleteScheduledPost :one
+const DeleteScheduledPost = `-- name: DeleteScheduledPost :one
 DELETE FROM scheduledposts
 WHERE id = $1
 RETURNING id, user_id, draft_id, scheduled_time, status, created_at, updated_at
 `
 
 func (q *Queries) DeleteScheduledPost(ctx context.Context, id pgtype.UUID) (Scheduledpost, error) {
-	row := q.db.QueryRow(ctx, deleteScheduledPost, id)
+	row := q.db.QueryRow(ctx, DeleteScheduledPost, id)
 	var i Scheduledpost
 	err := row.Scan(
 		&i.ID,
@@ -89,7 +89,7 @@ func (q *Queries) GetScheduledPostByID(ctx context.Context, id pgtype.UUID) (Sch
 	return i, err
 }
 
-const listScheduledPostsByUserID = `-- name: ListScheduledPostsByUserID :many
+const ListScheduledPostsByUserID = `-- name: ListScheduledPostsByUserID :many
 SELECT id, user_id, draft_id, scheduled_time, status, created_at, updated_at
 FROM scheduledposts
 WHERE user_id = $1
@@ -104,7 +104,7 @@ type ListScheduledPostsByUserIDParams struct {
 }
 
 func (q *Queries) ListScheduledPostsByUserID(ctx context.Context, arg ListScheduledPostsByUserIDParams) ([]Scheduledpost, error) {
-	rows, err := q.db.Query(ctx, listScheduledPostsByUserID, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, ListScheduledPostsByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func (q *Queries) ListScheduledPostsByUserID(ctx context.Context, arg ListSchedu
 	return items, nil
 }
 
-const updateScheduledPost = `-- name: UpdateScheduledPost :one
+const UpdateScheduledPost = `-- name: UpdateScheduledPost :one
 UPDATE scheduledposts
 SET scheduled_time = $2,
     status = $3,
@@ -147,7 +147,7 @@ type UpdateScheduledPostParams struct {
 }
 
 func (q *Queries) UpdateScheduledPost(ctx context.Context, arg UpdateScheduledPostParams) (Scheduledpost, error) {
-	row := q.db.QueryRow(ctx, updateScheduledPost, arg.ID, arg.ScheduledTime, arg.Status)
+	row := q.db.QueryRow(ctx, UpdateScheduledPost, arg.ID, arg.ScheduledTime, arg.Status)
 	var i Scheduledpost
 	err := row.Scan(
 		&i.ID,

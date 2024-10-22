@@ -9,15 +9,15 @@ import (
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
 
-type createSocialAccountRequest struct {
+type CreateSocialAccountRequest struct {
 	UserID      string `json:"user_id" binding:"required,uuid"`
 	Platform    string `json:"platform" binding:"required"`
 	AccountName string `json:"account_name" binding:"required"`
 	AccessToken string `json:"access_token" binding:"required"`
 }
 
-// socialAccountResponse defines the response structure for a social account
-type socialAccountResponse struct {
+// SocialAccountResponse defines the response structure for a social account
+type SocialAccountResponse struct {
 	ID          pgtype.UUID
 	UserID      pgtype.UUID
 	Platform    string
@@ -28,8 +28,8 @@ type socialAccountResponse struct {
 }
 
 // CreateSocialAccount handles the creation of a social account
-func (server *Server) createSocialAccount(ctx *gin.Context) {
-	var req createSocialAccountRequest
+func (server *Server) CreateSocialAccount(ctx *gin.Context) {
+	var req CreateSocialAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -54,7 +54,7 @@ func (server *Server) createSocialAccount(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, socialAccountResponse{
+	ctx.JSON(http.StatusOK, SocialAccountResponse{
 		ID:          socialAccount.ID,
 		UserID:      socialAccount.UserID,
 		Platform:    socialAccount.Platform,
@@ -65,13 +65,13 @@ func (server *Server) createSocialAccount(ctx *gin.Context) {
 	})
 }
 
-type getSocialAccountRequest struct {
+type GetSocialAccountRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
 // GetSocialAccount handles retrieval of a social account by ID
-func (server *Server) getSocialAccount(ctx *gin.Context) {
-	var req getSocialAccountRequest
+func (server *Server) GetSocialAccount(ctx *gin.Context) {
+	var req GetSocialAccountRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -89,7 +89,7 @@ func (server *Server) getSocialAccount(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, socialAccountResponse{
+	ctx.JSON(http.StatusOK, SocialAccountResponse{
 		ID:          socialAccount.ID,
 		UserID:      socialAccount.UserID,
 		Platform:    socialAccount.Platform,
@@ -100,7 +100,7 @@ func (server *Server) getSocialAccount(ctx *gin.Context) {
 	})
 }
 
-type listSocialAccountsByUserIDRequest struct {
+type ListSocialAccountsByUserIDRequest struct {
 	UserID   string `form:"user_id" binding:"required,uuid"`
 	Page     int32  `form:"page" binding:"required,min=1"`
 	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
@@ -108,7 +108,7 @@ type listSocialAccountsByUserIDRequest struct {
 
 // ListSocialAccountsByUserID handles listing of social accounts for a specific user
 func (server *Server) listSocialAccountsByUserID(ctx *gin.Context) {
-	var req listSocialAccountsByUserIDRequest
+	var req ListSocialAccountsByUserIDRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -134,9 +134,9 @@ func (server *Server) listSocialAccountsByUserID(ctx *gin.Context) {
 		return
 	}
 
-	var responses []socialAccountResponse
+	var responses []SocialAccountResponse
 	for _, acc := range socialAccounts {
-		responses = append(responses, socialAccountResponse{
+		responses = append(responses, SocialAccountResponse{
 			ID:          acc.ID,
 			UserID:      acc.UserID,
 			Platform:    acc.Platform,
@@ -150,16 +150,16 @@ func (server *Server) listSocialAccountsByUserID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, responses)
 }
 
-// updateSocialAccountRequest defines the request structure for updating a social account
-type updateSocialAccountRequest struct {
+// UpdateSocialAccountRequest defines the request structure for updating a social account
+type UpdateSocialAccountRequest struct {
 	Platform    string `json:"platform"`
 	AccountName string `json:"account_name"`
 	AccessToken string `json:"access_token"`
 }
 
 // UpdateSocialAccount handles updating an existing social account
-func (server *Server) updateSocialAccount(ctx *gin.Context) {
-	var req updateSocialAccountRequest
+func (server *Server) UpdateSocialAccount(ctx *gin.Context) {
+	var req UpdateSocialAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -184,7 +184,7 @@ func (server *Server) updateSocialAccount(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, socialAccountResponse{
+	ctx.JSON(http.StatusOK, SocialAccountResponse{
 		ID:          socialAccount.ID,
 		UserID:      socialAccount.UserID,
 		Platform:    socialAccount.Platform,
@@ -195,14 +195,14 @@ func (server *Server) updateSocialAccount(ctx *gin.Context) {
 	})
 }
 
-// deleteSocialAccountRequest defines the request structure for deleting a social account
-type deleteSocialAccountRequest struct {
+// DeleteSocialAccountRequest defines the request structure for deleting a social account
+type DeleteSocialAccountRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
 // DeleteSocialAccount handles the deletion of a social account
-func (server *Server) deleteSocialAccount(ctx *gin.Context) {
-	var req deleteSocialAccountRequest
+func (server *Server) DeleteSocialAccount(ctx *gin.Context) {
+	var req DeleteSocialAccountRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
