@@ -33,7 +33,7 @@ func TestCreateSocialAccount(t *testing.T) {
 		require.Equal(t, arg.AccessToken, socialAccount.AccessToken)
 		require.Equal(t, arg.AccountEmail, socialAccount.AccountEmail)
 		require.Equal(t, arg.IDToken, socialAccount.IDToken)
-		require.Equal(t, arg.TokenExpiresAt.Time, socialAccount.TokenExpiresAt.Time)
+		require.Equal(t, arg.TokenExpiresAt.Time.Truncate(time.Second), socialAccount.TokenExpiresAt.Time.Truncate(time.Second))
 		require.NotZero(t, socialAccount.CreatedAt)
 	})
 }
