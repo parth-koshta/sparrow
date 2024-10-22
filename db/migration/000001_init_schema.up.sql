@@ -17,8 +17,8 @@ CREATE TABLE SocialAccounts (
     platform VARCHAR(255) NOT NULL,
     account_name VARCHAR(255) NOT NULL,
     account_email VARCHAR(255) NOT NULL,
-    access_token VARCHAR(255) NOT NULL,
-    id_token VARCHAR(255) NOT NULL,
+    access_token TEXT NOT NULL,
+    id_token TEXT NOT NULL,
     token_expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()

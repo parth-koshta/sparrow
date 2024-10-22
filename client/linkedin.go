@@ -67,12 +67,9 @@ func (lc *LinkedInClient) GetAccessToken(code string) (*TokenInfo, error) {
 }
 
 type UserInfo struct {
-	Sub       string `json:"sub"`
-	Email     string `json:"email"`
-	FirstName string `json:"given_name"`
-	LastName  string `json:"family_name"`
-	Picture   string `json:"picture"`
-	Locale    string `json:"locale"`
+	Sub   string `json:"sub"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
 
 func (c *LinkedInClient) GetUserInfo(accessToken string) (*UserInfo, error) {

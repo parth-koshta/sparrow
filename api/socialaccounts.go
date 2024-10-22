@@ -9,16 +9,15 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
+	dbtypes "github.com/parth-koshta/sparrow/db/types"
 	"github.com/parth-koshta/sparrow/token"
 )
 
 type SocialAccountResponse struct {
-	ID          pgtype.UUID
-	UserID      pgtype.UUID
-	Platform    string
-	AccountName string
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+	Platform       string
+	AccountName    string
+	TokenExpiresAt pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
 }
 
 type AddLinkedInAccountRequest struct {
@@ -67,14 +66,11 @@ func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
 		return
 	}
 
-	accountName := fmt.Sprintf("%s %s", userInfo.FirstName, userInfo.LastName)
-	accountEmail := userInfo.Email
-
 	arg := db.CreateSocialAccountParams{
 		UserID:         pgtype.UUID{Bytes: userID, Valid: true},
-		Platform:       "LinkedIn",
-		AccountName:    accountName,
-		AccountEmail:   accountEmail,
+		Platform:       dbtypes.SocialPlatformLinkedIn.String(),
+		AccountName:    userInfo.Name,
+		AccountEmail:   userInfo.Email,
 		AccessToken:    accessToken,
 		IDToken:        idToken,
 		TokenExpiresAt: tokenExpiresAtPg,
@@ -87,12 +83,10 @@ func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, SocialAccountResponse{
-		ID:          socialAccount.ID,
-		UserID:      socialAccount.UserID,
-		Platform:    socialAccount.Platform,
-		AccountName: socialAccount.AccountName,
-		CreatedAt:   socialAccount.CreatedAt,
-		UpdatedAt:   socialAccount.UpdatedAt,
+		Platform:       socialAccount.Platform,
+		AccountName:    socialAccount.AccountName,
+		TokenExpiresAt: socialAccount.TokenExpiresAt,
+		UpdatedAt:      socialAccount.UpdatedAt,
 	})
 }
 
@@ -120,12 +114,10 @@ func (server *Server) GetSocialAccount(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, SocialAccountResponse{
-		ID:          socialAccount.ID,
-		UserID:      socialAccount.UserID,
-		Platform:    socialAccount.Platform,
-		AccountName: socialAccount.AccountName,
-		CreatedAt:   socialAccount.CreatedAt,
-		UpdatedAt:   socialAccount.UpdatedAt,
+		Platform:       socialAccount.Platform,
+		AccountName:    socialAccount.AccountName,
+		TokenExpiresAt: socialAccount.TokenExpiresAt,
+		UpdatedAt:      socialAccount.UpdatedAt,
 	})
 }
 
@@ -165,12 +157,10 @@ func (server *Server) ListSocialAccountsByUserID(ctx *gin.Context) {
 	var responses []SocialAccountResponse
 	for _, acc := range socialAccounts {
 		responses = append(responses, SocialAccountResponse{
-			ID:          acc.ID,
-			UserID:      acc.UserID,
-			Platform:    acc.Platform,
-			AccountName: acc.AccountName,
-			CreatedAt:   acc.CreatedAt,
-			UpdatedAt:   acc.UpdatedAt,
+			Platform:       acc.Platform,
+			AccountName:    acc.AccountName,
+			TokenExpiresAt: acc.TokenExpiresAt,
+			UpdatedAt:      acc.UpdatedAt,
 		})
 	}
 
@@ -210,12 +200,10 @@ func (server *Server) UpdateSocialAccount(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, SocialAccountResponse{
-		ID:          socialAccount.ID,
-		UserID:      socialAccount.UserID,
-		Platform:    socialAccount.Platform,
-		AccountName: socialAccount.AccountName,
-		CreatedAt:   socialAccount.CreatedAt,
-		UpdatedAt:   socialAccount.UpdatedAt,
+		Platform:       socialAccount.Platform,
+		AccountName:    socialAccount.AccountName,
+		TokenExpiresAt: socialAccount.TokenExpiresAt,
+		UpdatedAt:      socialAccount.UpdatedAt,
 	})
 }
 

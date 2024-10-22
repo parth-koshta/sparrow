@@ -7,12 +7,12 @@ INSERT INTO socialaccounts (
 RETURNING *;
 
 -- name: GetSocialAccountByID :one
-SELECT id, user_id, platform, account_name, access_token, created_at, updated_at
+SELECT platform, account_name, access_token, token_expires_at, updated_at
 FROM socialaccounts
 WHERE id = $1;
 
 -- name: ListSocialAccountsByUserID :many
-SELECT id, user_id, platform, account_name, access_token, created_at, updated_at
+SELECT id, user_id, platform, account_name, token_expires_at, created_at, updated_at
 FROM socialaccounts
 WHERE user_id = $1
 ORDER BY created_at DESC

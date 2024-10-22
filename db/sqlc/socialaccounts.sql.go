@@ -81,38 +81,34 @@ func (q *Queries) DeleteSocialAccount(ctx context.Context, id pgtype.UUID) (Soci
 }
 
 const getSocialAccountByID = `-- name: GetSocialAccountByID :one
-SELECT id, user_id, platform, account_name, access_token, created_at, updated_at
+SELECT platform, account_name, access_token, token_expires_at, updated_at
 FROM socialaccounts
 WHERE id = $1
 `
 
 type GetSocialAccountByIDRow struct {
-	ID          pgtype.UUID
-	UserID      pgtype.UUID
-	Platform    string
-	AccountName string
-	AccessToken string
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+	Platform       string
+	AccountName    string
+	AccessToken    string
+	TokenExpiresAt pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
 }
 
 func (q *Queries) GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (GetSocialAccountByIDRow, error) {
 	row := q.db.QueryRow(ctx, getSocialAccountByID, id)
 	var i GetSocialAccountByIDRow
 	err := row.Scan(
-		&i.ID,
-		&i.UserID,
 		&i.Platform,
 		&i.AccountName,
 		&i.AccessToken,
-		&i.CreatedAt,
+		&i.TokenExpiresAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listSocialAccountsByUserID = `-- name: ListSocialAccountsByUserID :many
-SELECT id, user_id, platform, account_name, access_token, created_at, updated_at
+SELECT id, user_id, platform, account_name, token_expires_at, created_at, updated_at
 FROM socialaccounts
 WHERE user_id = $1
 ORDER BY created_at DESC
@@ -126,13 +122,13 @@ type ListSocialAccountsByUserIDParams struct {
 }
 
 type ListSocialAccountsByUserIDRow struct {
-	ID          pgtype.UUID
-	UserID      pgtype.UUID
-	Platform    string
-	AccountName string
-	AccessToken string
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+	ID             pgtype.UUID
+	UserID         pgtype.UUID
+	Platform       string
+	AccountName    string
+	TokenExpiresAt pgtype.Timestamp
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
 }
 
 func (q *Queries) ListSocialAccountsByUserID(ctx context.Context, arg ListSocialAccountsByUserIDParams) ([]ListSocialAccountsByUserIDRow, error) {
@@ -149,7 +145,7 @@ func (q *Queries) ListSocialAccountsByUserID(ctx context.Context, arg ListSocial
 			&i.UserID,
 			&i.Platform,
 			&i.AccountName,
-			&i.AccessToken,
+			&i.TokenExpiresAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

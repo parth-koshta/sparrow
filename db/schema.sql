@@ -109,8 +109,8 @@ CREATE TABLE public.socialaccounts (
     platform character varying(255) NOT NULL,
     account_name character varying(255) NOT NULL,
     account_email character varying(255) NOT NULL,
-    access_token character varying(255) NOT NULL,
-    id_token character varying(255) NOT NULL,
+    access_token text NOT NULL,
+    id_token text NOT NULL,
     token_expires_at timestamp without time zone NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
