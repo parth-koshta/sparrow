@@ -44,7 +44,7 @@ func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
 		return
 	}
 
-	accessTokenResp, err := server.linkedInClient.GetAccessToken(req.Code)
+	accessTokenResp, err := server.linkedinClient.GetAccessToken(req.Code)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to get access token: %v", err)))
 		return
@@ -60,7 +60,7 @@ func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
 		Valid: true,
 	}
 
-	userInfo, err := server.linkedInClient.GetUserInfo(accessToken)
+	userInfo, err := server.linkedinClient.GetUserInfo(accessToken)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to get user info: %v", err)))
 		return
@@ -117,7 +117,7 @@ func (server *Server) UpdateLinkedInAccessToken(ctx *gin.Context) {
 
 	// Call LinkedIn client to get new access token
 	// linkedinClient := NewLinkedInClient() // Assuming you have a function to create a LinkedIn client
-	tokenInfo, err := server.linkedInClient.GetAccessToken(req.Code)
+	tokenInfo, err := server.linkedinClient.GetAccessToken(req.Code)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

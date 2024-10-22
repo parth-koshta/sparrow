@@ -16,7 +16,7 @@ type Server struct {
 	tokenMaker     token.Maker
 	config         util.Config
 	router         *gin.Engine
-	linkedInClient *client.LinkedInClient
+	linkedinClient *client.LinkedinClient
 }
 
 func NewServer(store db.Store, config util.Config) (*Server, error) {
@@ -25,9 +25,9 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 		return nil, err
 	}
 
-	linkedInClient := client.NewLinkedInClient(config.LinkedInClientID, config.LinkedInClientSecret, config.LinkedInRedirectURL)
+	linkedinClient := client.NewLinkedInClient(config.LinkedInClientID, config.LinkedInClientSecret, config.LinkedInRedirectURL)
 
-	server := &Server{store: store, tokenMaker: tokenMaker, config: config, linkedInClient: linkedInClient}
+	server := &Server{store: store, tokenMaker: tokenMaker, config: config, linkedinClient: linkedinClient}
 
 	err = server.initializeSentry()
 	if err != nil {

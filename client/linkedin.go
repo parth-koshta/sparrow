@@ -12,14 +12,14 @@ import (
 const GET_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
 const GET_USER_INFO_URL = "https://api.linkedin.com/v2/userinfo"
 
-type LinkedInClient struct {
+type LinkedinClient struct {
 	ClientID     string
 	ClientSecret string
 	RedirectURI  string
 }
 
-func NewLinkedInClient(clientID, clientSecret, redirectURI string) *LinkedInClient {
-	return &LinkedInClient{
+func NewLinkedInClient(clientID, clientSecret, redirectURI string) *LinkedinClient {
+	return &LinkedinClient{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		RedirectURI:  redirectURI,
@@ -32,7 +32,7 @@ type TokenInfo struct {
 	ExpiresIn   int    `json:"expires_in"`
 }
 
-func (lc *LinkedInClient) GetAccessToken(code string) (*TokenInfo, error) {
+func (lc *LinkedinClient) GetAccessToken(code string) (*TokenInfo, error) {
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
 	data.Set("code", code)
@@ -72,7 +72,7 @@ type UserInfo struct {
 	Name  string `json:"name"`
 }
 
-func (c *LinkedInClient) GetUserInfo(accessToken string) (*UserInfo, error) {
+func (c *LinkedinClient) GetUserInfo(accessToken string) (*UserInfo, error) {
 	req, err := http.NewRequest("GET", GET_USER_INFO_URL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
