@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const CreatePostSuggestion = `-- name: CreatePostSuggestion :one
+const createPostSuggestion = `-- name: CreatePostSuggestion :one
 INSERT INTO postsuggestions (
   prompt_id, suggestion_text
 ) VALUES (
@@ -26,7 +26,7 @@ type CreatePostSuggestionParams struct {
 }
 
 func (q *Queries) CreatePostSuggestion(ctx context.Context, arg CreatePostSuggestionParams) (Postsuggestion, error) {
-	row := q.db.QueryRow(ctx, CreatePostSuggestion, arg.PromptID, arg.SuggestionText)
+	row := q.db.QueryRow(ctx, createPostSuggestion, arg.PromptID, arg.SuggestionText)
 	var i Postsuggestion
 	err := row.Scan(
 		&i.ID,
@@ -38,14 +38,14 @@ func (q *Queries) CreatePostSuggestion(ctx context.Context, arg CreatePostSugges
 	return i, err
 }
 
-const DeletePostSuggestion = `-- name: DeletePostSuggestion :one
+const deletePostSuggestion = `-- name: DeletePostSuggestion :one
 DELETE FROM postsuggestions
 WHERE id = $1
 RETURNING id, prompt_id, suggestion_text, created_at, updated_at
 `
 
 func (q *Queries) DeletePostSuggestion(ctx context.Context, id pgtype.UUID) (Postsuggestion, error) {
-	row := q.db.QueryRow(ctx, DeletePostSuggestion, id)
+	row := q.db.QueryRow(ctx, deletePostSuggestion, id)
 	var i Postsuggestion
 	err := row.Scan(
 		&i.ID,
@@ -76,7 +76,7 @@ func (q *Queries) GetPostSuggestionByID(ctx context.Context, id pgtype.UUID) (Po
 	return i, err
 }
 
-const ListPostSuggestionsByPromptID = `-- name: ListPostSuggestionsByPromptID :many
+const listPostSuggestionsByPromptID = `-- name: ListPostSuggestionsByPromptID :many
 SELECT id, prompt_id, suggestion_text, created_at, updated_at
 FROM postsuggestions
 WHERE prompt_id = $1
@@ -91,7 +91,7 @@ type ListPostSuggestionsByPromptIDParams struct {
 }
 
 func (q *Queries) ListPostSuggestionsByPromptID(ctx context.Context, arg ListPostSuggestionsByPromptIDParams) ([]Postsuggestion, error) {
-	rows, err := q.db.Query(ctx, ListPostSuggestionsByPromptID, arg.PromptID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listPostSuggestionsByPromptID, arg.PromptID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (q *Queries) ListPostSuggestionsByPromptID(ctx context.Context, arg ListPos
 	return items, nil
 }
 
-const UpdatePostSuggestion = `-- name: UpdatePostSuggestion :one
+const updatePostSuggestion = `-- name: UpdatePostSuggestion :one
 UPDATE postsuggestions
 SET suggestion_text = $2,
     updated_at = NOW()
@@ -130,7 +130,7 @@ type UpdatePostSuggestionParams struct {
 }
 
 func (q *Queries) UpdatePostSuggestion(ctx context.Context, arg UpdatePostSuggestionParams) (Postsuggestion, error) {
-	row := q.db.QueryRow(ctx, UpdatePostSuggestion, arg.ID, arg.SuggestionText)
+	row := q.db.QueryRow(ctx, updatePostSuggestion, arg.ID, arg.SuggestionText)
 	var i Postsuggestion
 	err := row.Scan(
 		&i.ID,

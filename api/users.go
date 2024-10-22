@@ -74,13 +74,13 @@ func (server *Server) GetUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	authPayload := ctx.MustGet(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
 	requestUUID, err := uuid.Parse(req.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	authPayload := ctx.MustGet(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
 	authUUID, err := authPayload.ID.UUIDValue()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))

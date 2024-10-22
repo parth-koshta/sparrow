@@ -69,7 +69,7 @@ type GetDraftRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) getDraft(ctx *gin.Context) {
+func (server *Server) GetDraft(ctx *gin.Context) {
 	var req GetDraftRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -104,7 +104,7 @@ type ListDraftsByUserIDRequest struct {
 	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
 
-func (server *Server) listDraftsByUserID(ctx *gin.Context) {
+func (server *Server) ListDraftsByUserID(ctx *gin.Context) {
 	var req ListDraftsByUserIDRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -139,7 +139,7 @@ type UpdateDraftRequest struct {
 	DraftText string `json:"draft_text" binding:"required"`
 }
 
-func (server *Server) updateDraft(ctx *gin.Context) {
+func (server *Server) UpdateDraft(ctx *gin.Context) {
 	var req UpdateDraftRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -177,7 +177,7 @@ type DeleteDraftRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) deleteDraft(ctx *gin.Context) {
+func (server *Server) DeleteDraft(ctx *gin.Context) {
 	var req DeleteDraftRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))

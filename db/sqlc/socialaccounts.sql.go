@@ -11,28 +11,34 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const CreateSocialAccount = `-- name: CreateSocialAccount :one
+const createSocialAccount = `-- name: CreateSocialAccount :one
 INSERT INTO socialaccounts (
-  user_id, platform, account_name, access_token
+  user_id, platform, account_name, account_email, access_token, id_token, token_expires_at
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5, $6, $7
 )
-RETURNING id, user_id, platform, account_name, access_token, created_at, updated_at
+RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at
 `
 
 type CreateSocialAccountParams struct {
-	UserID      pgtype.UUID
-	Platform    string
-	AccountName string
-	AccessToken string
+	UserID         pgtype.UUID
+	Platform       string
+	AccountName    string
+	AccountEmail   string
+	AccessToken    string
+	IDToken        string
+	TokenExpiresAt pgtype.Timestamp
 }
 
 func (q *Queries) CreateSocialAccount(ctx context.Context, arg CreateSocialAccountParams) (Socialaccount, error) {
-	row := q.db.QueryRow(ctx, CreateSocialAccount,
+	row := q.db.QueryRow(ctx, createSocialAccount,
 		arg.UserID,
 		arg.Platform,
 		arg.AccountName,
+		arg.AccountEmail,
 		arg.AccessToken,
+		arg.IDToken,
+		arg.TokenExpiresAt,
 	)
 	var i Socialaccount
 	err := row.Scan(
@@ -40,28 +46,34 @@ func (q *Queries) CreateSocialAccount(ctx context.Context, arg CreateSocialAccou
 		&i.UserID,
 		&i.Platform,
 		&i.AccountName,
+		&i.AccountEmail,
 		&i.AccessToken,
+		&i.IDToken,
+		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const DeleteSocialAccount = `-- name: DeleteSocialAccount :one
+const deleteSocialAccount = `-- name: DeleteSocialAccount :one
 DELETE FROM socialaccounts
 WHERE id = $1
-RETURNING id, user_id, platform, account_name, access_token, created_at, updated_at
+RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at
 `
 
 func (q *Queries) DeleteSocialAccount(ctx context.Context, id pgtype.UUID) (Socialaccount, error) {
-	row := q.db.QueryRow(ctx, DeleteSocialAccount, id)
+	row := q.db.QueryRow(ctx, deleteSocialAccount, id)
 	var i Socialaccount
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Platform,
 		&i.AccountName,
+		&i.AccountEmail,
 		&i.AccessToken,
+		&i.IDToken,
+		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -74,9 +86,19 @@ FROM socialaccounts
 WHERE id = $1
 `
 
-func (q *Queries) GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (Socialaccount, error) {
+type GetSocialAccountByIDRow struct {
+	ID          pgtype.UUID
+	UserID      pgtype.UUID
+	Platform    string
+	AccountName string
+	AccessToken string
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
+func (q *Queries) GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (GetSocialAccountByIDRow, error) {
 	row := q.db.QueryRow(ctx, getSocialAccountByID, id)
-	var i Socialaccount
+	var i GetSocialAccountByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -103,15 +125,25 @@ type ListSocialAccountsByUserIDParams struct {
 	Offset int32
 }
 
-func (q *Queries) ListSocialAccountsByUserID(ctx context.Context, arg ListSocialAccountsByUserIDParams) ([]Socialaccount, error) {
+type ListSocialAccountsByUserIDRow struct {
+	ID          pgtype.UUID
+	UserID      pgtype.UUID
+	Platform    string
+	AccountName string
+	AccessToken string
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
+func (q *Queries) ListSocialAccountsByUserID(ctx context.Context, arg ListSocialAccountsByUserIDParams) ([]ListSocialAccountsByUserIDRow, error) {
 	rows, err := q.db.Query(ctx, listSocialAccountsByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Socialaccount
+	var items []ListSocialAccountsByUserIDRow
 	for rows.Next() {
-		var i Socialaccount
+		var i ListSocialAccountsByUserIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -131,14 +163,14 @@ func (q *Queries) ListSocialAccountsByUserID(ctx context.Context, arg ListSocial
 	return items, nil
 }
 
-const UpdateSocialAccount = `-- name: UpdateSocialAccount :one
+const updateSocialAccount = `-- name: UpdateSocialAccount :one
 UPDATE socialaccounts
 SET platform = $2,
     account_name = $3,
     access_token = $4,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, user_id, platform, account_name, access_token, created_at, updated_at
+RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at
 `
 
 type UpdateSocialAccountParams struct {
@@ -149,7 +181,7 @@ type UpdateSocialAccountParams struct {
 }
 
 func (q *Queries) UpdateSocialAccount(ctx context.Context, arg UpdateSocialAccountParams) (Socialaccount, error) {
-	row := q.db.QueryRow(ctx, UpdateSocialAccount,
+	row := q.db.QueryRow(ctx, updateSocialAccount,
 		arg.ID,
 		arg.Platform,
 		arg.AccountName,
@@ -161,7 +193,10 @@ func (q *Queries) UpdateSocialAccount(ctx context.Context, arg UpdateSocialAccou
 		&i.UserID,
 		&i.Platform,
 		&i.AccountName,
+		&i.AccountEmail,
 		&i.AccessToken,
+		&i.IDToken,
+		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

@@ -16,7 +16,10 @@ CREATE TABLE SocialAccounts (
     user_id UUID NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
     platform VARCHAR(255) NOT NULL,
     account_name VARCHAR(255) NOT NULL,
+    account_email VARCHAR(255) NOT NULL,
     access_token VARCHAR(255) NOT NULL,
+    id_token VARCHAR(255) NOT NULL,
+    token_expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

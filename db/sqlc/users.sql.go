@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const CreateUser = `-- name: CreateUser :one
+const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   email, password_hash
 ) VALUES (
@@ -26,7 +26,7 @@ type CreateUserParams struct {
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, CreateUser, arg.Email, arg.PasswordHash)
+	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.PasswordHash)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -86,7 +86,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDR
 	return i, err
 }
 
-const ListUsers = `-- name: ListUsers :many
+const listUsers = `-- name: ListUsers :many
 SELECT id, username, email, password_hash, created_at, updated_at
 FROM users
 ORDER BY created_at DESC
@@ -99,7 +99,7 @@ type ListUsersParams struct {
 }
 
 func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
-	rows, err := q.db.Query(ctx, ListUsers, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

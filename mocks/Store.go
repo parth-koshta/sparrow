@@ -455,22 +455,22 @@ func (_m *Store) GetScheduledPostByID(ctx context.Context, id pgtype.UUID) (db.S
 }
 
 // GetSocialAccountByID provides a mock function with given fields: ctx, id
-func (_m *Store) GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (db.Socialaccount, error) {
+func (_m *Store) GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (db.GetSocialAccountByIDRow, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetSocialAccountByID")
 	}
 
-	var r0 db.Socialaccount
+	var r0 db.GetSocialAccountByIDRow
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, pgtype.UUID) (db.Socialaccount, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, pgtype.UUID) (db.GetSocialAccountByIDRow, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, pgtype.UUID) db.Socialaccount); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, pgtype.UUID) db.GetSocialAccountByIDRow); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(db.Socialaccount)
+		r0 = ret.Get(0).(db.GetSocialAccountByIDRow)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, pgtype.UUID) error); ok {
@@ -659,23 +659,23 @@ func (_m *Store) ListScheduledPostsByUserID(ctx context.Context, arg db.ListSche
 }
 
 // ListSocialAccountsByUserID provides a mock function with given fields: ctx, arg
-func (_m *Store) ListSocialAccountsByUserID(ctx context.Context, arg db.ListSocialAccountsByUserIDParams) ([]db.Socialaccount, error) {
+func (_m *Store) ListSocialAccountsByUserID(ctx context.Context, arg db.ListSocialAccountsByUserIDParams) ([]db.ListSocialAccountsByUserIDRow, error) {
 	ret := _m.Called(ctx, arg)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ListSocialAccountsByUserID")
 	}
 
-	var r0 []db.Socialaccount
+	var r0 []db.ListSocialAccountsByUserIDRow
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.ListSocialAccountsByUserIDParams) ([]db.Socialaccount, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, db.ListSocialAccountsByUserIDParams) ([]db.ListSocialAccountsByUserIDRow, error)); ok {
 		return rf(ctx, arg)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, db.ListSocialAccountsByUserIDParams) []db.Socialaccount); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, db.ListSocialAccountsByUserIDParams) []db.ListSocialAccountsByUserIDRow); ok {
 		r0 = rf(ctx, arg)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]db.Socialaccount)
+			r0 = ret.Get(0).([]db.ListSocialAccountsByUserIDRow)
 		}
 	}
 

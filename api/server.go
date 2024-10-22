@@ -52,13 +52,13 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.GET("/users/:id", server.GetUser)
 
 	authenticatedRouter.POST("/drafts", server.CreateDraft)
-	authenticatedRouter.GET("/drafts/:id", server.getDraft)
-	authenticatedRouter.PUT("/drafts/:id", server.updateDraft)
-	authenticatedRouter.DELETE("/drafts/:id", server.deleteDraft)
-	authenticatedRouter.GET("/drafts/user/:id", server.listDraftsByUserID)
+	authenticatedRouter.GET("/drafts/:id", server.GetDraft)
+	authenticatedRouter.PUT("/drafts/:id", server.UpdateDraft)
+	authenticatedRouter.DELETE("/drafts/:id", server.DeleteDraft)
+	authenticatedRouter.GET("/drafts/user/:id", server.ListDraftsByUserID)
 
 	authenticatedRouter.POST("/prompts", server.CreatePrompt)
-	authenticatedRouter.GET("/prompts/:id", server.getPrompt)
+	authenticatedRouter.GET("/prompts/:id", server.GetPrompt)
 	authenticatedRouter.PUT("/prompts/:id", server.UpdatePrompt)
 	authenticatedRouter.DELETE("/prompts/:id", server.DeletePrompt)
 	authenticatedRouter.GET("/prompts/user/:id", server.ListPromptsByUserID)
@@ -69,11 +69,11 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.DELETE("/suggestions/:id", server.DeletePostSuggestion)
 	authenticatedRouter.GET("/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
 
-	authenticatedRouter.POST("/socialaccounts", server.CreateSocialAccount)
+	authenticatedRouter.POST("/socialaccounts/linkedin", server.AddLinkedInAccount)
 	authenticatedRouter.GET("/socialaccounts/:id", server.GetSocialAccount)
 	authenticatedRouter.PUT("/socialaccounts/:id", server.UpdateSocialAccount)
 	authenticatedRouter.DELETE("/socialaccounts/:id", server.DeleteSocialAccount)
-	authenticatedRouter.GET("/socialaccounts/user/:id", server.listSocialAccountsByUserID)
+	authenticatedRouter.GET("/socialaccounts/user/:id", server.ListSocialAccountsByUserID)
 
 	authenticatedRouter.POST("/posts", server.CreateScheduledPost)
 	authenticatedRouter.GET("/posts/:id", server.GetScheduledPost)

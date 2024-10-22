@@ -9,7 +9,8 @@ import (
 	"strings"
 )
 
-const LINKEDIN_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
+const GET_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
+const GET_USER_INFO_URL = "https://api.linkedin.com/v2/userinfo"
 
 type LinkedInClient struct {
 	ClientID     string
@@ -25,7 +26,13 @@ func NewLinkedInClient(clientID, clientSecret, redirectURI string) *LinkedInClie
 	}
 }
 
-func (lc *LinkedInClient) GetAccessToken(code string) (string, error) {
+type TokenInfo struct {
+	AccessToken string `json:"access_token"`
+	IDToken     string `json:"id_token"`
+	ExpiresIn   int    `json:"expires_in"`
+}
+
+func (lc *LinkedInClient) GetAccessToken(code string) (*TokenInfo, error) {
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
 	data.Set("code", code)
@@ -33,30 +40,71 @@ func (lc *LinkedInClient) GetAccessToken(code string) (string, error) {
 	data.Set("client_id", lc.ClientID)
 	data.Set("client_secret", lc.ClientSecret)
 
-	req, err := http.NewRequest("POST", LINKEDIN_TOKEN_URL, strings.NewReader(data.Encode()))
+	req, err := http.NewRequest("POST", GET_TOKEN_URL, strings.NewReader(data.Encode()))
 	if err != nil {
-		return "", fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	httpClient := &http.Client{}
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to send request: %w", err)
+		return nil, fmt.Errorf("failed to send request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("failed to get access token: %s", body)
+		return nil, fmt.Errorf("failed to get access token: %s", body)
 	}
 
-	var response struct {
-		AccessToken string `json:"access_token"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return "", fmt.Errorf("failed to decode response: %w", err)
+	var tokenInfo TokenInfo
+	if err := json.NewDecoder(resp.Body).Decode(&tokenInfo); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	return response.AccessToken, nil
+	return &tokenInfo, nil
+}
+
+type UserInfo struct {
+	Sub       string `json:"sub"`
+	Email     string `json:"email"`
+	FirstName string `json:"given_name"`
+	LastName  string `json:"family_name"`
+	Picture   string `json:"picture"`
+	Locale    string `json:"locale"`
+}
+
+func (c *LinkedInClient) GetUserInfo(accessToken string) (*UserInfo, error) {
+	req, err := http.NewRequest("GET", GET_USER_INFO_URL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	req.Header.Set("X-Restli-Protocol-Version", "2.0.0")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("LinkedIn API returned status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var userInfo UserInfo
+	if err := json.Unmarshal(body, &userInfo); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal user info: %w", err)
+	}
+
+	return &userInfo, nil
 }

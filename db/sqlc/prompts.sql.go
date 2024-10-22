@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const CreatePrompt = `-- name: CreatePrompt :one
+const createPrompt = `-- name: CreatePrompt :one
 INSERT INTO prompts (
   user_id, prompt_text
 ) VALUES (
@@ -26,7 +26,7 @@ type CreatePromptParams struct {
 }
 
 func (q *Queries) CreatePrompt(ctx context.Context, arg CreatePromptParams) (Prompt, error) {
-	row := q.db.QueryRow(ctx, CreatePrompt, arg.UserID, arg.PromptText)
+	row := q.db.QueryRow(ctx, createPrompt, arg.UserID, arg.PromptText)
 	var i Prompt
 	err := row.Scan(
 		&i.ID,
@@ -38,14 +38,14 @@ func (q *Queries) CreatePrompt(ctx context.Context, arg CreatePromptParams) (Pro
 	return i, err
 }
 
-const DeletePrompt = `-- name: DeletePrompt :one
+const deletePrompt = `-- name: DeletePrompt :one
 DELETE FROM prompts
 WHERE id = $1
 RETURNING id, user_id, prompt_text, created_at, updated_at
 `
 
 func (q *Queries) DeletePrompt(ctx context.Context, id pgtype.UUID) (Prompt, error) {
-	row := q.db.QueryRow(ctx, DeletePrompt, id)
+	row := q.db.QueryRow(ctx, deletePrompt, id)
 	var i Prompt
 	err := row.Scan(
 		&i.ID,
@@ -76,7 +76,7 @@ func (q *Queries) GetPromptByID(ctx context.Context, id pgtype.UUID) (Prompt, er
 	return i, err
 }
 
-const ListPromptsByUserID = `-- name: ListPromptsByUserID :many
+const listPromptsByUserID = `-- name: ListPromptsByUserID :many
 SELECT id, user_id, prompt_text, created_at, updated_at
 FROM prompts
 WHERE user_id = $1
@@ -91,7 +91,7 @@ type ListPromptsByUserIDParams struct {
 }
 
 func (q *Queries) ListPromptsByUserID(ctx context.Context, arg ListPromptsByUserIDParams) ([]Prompt, error) {
-	rows, err := q.db.Query(ctx, ListPromptsByUserID, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listPromptsByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (q *Queries) ListPromptsByUserID(ctx context.Context, arg ListPromptsByUser
 	return items, nil
 }
 
-const UpdatePrompt = `-- name: UpdatePrompt :one
+const updatePrompt = `-- name: UpdatePrompt :one
 UPDATE prompts
 SET prompt_text = $2,
     updated_at = NOW()
@@ -130,7 +130,7 @@ type UpdatePromptParams struct {
 }
 
 func (q *Queries) UpdatePrompt(ctx context.Context, arg UpdatePromptParams) (Prompt, error) {
-	row := q.db.QueryRow(ctx, UpdatePrompt, arg.ID, arg.PromptText)
+	row := q.db.QueryRow(ctx, updatePrompt, arg.ID, arg.PromptText)
 	var i Prompt
 	err := row.Scan(
 		&i.ID,

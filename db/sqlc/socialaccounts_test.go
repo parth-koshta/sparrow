@@ -3,7 +3,9 @@ package db
 import (
 	"context"
 	"testing"
+	"time"
 
+	pgtype "github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,10 +15,13 @@ func TestCreateSocialAccount(t *testing.T) {
 		user := createRandomUser(t, testQueries)
 
 		arg := CreateSocialAccountParams{
-			UserID:      user.ID,
-			Platform:    "twitter",
-			AccountName: "example_account",
-			AccessToken: "sample_access_token",
+			UserID:         user.ID,
+			Platform:       "twitter",
+			AccountName:    "example_account",
+			AccessToken:    "sample_access_token",
+			AccountEmail:   "test@gmail.com",
+			IDToken:        "sample_id_token",
+			TokenExpiresAt: pgtype.Timestamp{Time: time.Now().Add(24 * time.Hour).UTC(), Valid: true},
 		}
 		socialAccount, err := testQueries.CreateSocialAccount(context.Background(), arg)
 		require.NoError(t, err)
@@ -26,6 +31,9 @@ func TestCreateSocialAccount(t *testing.T) {
 		require.Equal(t, arg.Platform, socialAccount.Platform)
 		require.Equal(t, arg.AccountName, socialAccount.AccountName)
 		require.Equal(t, arg.AccessToken, socialAccount.AccessToken)
+		require.Equal(t, arg.AccountEmail, socialAccount.AccountEmail)
+		require.Equal(t, arg.IDToken, socialAccount.IDToken)
+		require.Equal(t, arg.TokenExpiresAt.Time, socialAccount.TokenExpiresAt.Time)
 		require.NotZero(t, socialAccount.CreatedAt)
 	})
 }

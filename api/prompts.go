@@ -59,7 +59,7 @@ type GetPromptRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) getPrompt(ctx *gin.Context) {
+func (server *Server) GetPrompt(ctx *gin.Context) {
 	var req GetPromptRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))

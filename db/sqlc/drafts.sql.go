@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const CreateDraft = `-- name: CreateDraft :one
+const createDraft = `-- name: CreateDraft :one
 INSERT INTO drafts (
   user_id, suggestion_id, draft_text
 ) VALUES (
@@ -27,7 +27,7 @@ type CreateDraftParams struct {
 }
 
 func (q *Queries) CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft, error) {
-	row := q.db.QueryRow(ctx, CreateDraft, arg.UserID, arg.SuggestionID, arg.DraftText)
+	row := q.db.QueryRow(ctx, createDraft, arg.UserID, arg.SuggestionID, arg.DraftText)
 	var i Draft
 	err := row.Scan(
 		&i.ID,
@@ -40,14 +40,14 @@ func (q *Queries) CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft
 	return i, err
 }
 
-const deleteDraft = `-- name: DeleteDraft :one
+const DeleteDraft = `-- name: DeleteDraft :one
 DELETE FROM drafts
 WHERE id = $1
 RETURNING id, user_id, suggestion_id, draft_text, created_at, updated_at
 `
 
 func (q *Queries) DeleteDraft(ctx context.Context, id pgtype.UUID) (Draft, error) {
-	row := q.db.QueryRow(ctx, deleteDraft, id)
+	row := q.db.QueryRow(ctx, DeleteDraft, id)
 	var i Draft
 	err := row.Scan(
 		&i.ID,
@@ -80,7 +80,7 @@ func (q *Queries) GetDraftByID(ctx context.Context, id pgtype.UUID) (Draft, erro
 	return i, err
 }
 
-const listDraftsByUserID = `-- name: ListDraftsByUserID :many
+const ListDraftsByUserID = `-- name: ListDraftsByUserID :many
 SELECT id, user_id, suggestion_id, draft_text, created_at, updated_at
 FROM drafts
 WHERE user_id = $1
@@ -95,7 +95,7 @@ type ListDraftsByUserIDParams struct {
 }
 
 func (q *Queries) ListDraftsByUserID(ctx context.Context, arg ListDraftsByUserIDParams) ([]Draft, error) {
-	rows, err := q.db.Query(ctx, listDraftsByUserID, arg.UserID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, ListDraftsByUserID, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (q *Queries) ListDraftsByUserID(ctx context.Context, arg ListDraftsByUserID
 	return items, nil
 }
 
-const updateDraft = `-- name: UpdateDraft :one
+const UpdateDraft = `-- name: UpdateDraft :one
 UPDATE drafts
 SET draft_text = $2,
     updated_at = NOW()
@@ -135,7 +135,7 @@ type UpdateDraftParams struct {
 }
 
 func (q *Queries) UpdateDraft(ctx context.Context, arg UpdateDraftParams) (Draft, error) {
-	row := q.db.QueryRow(ctx, updateDraft, arg.ID, arg.DraftText)
+	row := q.db.QueryRow(ctx, UpdateDraft, arg.ID, arg.DraftText)
 	var i Draft
 	err := row.Scan(
 		&i.ID,

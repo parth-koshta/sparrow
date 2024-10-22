@@ -1,8 +1,8 @@
 -- name: CreateSocialAccount :one
 INSERT INTO socialaccounts (
-  user_id, platform, account_name, access_token
+  user_id, platform, account_name, account_email, access_token, id_token, token_expires_at
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5, $6, $7
 )
 RETURNING *;
 
