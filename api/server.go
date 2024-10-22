@@ -69,11 +69,11 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.DELETE("/suggestions/:id", server.DeletePostSuggestion)
 	authenticatedRouter.GET("/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
 
-	authenticatedRouter.POST("/socialaccounts/linkedin", server.AddLinkedInAccount)
 	authenticatedRouter.GET("/socialaccounts/:id", server.GetSocialAccount)
-	authenticatedRouter.PUT("/socialaccounts/:id", server.UpdateSocialAccount)
 	authenticatedRouter.DELETE("/socialaccounts/:id", server.DeleteSocialAccount)
 	authenticatedRouter.GET("/socialaccounts/user/:id", server.ListSocialAccountsByUserID)
+	authenticatedRouter.POST("/socialaccounts/linkedin", server.AddLinkedInAccount)
+	authenticatedRouter.PUT("/socialaccounts/accesstoken/linkedin", server.UpdateLinkedInAccessToken)
 
 	authenticatedRouter.POST("/posts", server.CreateScheduledPost)
 	authenticatedRouter.GET("/posts/:id", server.GetScheduledPost)

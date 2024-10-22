@@ -27,6 +27,15 @@ SET platform = $2,
 WHERE id = $1
 RETURNING *;
 
+-- name: UpdateSocialAccountToken :one
+UPDATE socialaccounts
+SET access_token = $2,
+    id_token = $3,
+    token_expires_at = $4,
+    updated_at = NOW()
+WHERE user_id = $1
+RETURNING *;
+
 -- name: DeleteSocialAccount :one
 DELETE FROM socialaccounts
 WHERE id = $1

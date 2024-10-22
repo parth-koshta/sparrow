@@ -198,3 +198,43 @@ func (q *Queries) UpdateSocialAccount(ctx context.Context, arg UpdateSocialAccou
 	)
 	return i, err
 }
+
+const updateSocialAccountToken = `-- name: UpdateSocialAccountToken :one
+UPDATE socialaccounts
+SET access_token = $2,
+    id_token = $3,
+    token_expires_at = $4,
+    updated_at = NOW()
+WHERE user_id = $1
+RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at
+`
+
+type UpdateSocialAccountTokenParams struct {
+	UserID         pgtype.UUID
+	AccessToken    string
+	IDToken        string
+	TokenExpiresAt pgtype.Timestamp
+}
+
+func (q *Queries) UpdateSocialAccountToken(ctx context.Context, arg UpdateSocialAccountTokenParams) (Socialaccount, error) {
+	row := q.db.QueryRow(ctx, updateSocialAccountToken,
+		arg.UserID,
+		arg.AccessToken,
+		arg.IDToken,
+		arg.TokenExpiresAt,
+	)
+	var i Socialaccount
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Platform,
+		&i.AccountName,
+		&i.AccountEmail,
+		&i.AccessToken,
+		&i.IDToken,
+		&i.TokenExpiresAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

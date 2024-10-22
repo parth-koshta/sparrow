@@ -40,6 +40,7 @@ type Querier interface {
 	UpdatePrompt(ctx context.Context, arg UpdatePromptParams) (Prompt, error)
 	UpdateScheduledPost(ctx context.Context, arg UpdateScheduledPostParams) (Scheduledpost, error)
 	UpdateSocialAccount(ctx context.Context, arg UpdateSocialAccountParams) (Socialaccount, error)
+	UpdateSocialAccountToken(ctx context.Context, arg UpdateSocialAccountTokenParams) (Socialaccount, error)
 }
 
 var _ Querier = (*Queries)(nil)

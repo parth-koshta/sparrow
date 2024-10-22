@@ -840,6 +840,34 @@ func (_m *Querier) UpdateSocialAccount(ctx context.Context, arg db.UpdateSocialA
 	return r0, r1
 }
 
+// UpdateSocialAccountToken provides a mock function with given fields: ctx, arg
+func (_m *Querier) UpdateSocialAccountToken(ctx context.Context, arg db.UpdateSocialAccountTokenParams) (db.Socialaccount, error) {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateSocialAccountToken")
+	}
+
+	var r0 db.Socialaccount
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateSocialAccountTokenParams) (db.Socialaccount, error)); ok {
+		return rf(ctx, arg)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateSocialAccountTokenParams) db.Socialaccount); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Get(0).(db.Socialaccount)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, db.UpdateSocialAccountTokenParams) error); ok {
+		r1 = rf(ctx, arg)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewQuerier creates a new instance of Querier. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewQuerier(t interface {
