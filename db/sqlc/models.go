@@ -44,13 +44,16 @@ type Scheduledpost struct {
 }
 
 type Socialaccount struct {
-	ID          pgtype.UUID
-	UserID      pgtype.UUID
-	Platform    string
-	AccountName string
-	AccessToken string
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+	ID             pgtype.UUID
+	UserID         pgtype.UUID
+	Platform       string
+	AccountName    string
+	AccountEmail   string
+	AccessToken    string
+	IDToken        string
+	TokenExpiresAt pgtype.Timestamp
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
 }
 
 type User struct {

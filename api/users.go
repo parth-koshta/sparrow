@@ -14,12 +14,12 @@ import (
 	"github.com/parth-koshta/sparrow/util"
 )
 
-type createUserRequest struct {
+type CreateUserRequest struct {
 	Email    string `json:"email" binding:"required,min=6"`
 	Password string `json:"password" binding:"required"`
 }
 
-type userResponse struct {
+type UserResponse struct {
 	ID        pgtype.UUID
 	Username  pgtype.Text
 	Email     string
@@ -27,8 +27,8 @@ type userResponse struct {
 	UpdatedAt pgtype.Timestamp
 }
 
-func (server *Server) createUser(ctx *gin.Context) {
-	var req createUserRequest
+func (server *Server) CreateUser(ctx *gin.Context) {
+	var req CreateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -55,7 +55,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, &userResponse{
+	ctx.JSON(http.StatusOK, &UserResponse{
 		ID:        user.ID,
 		Username:  user.Username,
 		Email:     user.Email,
@@ -64,23 +64,23 @@ func (server *Server) createUser(ctx *gin.Context) {
 	})
 }
 
-type getUserRequest struct {
+type GetUserRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) getUser(ctx *gin.Context) {
-	var req getUserRequest
+func (server *Server) GetUser(ctx *gin.Context) {
+	var req GetUserRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
-	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	requestUUID, err := uuid.Parse(req.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	authPayload := ctx.MustGet(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
 	authUUID, err := authPayload.ID.UUIDValue()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -116,13 +116,13 @@ func (server *Server) getUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
-type listUsersRequest struct {
+type ListUsersRequest struct {
 	Page     int32 `form:"page" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=100"`
 }
 
-func (server *Server) listUsers(ctx *gin.Context) {
-	var req listUsersRequest
+func (server *Server) ListUsers(ctx *gin.Context) {
+	var req ListUsersRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -144,18 +144,18 @@ func (server *Server) listUsers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, users)
 }
 
-type loginUserRequest struct {
+type LoginUserRequest struct {
 	Email    string `json:"email" binding:"required,min=6"`
 	Password string `json:"password" binding:"required"`
 }
 
-type loginUserResponse struct {
+type LoginUserResponse struct {
 	Token string       `json:"token"`
-	User  userResponse `json:"user"`
+	User  UserResponse `json:"user"`
 }
 
-func (server *Server) loginUser(ctx *gin.Context) {
-	var req loginUserRequest
+func (server *Server) LoginUser(ctx *gin.Context) {
+	var req LoginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -191,9 +191,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 
 	// Return the access token
-	ctx.JSON(http.StatusOK, &loginUserResponse{
+	ctx.JSON(http.StatusOK, &LoginUserResponse{
 		Token: accessToken,
-		User: userResponse{
+		User: UserResponse{
 			ID:        user.ID,
 			Username:  user.Username,
 			Email:     user.Email,

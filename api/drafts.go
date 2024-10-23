@@ -9,13 +9,13 @@ import (
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
 
-type createDraftRequest struct {
+type CreateDraftRequest struct {
 	UserID       string `json:"user_id" binding:"required,uuid"`
 	SuggestionID string `json:"suggestion_id" binding:"required,uuid"`
 	DraftText    string `json:"draft_text" binding:"required"`
 }
 
-type draftResponse struct {
+type DraftResponse struct {
 	ID           pgtype.UUID
 	UserID       pgtype.UUID
 	SuggestionID pgtype.UUID
@@ -24,8 +24,8 @@ type draftResponse struct {
 	UpdatedAt    pgtype.Timestamp
 }
 
-func (server *Server) createDraft(ctx *gin.Context) {
-	var req createDraftRequest
+func (server *Server) CreateDraft(ctx *gin.Context) {
+	var req CreateDraftRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -55,7 +55,7 @@ func (server *Server) createDraft(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, draftResponse{
+	ctx.JSON(http.StatusOK, DraftResponse{
 		ID:           draft.ID,
 		UserID:       draft.UserID,
 		SuggestionID: draft.SuggestionID,
@@ -65,12 +65,12 @@ func (server *Server) createDraft(ctx *gin.Context) {
 	})
 }
 
-type getDraftRequest struct {
+type GetDraftRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) getDraft(ctx *gin.Context) {
-	var req getDraftRequest
+func (server *Server) GetDraft(ctx *gin.Context) {
+	var req GetDraftRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -88,7 +88,7 @@ func (server *Server) getDraft(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, draftResponse{
+	ctx.JSON(http.StatusOK, DraftResponse{
 		ID:           draft.ID,
 		UserID:       draft.UserID,
 		SuggestionID: draft.SuggestionID,
@@ -98,14 +98,14 @@ func (server *Server) getDraft(ctx *gin.Context) {
 	})
 }
 
-type listDraftsByUserIDRequest struct {
+type ListDraftsByUserIDRequest struct {
 	UserID   string `form:"user_id" binding:"required,uuid"`
 	Page     int32  `form:"page" binding:"required,min=1"`
 	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
 
-func (server *Server) listDraftsByUserID(ctx *gin.Context) {
-	var req listDraftsByUserIDRequest
+func (server *Server) ListDraftsByUserID(ctx *gin.Context) {
+	var req ListDraftsByUserIDRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -134,13 +134,13 @@ func (server *Server) listDraftsByUserID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, drafts)
 }
 
-type updateDraftRequest struct {
+type UpdateDraftRequest struct {
 	ID        string `json:"id" binding:"required,uuid"`
 	DraftText string `json:"draft_text" binding:"required"`
 }
 
-func (server *Server) updateDraft(ctx *gin.Context) {
-	var req updateDraftRequest
+func (server *Server) UpdateDraft(ctx *gin.Context) {
+	var req UpdateDraftRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -163,7 +163,7 @@ func (server *Server) updateDraft(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, draftResponse{
+	ctx.JSON(http.StatusOK, DraftResponse{
 		ID:           draft.ID,
 		UserID:       draft.UserID,
 		SuggestionID: draft.SuggestionID,
@@ -173,12 +173,12 @@ func (server *Server) updateDraft(ctx *gin.Context) {
 	})
 }
 
-type deleteDraftRequest struct {
+type DeleteDraftRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) deleteDraft(ctx *gin.Context) {
-	var req deleteDraftRequest
+func (server *Server) DeleteDraft(ctx *gin.Context) {
+	var req DeleteDraftRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

@@ -3,9 +3,10 @@
 package mocks
 
 import (
-	time "time"
-
+	pgtype "github.com/jackc/pgx/v5/pgtype"
 	mock "github.com/stretchr/testify/mock"
+
+	time "time"
 
 	token "github.com/parth-koshta/sparrow/token"
 )
@@ -15,9 +16,9 @@ type Maker struct {
 	mock.Mock
 }
 
-// CreateToken provides a mock function with given fields: email, duration
-func (_m *Maker) CreateToken(email string, duration time.Duration) (string, error) {
-	ret := _m.Called(email, duration)
+// CreateToken provides a mock function with given fields: id, email, duration
+func (_m *Maker) CreateToken(id pgtype.UUID, email string, duration time.Duration) (string, error) {
+	ret := _m.Called(id, email, duration)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateToken")
@@ -25,17 +26,17 @@ func (_m *Maker) CreateToken(email string, duration time.Duration) (string, erro
 
 	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, time.Duration) (string, error)); ok {
-		return rf(email, duration)
+	if rf, ok := ret.Get(0).(func(pgtype.UUID, string, time.Duration) (string, error)); ok {
+		return rf(id, email, duration)
 	}
-	if rf, ok := ret.Get(0).(func(string, time.Duration) string); ok {
-		r0 = rf(email, duration)
+	if rf, ok := ret.Get(0).(func(pgtype.UUID, string, time.Duration) string); ok {
+		r0 = rf(id, email, duration)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(string, time.Duration) error); ok {
-		r1 = rf(email, duration)
+	if rf, ok := ret.Get(1).(func(pgtype.UUID, string, time.Duration) error); ok {
+		r1 = rf(id, email, duration)
 	} else {
 		r1 = ret.Error(1)
 	}

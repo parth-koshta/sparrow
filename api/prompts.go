@@ -9,12 +9,12 @@ import (
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
 
-type createPromptRequest struct {
+type CreatePromptRequest struct {
 	UserID     string `json:"user_id" binding:"required,uuid"`
 	PromptText string `json:"prompt_text" binding:"required"`
 }
 
-type promptResponse struct {
+type PromptResponse struct {
 	ID         pgtype.UUID
 	UserID     pgtype.UUID
 	PromptText string
@@ -22,8 +22,8 @@ type promptResponse struct {
 	UpdatedAt  pgtype.Timestamp
 }
 
-func (server *Server) createPrompt(ctx *gin.Context) {
-	var req createPromptRequest
+func (server *Server) CreatePrompt(ctx *gin.Context) {
+	var req CreatePromptRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -46,7 +46,7 @@ func (server *Server) createPrompt(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, promptResponse{
+	ctx.JSON(http.StatusOK, PromptResponse{
 		ID:         prompt.ID,
 		UserID:     prompt.UserID,
 		PromptText: prompt.PromptText,
@@ -55,12 +55,12 @@ func (server *Server) createPrompt(ctx *gin.Context) {
 	})
 }
 
-type getPromptRequest struct {
+type GetPromptRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) getPrompt(ctx *gin.Context) {
-	var req getPromptRequest
+func (server *Server) GetPrompt(ctx *gin.Context) {
+	var req GetPromptRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -78,7 +78,7 @@ func (server *Server) getPrompt(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, promptResponse{
+	ctx.JSON(http.StatusOK, PromptResponse{
 		ID:         prompt.ID,
 		UserID:     prompt.UserID,
 		PromptText: prompt.PromptText,
@@ -87,14 +87,14 @@ func (server *Server) getPrompt(ctx *gin.Context) {
 	})
 }
 
-type listPromptsByUserIDRequest struct {
+type ListPromptsByUserIDRequest struct {
 	UserID   string `form:"user_id" binding:"required,uuid"`
 	Page     int32  `form:"page" binding:"required,min=1"`
 	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
 
-func (server *Server) listPromptsByUserID(ctx *gin.Context) {
-	var req listPromptsByUserIDRequest
+func (server *Server) ListPromptsByUserID(ctx *gin.Context) {
+	var req ListPromptsByUserIDRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -123,13 +123,13 @@ func (server *Server) listPromptsByUserID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, prompts)
 }
 
-type updatePromptRequest struct {
+type UpdatePromptRequest struct {
 	ID         string `json:"id" binding:"required,uuid"`
 	PromptText string `json:"prompt_text" binding:"required"`
 }
 
-func (server *Server) updatePrompt(ctx *gin.Context) {
-	var req updatePromptRequest
+func (server *Server) UpdatePrompt(ctx *gin.Context) {
+	var req UpdatePromptRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -152,7 +152,7 @@ func (server *Server) updatePrompt(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, promptResponse{
+	ctx.JSON(http.StatusOK, PromptResponse{
 		ID:         prompt.ID,
 		UserID:     prompt.UserID,
 		PromptText: prompt.PromptText,
@@ -161,12 +161,12 @@ func (server *Server) updatePrompt(ctx *gin.Context) {
 	})
 }
 
-type deletePromptRequest struct {
+type DeletePromptRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) deletePrompt(ctx *gin.Context) {
-	var req deletePromptRequest
+func (server *Server) DeletePrompt(ctx *gin.Context) {
+	var req DeletePromptRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

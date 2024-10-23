@@ -1,51 +1,79 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
+	dbtypes "github.com/parth-koshta/sparrow/db/types"
+	"github.com/parth-koshta/sparrow/token"
 )
 
-type createSocialAccountRequest struct {
-	UserID      string `json:"user_id" binding:"required,uuid"`
-	Platform    string `json:"platform" binding:"required"`
-	AccountName string `json:"account_name" binding:"required"`
-	AccessToken string `json:"access_token" binding:"required"`
+type SocialAccountResponse struct {
+	Platform       string
+	AccountName    string
+	TokenExpiresAt pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
 }
 
-// socialAccountResponse defines the response structure for a social account
-type socialAccountResponse struct {
-	ID          pgtype.UUID
-	UserID      pgtype.UUID
-	Platform    string
-	AccountName string
-	AccessToken string
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+type AddLinkedInAccountRequest struct {
+	Code string `json:"code" binding:"required"`
 }
 
-// CreateSocialAccount handles the creation of a social account
-func (server *Server) createSocialAccount(ctx *gin.Context) {
-	var req createSocialAccountRequest
+func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
+	var req AddLinkedInAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	userID, err := uuid.Parse(req.UserID)
+	authPayload := ctx.MustGet(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
+	if !authPayload.ID.Valid {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(fmt.Errorf("invalid user ID in auth payload")))
+		return
+	}
+
+	userIDBytes := authPayload.ID.Bytes[:]
+	userID, err := uuid.FromBytes(userIDBytes)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
+		return
+	}
+
+	accessTokenResp, err := server.linkedinClient.GetAccessToken(req.Code)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to get access token: %v", err)))
+		return
+	}
+
+	accessToken := accessTokenResp.AccessToken
+	idToken := accessTokenResp.IDToken
+	expiresIn := accessTokenResp.ExpiresIn
+
+	tokenExpiresAt := time.Now().Add(time.Second * time.Duration(expiresIn))
+	tokenExpiresAtPg := pgtype.Timestamp{
+		Time:  tokenExpiresAt,
+		Valid: true,
+	}
+
+	userInfo, err := server.linkedinClient.GetUserInfo(accessToken)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to get user info: %v", err)))
 		return
 	}
 
 	arg := db.CreateSocialAccountParams{
-		UserID:      pgtype.UUID{Bytes: userID, Valid: true},
-		Platform:    req.Platform,
-		AccountName: req.AccountName,
-		AccessToken: req.AccessToken,
+		UserID:         pgtype.UUID{Bytes: userID, Valid: true},
+		Platform:       dbtypes.SocialPlatformLinkedIn.String(),
+		AccountName:    userInfo.Name,
+		AccountEmail:   userInfo.Email,
+		AccessToken:    accessToken,
+		IDToken:        idToken,
+		TokenExpiresAt: tokenExpiresAtPg,
 	}
 
 	socialAccount, err := server.store.CreateSocialAccount(ctx, arg)
@@ -54,24 +82,78 @@ func (server *Server) createSocialAccount(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, socialAccountResponse{
-		ID:          socialAccount.ID,
-		UserID:      socialAccount.UserID,
-		Platform:    socialAccount.Platform,
-		AccountName: socialAccount.AccountName,
-		AccessToken: socialAccount.AccessToken,
-		CreatedAt:   socialAccount.CreatedAt,
-		UpdatedAt:   socialAccount.UpdatedAt,
+	ctx.JSON(http.StatusOK, SocialAccountResponse{
+		Platform:       socialAccount.Platform,
+		AccountName:    socialAccount.AccountName,
+		TokenExpiresAt: socialAccount.TokenExpiresAt,
+		UpdatedAt:      socialAccount.UpdatedAt,
 	})
 }
 
-type getSocialAccountRequest struct {
+type UpdateAccessTokenRequest struct {
+	Code string `json:"code" binding:"required"`
+}
+
+func (server *Server) UpdateLinkedInAccessToken(ctx *gin.Context) {
+	var req UpdateAccessTokenRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// Get user ID from the auth middleware
+	authPayload := ctx.MustGet(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
+	if !authPayload.ID.Valid {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(fmt.Errorf("invalid user ID in auth payload")))
+		return
+	}
+
+	userIDBytes := authPayload.ID.Bytes[:]
+	userID, err := uuid.FromBytes(userIDBytes)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
+		return
+	}
+
+	// Call LinkedIn client to get new access token
+	// linkedinClient := NewLinkedInClient() // Assuming you have a function to create a LinkedIn client
+	tokenInfo, err := server.linkedinClient.GetAccessToken(req.Code)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// Calculate the token expiration time
+	tokenExpiresAt := time.Now().Add(time.Duration(tokenInfo.ExpiresIn) * time.Second)
+
+	// Update the token in the database
+	arg := db.UpdateSocialAccountTokenParams{
+		UserID:         pgtype.UUID{Bytes: userID, Valid: true},
+		AccessToken:    tokenInfo.AccessToken,
+		IDToken:        tokenInfo.IDToken,
+		TokenExpiresAt: pgtype.Timestamp{Time: tokenExpiresAt, Valid: true},
+	}
+
+	socialAccount, err := server.store.UpdateSocialAccountToken(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, SocialAccountResponse{
+		Platform:       socialAccount.Platform,
+		AccountName:    socialAccount.AccountName,
+		TokenExpiresAt: socialAccount.TokenExpiresAt,
+		UpdatedAt:      socialAccount.UpdatedAt,
+	})
+}
+
+type GetSocialAccountRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-// GetSocialAccount handles retrieval of a social account by ID
-func (server *Server) getSocialAccount(ctx *gin.Context) {
-	var req getSocialAccountRequest
+func (server *Server) GetSocialAccount(ctx *gin.Context) {
+	var req GetSocialAccountRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -89,26 +171,22 @@ func (server *Server) getSocialAccount(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, socialAccountResponse{
-		ID:          socialAccount.ID,
-		UserID:      socialAccount.UserID,
-		Platform:    socialAccount.Platform,
-		AccountName: socialAccount.AccountName,
-		AccessToken: socialAccount.AccessToken,
-		CreatedAt:   socialAccount.CreatedAt,
-		UpdatedAt:   socialAccount.UpdatedAt,
+	ctx.JSON(http.StatusOK, SocialAccountResponse{
+		Platform:       socialAccount.Platform,
+		AccountName:    socialAccount.AccountName,
+		TokenExpiresAt: socialAccount.TokenExpiresAt,
+		UpdatedAt:      socialAccount.UpdatedAt,
 	})
 }
 
-type listSocialAccountsByUserIDRequest struct {
+type ListSocialAccountsByUserIDRequest struct {
 	UserID   string `form:"user_id" binding:"required,uuid"`
 	Page     int32  `form:"page" binding:"required,min=1"`
 	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
 
-// ListSocialAccountsByUserID handles listing of social accounts for a specific user
-func (server *Server) listSocialAccountsByUserID(ctx *gin.Context) {
-	var req listSocialAccountsByUserIDRequest
+func (server *Server) ListSocialAccountsByUserID(ctx *gin.Context) {
+	var req ListSocialAccountsByUserIDRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -134,75 +212,25 @@ func (server *Server) listSocialAccountsByUserID(ctx *gin.Context) {
 		return
 	}
 
-	var responses []socialAccountResponse
+	var responses []SocialAccountResponse
 	for _, acc := range socialAccounts {
-		responses = append(responses, socialAccountResponse{
-			ID:          acc.ID,
-			UserID:      acc.UserID,
-			Platform:    acc.Platform,
-			AccountName: acc.AccountName,
-			AccessToken: acc.AccessToken,
-			CreatedAt:   acc.CreatedAt,
-			UpdatedAt:   acc.UpdatedAt,
+		responses = append(responses, SocialAccountResponse{
+			Platform:       acc.Platform,
+			AccountName:    acc.AccountName,
+			TokenExpiresAt: acc.TokenExpiresAt,
+			UpdatedAt:      acc.UpdatedAt,
 		})
 	}
 
 	ctx.JSON(http.StatusOK, responses)
 }
 
-// updateSocialAccountRequest defines the request structure for updating a social account
-type updateSocialAccountRequest struct {
-	Platform    string `json:"platform"`
-	AccountName string `json:"account_name"`
-	AccessToken string `json:"access_token"`
-}
-
-// UpdateSocialAccount handles updating an existing social account
-func (server *Server) updateSocialAccount(ctx *gin.Context) {
-	var req updateSocialAccountRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	accountID, err := uuid.Parse(ctx.Param("id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	arg := db.UpdateSocialAccountParams{
-		ID:          pgtype.UUID{Bytes: accountID, Valid: true},
-		Platform:    req.Platform,
-		AccountName: req.AccountName,
-		AccessToken: req.AccessToken,
-	}
-
-	socialAccount, err := server.store.UpdateSocialAccount(ctx, arg)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, socialAccountResponse{
-		ID:          socialAccount.ID,
-		UserID:      socialAccount.UserID,
-		Platform:    socialAccount.Platform,
-		AccountName: socialAccount.AccountName,
-		AccessToken: socialAccount.AccessToken,
-		CreatedAt:   socialAccount.CreatedAt,
-		UpdatedAt:   socialAccount.UpdatedAt,
-	})
-}
-
-// deleteSocialAccountRequest defines the request structure for deleting a social account
-type deleteSocialAccountRequest struct {
+type DeleteSocialAccountRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-// DeleteSocialAccount handles the deletion of a social account
-func (server *Server) deleteSocialAccount(ctx *gin.Context) {
-	var req deleteSocialAccountRequest
+func (server *Server) DeleteSocialAccount(ctx *gin.Context) {
+	var req DeleteSocialAccountRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

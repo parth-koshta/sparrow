@@ -9,15 +9,15 @@ import (
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
 
-type createScheduledPostRequest struct {
+type CreateScheduledPostRequest struct {
 	UserID        string           `json:"user_id" binding:"required,uuid"`
 	DraftID       string           `json:"draft_id" binding:"required,uuid"`
 	ScheduledTime pgtype.Timestamp `json:"scheduled_time" binding:"required"`
 	Status        string           `json:"status" binding:"required"`
 }
 
-func (server *Server) createScheduledPost(ctx *gin.Context) {
-	var req createScheduledPostRequest
+func (server *Server) CreateScheduledPost(ctx *gin.Context) {
+	var req CreateScheduledPostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -51,12 +51,12 @@ func (server *Server) createScheduledPost(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, scheduledPost)
 }
 
-type getScheduledPostRequest struct {
+type GetScheduledPostRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) getScheduledPost(ctx *gin.Context) {
-	var req getScheduledPostRequest
+func (server *Server) GetScheduledPost(ctx *gin.Context) {
+	var req GetScheduledPostRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -77,14 +77,14 @@ func (server *Server) getScheduledPost(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, scheduledPost)
 }
 
-type listScheduledPostsByUserIDRequest struct {
+type ListScheduledPostsByUserIDRequest struct {
 	UserID   string `form:"user_id" binding:"required,uuid"`
 	Page     int32  `form:"page" binding:"required,min=1"`
 	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
 
-func (server *Server) listScheduledPostsByUserID(ctx *gin.Context) {
-	var req listScheduledPostsByUserIDRequest
+func (server *Server) ListScheduledPostsByUserID(ctx *gin.Context) {
+	var req ListScheduledPostsByUserIDRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -113,14 +113,14 @@ func (server *Server) listScheduledPostsByUserID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, scheduledPosts)
 }
 
-type updateScheduledPostRequest struct {
+type UpdateScheduledPostRequest struct {
 	ID            string           `json:"id" binding:"required,uuid"`
 	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
 	Status        string           `json:"status"`
 }
 
-func (server *Server) updateScheduledPost(ctx *gin.Context) {
-	var req updateScheduledPostRequest
+func (server *Server) UpdateScheduledPost(ctx *gin.Context) {
+	var req UpdateScheduledPostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -147,12 +147,12 @@ func (server *Server) updateScheduledPost(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, scheduledPost)
 }
 
-type deleteScheduledPostRequest struct {
+type DeleteScheduledPostRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) deleteScheduledPost(ctx *gin.Context) {
-	var req deleteScheduledPostRequest
+func (server *Server) DeleteScheduledPost(ctx *gin.Context) {
+	var req DeleteScheduledPostRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

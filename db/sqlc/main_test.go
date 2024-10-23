@@ -158,10 +158,13 @@ func createRandomScheduledPost(t *testing.T, testQueries *Queries, userID pgtype
 
 func createRandomSocialAccount(t *testing.T, testQueries *Queries, userID pgtype.UUID) Socialaccount {
 	arg := CreateSocialAccountParams{
-		UserID:      userID,
-		Platform:    "ExamplePlatform",
-		AccountName: "ExampleAccountName",
-		AccessToken: "ExampleAccessToken",
+		UserID:         userID,
+		Platform:       "ExamplePlatform",
+		AccountName:    "ExampleAccountName",
+		AccessToken:    "ExampleAccessToken",
+		AccountEmail:   "example@gmail.com",
+		IDToken:        "ExampleIDToken",
+		TokenExpiresAt: pgtype.Timestamp{Time: time.Now().Add(24 * time.Hour), Valid: true},
 	}
 	socialAccount, err := testQueries.CreateSocialAccount(context.Background(), arg)
 	require.NoError(t, err)

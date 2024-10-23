@@ -9,12 +9,12 @@ import (
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
 
-type createPostSuggestionRequest struct {
+type CreatePostSuggestionRequest struct {
 	PromptID       string `json:"prompt_id" binding:"required,uuid"`
 	SuggestionText string `json:"suggestion_text" binding:"required"`
 }
 
-type postSuggestionResponse struct {
+type PostSuggestionResponse struct {
 	ID             pgtype.UUID
 	PromptID       pgtype.UUID
 	SuggestionText string
@@ -22,8 +22,8 @@ type postSuggestionResponse struct {
 	UpdatedAt      pgtype.Timestamp
 }
 
-func (server *Server) createPostSuggestion(ctx *gin.Context) {
-	var req createPostSuggestionRequest
+func (server *Server) CreatePostSuggestion(ctx *gin.Context) {
+	var req CreatePostSuggestionRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -46,7 +46,7 @@ func (server *Server) createPostSuggestion(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, postSuggestionResponse{
+	ctx.JSON(http.StatusOK, PostSuggestionResponse{
 		ID:             suggestion.ID,
 		PromptID:       suggestion.PromptID,
 		SuggestionText: suggestion.SuggestionText,
@@ -55,12 +55,12 @@ func (server *Server) createPostSuggestion(ctx *gin.Context) {
 	})
 }
 
-type getPostSuggestionRequest struct {
+type GetPostSuggestionRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) getPostSuggestion(ctx *gin.Context) {
-	var req getPostSuggestionRequest
+func (server *Server) GetPostSuggestion(ctx *gin.Context) {
+	var req GetPostSuggestionRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -78,7 +78,7 @@ func (server *Server) getPostSuggestion(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, postSuggestionResponse{
+	ctx.JSON(http.StatusOK, PostSuggestionResponse{
 		ID:             suggestion.ID,
 		PromptID:       suggestion.PromptID,
 		SuggestionText: suggestion.SuggestionText,
@@ -87,14 +87,14 @@ func (server *Server) getPostSuggestion(ctx *gin.Context) {
 	})
 }
 
-type listPostSuggestionsByPromptIDRequest struct {
+type ListPostSuggestionsByPromptIDRequest struct {
 	PromptID string `form:"prompt_id" binding:"required,uuid"`
 	Page     int32  `form:"page" binding:"required,min=1"`
 	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
 
-func (server *Server) listPostSuggestionsByPromptID(ctx *gin.Context) {
-	var req listPostSuggestionsByPromptIDRequest
+func (server *Server) ListPostSuggestionsByPromptID(ctx *gin.Context) {
+	var req ListPostSuggestionsByPromptIDRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -123,13 +123,13 @@ func (server *Server) listPostSuggestionsByPromptID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, suggestions)
 }
 
-type updatePostSuggestionRequest struct {
+type UpdatePostSuggestionRequest struct {
 	ID             string `json:"id" binding:"required,uuid"`
 	SuggestionText string `json:"suggestion_text" binding:"required"`
 }
 
-func (server *Server) updatePostSuggestion(ctx *gin.Context) {
-	var req updatePostSuggestionRequest
+func (server *Server) UpdatePostSuggestion(ctx *gin.Context) {
+	var req UpdatePostSuggestionRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -152,7 +152,7 @@ func (server *Server) updatePostSuggestion(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, postSuggestionResponse{
+	ctx.JSON(http.StatusOK, PostSuggestionResponse{
 		ID:             suggestion.ID,
 		PromptID:       suggestion.PromptID,
 		SuggestionText: suggestion.SuggestionText,
@@ -161,12 +161,12 @@ func (server *Server) updatePostSuggestion(ctx *gin.Context) {
 	})
 }
 
-type deletePostSuggestionRequest struct {
+type DeletePostSuggestionRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) deletePostSuggestion(ctx *gin.Context) {
-	var req deletePostSuggestionRequest
+func (server *Server) DeletePostSuggestion(ctx *gin.Context) {
+	var req DeletePostSuggestionRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

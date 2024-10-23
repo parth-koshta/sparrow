@@ -5,16 +5,18 @@ import (
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 
+	"github.com/parth-koshta/sparrow/client"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/token"
 	"github.com/parth-koshta/sparrow/util"
 )
 
 type Server struct {
-	store      db.Store
-	tokenMaker token.Maker
-	config     util.Config
-	router     *gin.Engine
+	store          db.Store
+	tokenMaker     token.Maker
+	config         util.Config
+	router         *gin.Engine
+	linkedinClient *client.LinkedinClient
 }
 
 func NewServer(store db.Store, config util.Config) (*Server, error) {
@@ -23,7 +25,9 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 		return nil, err
 	}
 
-	server := &Server{store: store, tokenMaker: tokenMaker, config: config}
+	linkedinClient := client.NewLinkedInClient(config.LinkedInClientID, config.LinkedInClientSecret, config.LinkedInRedirectURL)
+
+	server := &Server{store: store, tokenMaker: tokenMaker, config: config, linkedinClient: linkedinClient}
 
 	err = server.initializeSentry()
 	if err != nil {
@@ -40,42 +44,44 @@ func (server *Server) setupRouter() {
 
 	router.Use(sentrygin.New(sentrygin.Options{Repanic: true}))
 
-	router.POST("/users/login", server.loginUser)
-	router.POST("/users", server.createUser)
+	router.GET("/", server.HealthCheck)
 
-	authenticatedRouter := router.Group("/").Use(authMiddleware(server.tokenMaker))
-	authenticatedRouter.GET("/users", server.listUsers)
-	authenticatedRouter.GET("/users/:id", server.getUser)
+	router.POST("/users/login", server.LoginUser)
+	router.POST("/users", server.CreateUser)
 
-	authenticatedRouter.POST("/drafts", server.createDraft)
-	authenticatedRouter.GET("/drafts/:id", server.getDraft)
-	authenticatedRouter.PUT("/drafts/:id", server.updateDraft)
-	authenticatedRouter.DELETE("/drafts/:id", server.deleteDraft)
-	authenticatedRouter.GET("/drafts/user/:id", server.listDraftsByUserID)
+	authenticatedRouter := router.Group("/").Use(AuthMiddleware(server.tokenMaker))
+	authenticatedRouter.GET("/users", server.ListUsers)
+	authenticatedRouter.GET("/users/:id", server.GetUser)
 
-	authenticatedRouter.POST("/prompts", server.createPrompt)
-	authenticatedRouter.GET("/prompts/:id", server.getPrompt)
-	authenticatedRouter.PUT("/prompts/:id", server.updatePrompt)
-	authenticatedRouter.DELETE("/prompts/:id", server.deletePrompt)
-	authenticatedRouter.GET("/prompts/user/:id", server.listPromptsByUserID)
+	authenticatedRouter.POST("/drafts", server.CreateDraft)
+	authenticatedRouter.GET("/drafts/:id", server.GetDraft)
+	authenticatedRouter.PUT("/drafts/:id", server.UpdateDraft)
+	authenticatedRouter.DELETE("/drafts/:id", server.DeleteDraft)
+	authenticatedRouter.GET("/drafts/user/:id", server.ListDraftsByUserID)
 
-	authenticatedRouter.POST("/suggestions", server.createPostSuggestion)
-	authenticatedRouter.GET("/suggestions/:id", server.getPostSuggestion)
-	authenticatedRouter.PUT("/suggestions/:id", server.updatePostSuggestion)
-	authenticatedRouter.DELETE("/suggestions/:id", server.deletePostSuggestion)
-	authenticatedRouter.GET("/suggestions/prompt/:id", server.listPostSuggestionsByPromptID)
+	authenticatedRouter.POST("/prompts", server.CreatePrompt)
+	authenticatedRouter.GET("/prompts/:id", server.GetPrompt)
+	authenticatedRouter.PUT("/prompts/:id", server.UpdatePrompt)
+	authenticatedRouter.DELETE("/prompts/:id", server.DeletePrompt)
+	authenticatedRouter.GET("/prompts/user/:id", server.ListPromptsByUserID)
 
-	authenticatedRouter.POST("/socialaccounts", server.createSocialAccount)
-	authenticatedRouter.GET("/socialaccounts/:id", server.getSocialAccount)
-	authenticatedRouter.PUT("/socialaccounts/:id", server.updateSocialAccount)
-	authenticatedRouter.DELETE("/socialaccounts/:id", server.deleteSocialAccount)
-	authenticatedRouter.GET("/socialaccounts/user/:id", server.listSocialAccountsByUserID)
+	authenticatedRouter.POST("/suggestions", server.CreatePostSuggestion)
+	authenticatedRouter.GET("/suggestions/:id", server.GetPostSuggestion)
+	authenticatedRouter.PUT("/suggestions/:id", server.UpdatePostSuggestion)
+	authenticatedRouter.DELETE("/suggestions/:id", server.DeletePostSuggestion)
+	authenticatedRouter.GET("/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
 
-	authenticatedRouter.POST("/posts", server.createScheduledPost)
-	authenticatedRouter.GET("/posts/:id", server.getScheduledPost)
-	authenticatedRouter.PUT("/posts/:id", server.updateScheduledPost)
-	authenticatedRouter.DELETE("/posts/:id", server.deleteScheduledPost)
-	authenticatedRouter.GET("/posts/user/:id", server.listScheduledPostsByUserID)
+	authenticatedRouter.GET("/socialaccounts/:id", server.GetSocialAccount)
+	authenticatedRouter.DELETE("/socialaccounts/:id", server.DeleteSocialAccount)
+	authenticatedRouter.GET("/socialaccounts/user/:id", server.ListSocialAccountsByUserID)
+	authenticatedRouter.POST("/socialaccounts/linkedin", server.AddLinkedInAccount)
+	authenticatedRouter.PUT("/socialaccounts/accesstoken/linkedin", server.UpdateLinkedInAccessToken)
+
+	authenticatedRouter.POST("/posts", server.CreateScheduledPost)
+	authenticatedRouter.GET("/posts/:id", server.GetScheduledPost)
+	authenticatedRouter.PUT("/posts/:id", server.UpdateScheduledPost)
+	authenticatedRouter.DELETE("/posts/:id", server.DeleteScheduledPost)
+	authenticatedRouter.GET("/posts/user/:id", server.ListScheduledPostsByUserID)
 
 	server.router = router
 }
