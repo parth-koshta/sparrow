@@ -53,6 +53,7 @@ jobs:
         docker push -a $REGISTRY/$REPOSITORY
 
     name: Log registry, repository, and image tag
+    id: log-registry-repository-image-tag
     run: |
       echo "Registry: $REGISTRY"
       echo "Repository: $REPOSITORY"
