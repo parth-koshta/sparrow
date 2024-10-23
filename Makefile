@@ -1,5 +1,6 @@
 MIGRATION_DIR=db/migration
 POSTGRES_CONTAINER=postgres16
+DB_SOURCE=postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable
 
 postgres:
 	docker run --name $(POSTGRES_CONTAINER) --network=sparrow-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
@@ -16,9 +17,9 @@ migratecreate:
 
 migrateup:
 	@if [ -z "$(n)" ]; then \
-		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose up; \
+		migrate -path $(MIGRATION_DIR) -database $(DB_SOURCE) -verbose up; \
 	else \
-		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose up $(n); \
+		migrate -path $(MIGRATION_DIR) -database $(DB_SOURCE) -verbose up $(n); \
 	fi
 	@if [ -z "$$GITHUB_ACTIONS" ]; then \
 		$(MAKE) dumpschema; \
@@ -26,9 +27,9 @@ migrateup:
 
 migratedown:
 	@if [ -z "$(n)" ]; then \
-		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose down; \
+		migrate -path $(MIGRATION_DIR) -database $(DB_SOURCE) -verbose down; \
 	else \
-		migrate -path $(MIGRATION_DIR) -database "postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable" -verbose down $(n); \
+		migrate -path $(MIGRATION_DIR) -database $(DB_SOURCE) -verbose down $(n); \
 	fi
 	@if [ -z "$$GITHUB_ACTIONS" ]; then \
 		$(MAKE) dumpschema; \
