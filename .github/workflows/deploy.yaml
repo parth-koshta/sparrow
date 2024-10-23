@@ -52,6 +52,12 @@ jobs:
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
         docker push -a $REGISTRY/$REPOSITORY
 
+    name: Log registry, repository, and image tag
+    run: |
+      echo "Registry: $REGISTRY"
+      echo "Repository: $REPOSITORY"
+      echo "Image tag: $IMAGE_TAG"
+
     - name: Register new task definition revision
       id: register-task-def
       run: |
