@@ -9,20 +9,19 @@ import (
 	"strings"
 )
 
+const REDIRECT_URI = "https://oauth.pstmn.io/v1/callback"
 const GET_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
 const GET_USER_INFO_URL = "https://api.linkedin.com/v2/userinfo"
 
 type LinkedinClient struct {
 	ClientID     string
 	ClientSecret string
-	RedirectURI  string
 }
 
-func NewLinkedInClient(clientID, clientSecret, redirectURI string) *LinkedinClient {
+func NewLinkedInClient(clientID, clientSecret string) *LinkedinClient {
 	return &LinkedinClient{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
-		RedirectURI:  redirectURI,
 	}
 }
 
@@ -36,7 +35,7 @@ func (lc *LinkedinClient) GetAccessToken(code string) (*TokenInfo, error) {
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
 	data.Set("code", code)
-	data.Set("redirect_uri", lc.RedirectURI)
+	data.Set("redirect_uri", REDIRECT_URI)
 	data.Set("client_id", lc.ClientID)
 	data.Set("client_secret", lc.ClientSecret)
 

@@ -11,9 +11,9 @@ type Config struct {
 	ServerAddress        string        `mapstructure:"SERVER_ADDRESS"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-	LinkedInRedirectURL  string        `mapstructure:"LINKEDIN_REDIRECT_URL"`
 	LinkedInClientID     string        `mapstructure:"LINKEDIN_CLIENT_ID"`
 	LinkedInClientSecret string        `mapstructure:"LINKEDIN_CLIENT_SECRET"`
+	OpenAIApiKey         string        `mapstructure:"OPENAI_API_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
