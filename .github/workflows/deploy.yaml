@@ -52,13 +52,6 @@ jobs:
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
         docker push -a $REGISTRY/$REPOSITORY
 
-    - name: Debug Image Name
-    run: |
-      echo "Registry: $REGISTRY"
-      echo "Repository: $REPOSITORY"
-      IMAGE="$REGISTRY/$REPOSITORY:${{ github.sha }}"
-      echo "Using image: $IMAGE"
-    
     - name: Register new task definition revision
       id: register-task-def
       run: |
