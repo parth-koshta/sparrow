@@ -26,11 +26,11 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-south-1
   
-    - name: Install kubectl matching server version
-      uses: azure/setup-kubectl@v4
-      with:
-        version: 'v1.31.1'
-      id: install
+    # - name: Install kubectl matching server version
+    #   uses: azure/setup-kubectl@v4
+    #   with:
+    #     version: 'v1.31.1'
+    #   id: install
       
     - name: Sts GetCallerIdentity
       run: |
@@ -51,6 +51,26 @@ jobs:
       run: |
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
         docker push -a $REGISTRY/$REPOSITORY
+
+    - name: Register new task definition revision
+      id: register-task-def
+      run: |
+        IMAGE="$REGISTRY/$REPOSITORY:${{ github.sha }}"
+
+        echo "Using image: $IMAGE"
+        
+        TASK_DEFINITION=$(jq --arg IMAGE "$IMAGE" '.containerDefinitions[0].image = $IMAGE' ecs/task-definition.json)
+        echo "$TASK_DEFINITION" > new-task-def.json
+        
+        aws ecs register-task-definition --cli-input-json file://new-task-def.json
+
+    - name: Update ECS service
+      run: |
+        aws ecs update-service \
+          --cluster sparrow-cluster \ 
+          --service sparrow-api-service \ 
+          --force-new-deployment \
+          --task-definition sparrow-api-task-definition
 
     # - name: Update kubectl configuration
     #   run: aws eks update-kubeconfig --name sparrow --region ap-south-1

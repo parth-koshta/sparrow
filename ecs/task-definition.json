@@ -1,0 +1,46 @@
+{
+    "family": "sparrow-api-task-definition",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+        {
+            "name": "sparrow-api",
+            "image": "050752639725.dkr.ecr.ap-south-1.amazonaws.com/core/sparrow:latest",
+            "cpu": 0,
+            "memory": 2048,
+            "essential": true,
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "name": "sparrow-api-8080-tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/sparrow-api-task-definition",
+                    "awslogs-region": "ap-south-1",
+                    "awslogs-stream-prefix": "ecs",
+                    "awslogs-create-group": "true",
+                    "mode": "non-blocking",
+                    "max-buffer-size": "25m"
+                }
+            }
+        }
+    ],
+    "executionRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "2048",
+    "tags": [
+        {
+            "key": "Environment",
+            "value": "Production"
+        }
+    ]
+}
