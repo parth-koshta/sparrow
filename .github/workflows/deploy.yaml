@@ -67,8 +67,8 @@ jobs:
     - name: Update ECS service
       run: |
         aws ecs update-service \
-          --cluster sparrow-cluster \ 
-          --service sparrow-api-service \ 
+          --cluster sparrow-cluster \
+          --service sparrow-api-service \
           --force-new-deployment \
           --task-definition sparrow-api-task-definition
 
