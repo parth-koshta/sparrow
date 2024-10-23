@@ -44,6 +44,8 @@ func (server *Server) setupRouter() {
 
 	router.Use(sentrygin.New(sentrygin.Options{Repanic: true}))
 
+	router.GET("/", server.HealthCheck)
+
 	router.POST("/users/login", server.LoginUser)
 	router.POST("/users", server.CreateUser)
 
