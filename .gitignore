@@ -1,1 +1,26 @@
+# Ignore environment files
 app-local.env
+app.env
+
+# Ignore the mocks folder
+mocks/
+
+# macOS system files
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# IDE directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Go specific
+*.exe
+*.exe~
+*.out
+*.test
