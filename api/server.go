@@ -72,6 +72,7 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.PUT("/suggestions/:id", server.UpdatePostSuggestion)
 	authenticatedRouter.DELETE("/suggestions/:id", server.DeletePostSuggestion)
 	authenticatedRouter.GET("/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
+	authenticatedRouter.POST("/suggestions/ai", server.GetAISuggestions)
 
 	authenticatedRouter.GET("/socialaccounts/:id", server.GetSocialAccount)
 	authenticatedRouter.DELETE("/socialaccounts/:id", server.DeleteSocialAccount)

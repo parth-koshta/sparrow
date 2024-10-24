@@ -9,6 +9,35 @@ import (
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
 
+type GetAISuggestionsRequest struct {
+	Prompt string `form:"prompt" binding:"required"`
+	Count  int    `form:"count" binding:"required,min=1,max=20"`
+}
+
+type GetAISuggestionsResponse struct {
+	Suggestions []string
+}
+
+func (s *Server) GetAISuggestions(ctx *gin.Context) {
+	var req GetAISuggestionsRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	suggestions, err := s.openaiClient.GenerateLinkedInPosts(req.Prompt, req.Count)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	//FIXME: save suggestions to db
+
+	ctx.JSON(http.StatusOK, GetAISuggestionsResponse{
+		Suggestions: suggestions,
+	})
+}
+
 type CreatePostSuggestionRequest struct {
 	PromptID       string `json:"prompt_id" binding:"required,uuid"`
 	SuggestionText string `json:"suggestion_text" binding:"required"`

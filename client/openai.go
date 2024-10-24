@@ -1,136 +1,73 @@
 package client
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"strings"
+
+	openai "github.com/openai/openai-go"
+	"github.com/openai/openai-go/option"
 )
 
-const BASE_URL = "https://api.openai.com/v1"
-
 type OpenAIClient struct {
-	APIKey string
+	Client *openai.Client
 }
 
 func NewOpenAIClient(apiKey string) *OpenAIClient {
+	// Initialize the OpenAI SDK client
 	return &OpenAIClient{
-		APIKey: apiKey,
+		Client: openai.NewClient(option.WithAPIKey(apiKey)),
 	}
-}
-
-type ChatCompletionRequest struct {
-	Model       string    `json:"model"`
-	Messages    []Message `json:"messages"`
-	Temperature float64   `json:"temperature,omitempty"`
-	TopP        float64   `json:"top_p,omitempty"`
-}
-
-type OpenAIResponse struct {
-	ID                string   `json:"id"`
-	Object            string   `json:"object"`
-	Created           int64    `json:"created"`
-	Model             string   `json:"model"`
-	SystemFingerprint string   `json:"system_fingerprint"`
-	Choices           []Choice `json:"choices"`
-	Usage             Usage    `json:"usage"`
-}
-
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-type Choice struct {
-	Index        int     `json:"index"`
-	Message      Message `json:"message"`
-	Logprobs     *int    `json:"logprobs,omitempty"`
-	FinishReason string  `json:"finish_reason"`
-}
-
-type Usage struct {
-	PromptTokens            int                     `json:"prompt_tokens"`
-	CompletionTokens        int                     `json:"completion_tokens"`
-	TotalTokens             int                     `json:"total_tokens"`
-	CompletionTokensDetails CompletionTokensDetails `json:"completion_tokens_details"`
-}
-
-type CompletionTokensDetails struct {
-	ReasoningTokens int `json:"reasoning_tokens"`
 }
 
 func (c *OpenAIClient) GenerateLinkedInPosts(topic string, numPosts int) ([]string, error) {
-	url := fmt.Sprintf("%s/chat/completions", BASE_URL)
+	// Create a custom prompt for LinkedIn posts
+	prompt := fmt.Sprintf("You are an experienced software engineer and technical writer for a software company. Response should only be requested content string separated by '$$$$$'. This will be used to separate the posts. Strings should not have any other delimiter in the start or end or serial number, no summary at start or end, only postable content, it should be well formatted for posting on LinkedIn. Write brief, concise and professional, %d LinkedIn posts for description %s. Each post should be professional and informative with examples where relevant, and provide value to a technical audience. Each post should be self-explanatory and should not have past context linked. Do not repeat past responses.", numPosts, topic)
 
-	// Create the request body with a custom prompt for LinkedIn posts
-	requestBody := ChatCompletionRequest{
-		Model: "gpt-4o-mini", // Replace with the model you are using
-		Messages: []Message{
-			{Role: "system", Content: "You are a content generation assistant specialized in crafting engaging social media posts."},
-			{Role: "user", Content: fmt.Sprintf("Write %d LinkedIn posts about %s. Each post should be professional, informative, and provide value to a technical audience.", numPosts, topic)},
-		},
-		Temperature: 0.8, // Higher value for more creativity
-		TopP:        0.9, // Adjust to increase diversity
-	}
-
-	// Marshal the body to JSON
-	jsonData, err := json.Marshal(requestBody)
+	// Call the OpenAI ChatCompletion API
+	resp, err := c.Client.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
+		Model: openai.F(openai.ChatModelGPT4oMini),
+		Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
+			openai.UserMessage(prompt),
+		}),
+		Temperature: openai.Float(0.9),  // Adjust for creativity
+		TopP:        openai.Float(0.95), // Adjust for response diversity
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	// Create an HTTP request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, err
-	}
-
-	// Add headers
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.APIKey))
-
-	// Make the request
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Read and return the response body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// Unmarshal the response JSON into the OpenAIResponse struct
-	var response OpenAIResponse
-	if err := json.Unmarshal(body, &response); err != nil {
-		return nil, err
-	}
-
-	// Extract the generated text from the response
-	if len(response.Choices) == 0 {
+	// Check if there are any responses
+	if len(resp.Choices) == 0 {
 		return nil, fmt.Errorf("no choices received in response")
 	}
-	message := response.Choices[0].Message.Content
 
-	// Split the message into individual posts based on newlines (or a different delimiter if needed)
+	// Extract the content of the response
+	message := resp.Choices[0].Message.Content
+
+	// Split the message into individual posts based on the delimiter "$$$$$"
 	posts := splitIntoPosts(message, numPosts)
 
 	return posts, nil
 }
 
+// Helper function to split posts by the specified delimiter
 func splitIntoPosts(text string, numPosts int) []string {
-	// Split the response into individual posts by double newlines
-	posts := strings.Split(text, "\n\n")
-
-	// If we have more posts than needed, trim the slice
-	if len(posts) > numPosts {
-		posts = posts[:numPosts]
+	var filteredPosts []string
+	posts := strings.Split(text, "$$$$$")
+	for _, suggestion := range posts {
+		content := strings.ReplaceAll(suggestion, "\n", "")
+		content = strings.ReplaceAll(content, "\r", "")
+		content = strings.TrimSpace(content)
+		if content != "" {
+			filteredPosts = append(filteredPosts, content)
+		}
 	}
 
-	return posts
+	// Trim to the requested number of posts
+	if len(filteredPosts) > numPosts {
+		filteredPosts = filteredPosts[:numPosts]
+	}
+
+	return filteredPosts
 }
