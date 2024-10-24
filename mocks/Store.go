@@ -16,6 +16,24 @@ type Store struct {
 	mock.Mock
 }
 
+// BulkCreatePostSuggestions provides a mock function with given fields: ctx, arg
+func (_m *Store) BulkCreatePostSuggestions(ctx context.Context, arg db.BulkCreatePostSuggestionsParams) error {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for BulkCreatePostSuggestions")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.BulkCreatePostSuggestionsParams) error); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CreateDraft provides a mock function with given fields: ctx, arg
 func (_m *Store) CreateDraft(ctx context.Context, arg db.CreateDraftParams) (db.Draft, error) {
 	ret := _m.Called(ctx, arg)

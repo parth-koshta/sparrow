@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	BulkCreatePostSuggestions(ctx context.Context, arg BulkCreatePostSuggestionsParams) error
 	CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft, error)
 	CreatePostSuggestion(ctx context.Context, arg CreatePostSuggestionParams) (Postsuggestion, error)
 	CreatePrompt(ctx context.Context, arg CreatePromptParams) (Prompt, error)

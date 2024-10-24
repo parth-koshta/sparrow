@@ -29,3 +29,9 @@ RETURNING *;
 DELETE FROM postsuggestions
 WHERE id = $1
 RETURNING *;
+
+
+-- name: BulkCreatePostSuggestions :exec
+INSERT INTO postsuggestions (prompt_id, suggestion_text)
+SELECT @prompt_id, unnest(@suggestions::text[])
+ON CONFLICT (prompt_id, suggestion_text) DO NOTHING;

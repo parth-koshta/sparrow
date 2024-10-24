@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const bulkCreatePostSuggestions = `-- name: BulkCreatePostSuggestions :exec
+INSERT INTO postsuggestions (prompt_id, suggestion_text)
+SELECT $1, unnest($2::text[])
+ON CONFLICT (prompt_id, suggestion_text) DO NOTHING
+`
+
+type BulkCreatePostSuggestionsParams struct {
+	PromptID    pgtype.UUID
+	Suggestions []string
+}
+
+func (q *Queries) BulkCreatePostSuggestions(ctx context.Context, arg BulkCreatePostSuggestionsParams) error {
+	_, err := q.db.Exec(ctx, bulkCreatePostSuggestions, arg.PromptID, arg.Suggestions)
+	return err
+}
+
 const createPostSuggestion = `-- name: CreatePostSuggestion :one
 INSERT INTO postsuggestions (
   prompt_id, suggestion_text
