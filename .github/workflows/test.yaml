@@ -46,7 +46,10 @@ jobs:
           sudo mv migrate /usr/bin/migrate
           which migrate
           migrate -version
-     
+    
+    - name: Install mockery
+      run: go install github.com/vektra/mockery/v2/...@latest
+
     - name: Migrations
       run: make migrateup
 
