@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,26 +16,74 @@ type GetAISuggestionsRequest struct {
 }
 
 type GetAISuggestionsResponse struct {
-	Suggestions []string
+	Suggestions []db.BulkCreatePostSuggestionsRow `json:"suggestions"`
 }
 
-func (s *Server) GetAISuggestions(ctx *gin.Context) {
+func (s *Server) GetAISuggestionsByPrompt(ctx *gin.Context) {
 	var req GetAISuggestionsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
+	userID, err := GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
+		return
+	}
+
+	// check if prompt already exists for this user
+	getPromptArgs := db.GetPromptByUserIDAndTextParams{
+		UserID:     pgtype.UUID{Bytes: userID, Valid: true},
+		PromptText: req.Prompt,
+	}
+	existingPrompt, err := s.store.GetPromptByUserIDAndText(ctx, getPromptArgs)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	var promptID pgtype.UUID
+	if existingPrompt.ID.Valid {
+		promptID = existingPrompt.ID
+	} else {
+		promptArg := db.CreatePromptParams{
+			UserID:     pgtype.UUID{Bytes: userID, Valid: true},
+			PromptText: req.Prompt,
+		}
+
+		// Save the prompt to the database
+		prompt, err := s.store.CreatePrompt(ctx, promptArg)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+		promptID = prompt.ID
+	}
+
+	// Step 2: Generate suggestions using the OpenAI client
 	suggestions, err := s.openaiClient.GenerateLinkedInPosts(req.Prompt, req.Count)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	//FIXME: save suggestions to db
-
-	ctx.JSON(http.StatusOK, GetAISuggestionsResponse{
+	// Step 3: Save the suggestions in the database
+	bulkArgs := db.BulkCreatePostSuggestionsParams{
+		PromptID:    promptID,
 		Suggestions: suggestions,
+	}
+
+	// Get the saved suggestions from the database
+	savedSuggestions, err := s.store.BulkCreatePostSuggestions(ctx, bulkArgs)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// Step 4: Return the saved suggestions to the client
+	ctx.JSON(http.StatusOK, GetAISuggestionsResponse{
+		Suggestions: savedSuggestions,
 	})
 }
 

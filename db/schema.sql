@@ -180,6 +180,14 @@ ALTER TABLE ONLY public.socialaccounts
 
 
 --
+-- Name: postsuggestions unique_prompt_suggestion; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.postsuggestions
+    ADD CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, suggestion_text);
+
+
+--
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 

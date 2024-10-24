@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/parth-koshta/sparrow/token"
 )
 
@@ -50,4 +51,18 @@ func AuthMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 		ctx.Set(AUTHORIZATION_PAYLOAD_KEY, payload)
 		ctx.Next()
 	}
+}
+
+func GetUserIDFromContext(ctx *gin.Context) (uuid.UUID, error) {
+	authPayload, exists := ctx.MustGet(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
+	if !exists || !authPayload.ID.Valid {
+		return uuid.UUID{}, fmt.Errorf("invalid user ID in auth payload")
+	}
+
+	userID, err := uuid.FromBytes(authPayload.ID.Bytes[:])
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("failed to parse user ID: %v", err)
+	}
+
+	return userID, nil
 }

@@ -11,7 +11,7 @@ import (
 )
 
 type Querier interface {
-	BulkCreatePostSuggestions(ctx context.Context, arg BulkCreatePostSuggestionsParams) error
+	BulkCreatePostSuggestions(ctx context.Context, arg BulkCreatePostSuggestionsParams) ([]BulkCreatePostSuggestionsRow, error)
 	CreateDraft(ctx context.Context, arg CreateDraftParams) (Draft, error)
 	CreatePostSuggestion(ctx context.Context, arg CreatePostSuggestionParams) (Postsuggestion, error)
 	CreatePrompt(ctx context.Context, arg CreatePromptParams) (Prompt, error)
@@ -26,6 +26,7 @@ type Querier interface {
 	GetDraftByID(ctx context.Context, id pgtype.UUID) (Draft, error)
 	GetPostSuggestionByID(ctx context.Context, id pgtype.UUID) (Postsuggestion, error)
 	GetPromptByID(ctx context.Context, id pgtype.UUID) (Prompt, error)
+	GetPromptByUserIDAndText(ctx context.Context, arg GetPromptByUserIDAndTextParams) (Prompt, error)
 	GetScheduledPostByID(ctx context.Context, id pgtype.UUID) (Scheduledpost, error)
 	GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (GetSocialAccountByIDRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)

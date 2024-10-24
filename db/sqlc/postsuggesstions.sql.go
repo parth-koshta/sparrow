@@ -11,10 +11,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const bulkCreatePostSuggestions = `-- name: BulkCreatePostSuggestions :exec
+const bulkCreatePostSuggestions = `-- name: BulkCreatePostSuggestions :many
 INSERT INTO postsuggestions (prompt_id, suggestion_text)
 SELECT $1, unnest($2::text[])
 ON CONFLICT (prompt_id, suggestion_text) DO NOTHING
+RETURNING id, prompt_id, suggestion_text, created_at
 `
 
 type BulkCreatePostSuggestionsParams struct {
@@ -22,9 +23,36 @@ type BulkCreatePostSuggestionsParams struct {
 	Suggestions []string
 }
 
-func (q *Queries) BulkCreatePostSuggestions(ctx context.Context, arg BulkCreatePostSuggestionsParams) error {
-	_, err := q.db.Exec(ctx, bulkCreatePostSuggestions, arg.PromptID, arg.Suggestions)
-	return err
+type BulkCreatePostSuggestionsRow struct {
+	ID             pgtype.UUID
+	PromptID       pgtype.UUID
+	SuggestionText string
+	CreatedAt      pgtype.Timestamp
+}
+
+func (q *Queries) BulkCreatePostSuggestions(ctx context.Context, arg BulkCreatePostSuggestionsParams) ([]BulkCreatePostSuggestionsRow, error) {
+	rows, err := q.db.Query(ctx, bulkCreatePostSuggestions, arg.PromptID, arg.Suggestions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []BulkCreatePostSuggestionsRow
+	for rows.Next() {
+		var i BulkCreatePostSuggestionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.PromptID,
+			&i.SuggestionText,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const createPostSuggestion = `-- name: CreatePostSuggestion :one

@@ -76,6 +76,31 @@ func (q *Queries) GetPromptByID(ctx context.Context, id pgtype.UUID) (Prompt, er
 	return i, err
 }
 
+const getPromptByUserIDAndText = `-- name: GetPromptByUserIDAndText :one
+SELECT id, user_id, prompt_text, created_at, updated_at
+FROM prompts
+WHERE user_id = $1 AND prompt_text = $2
+LIMIT 1
+`
+
+type GetPromptByUserIDAndTextParams struct {
+	UserID     pgtype.UUID
+	PromptText string
+}
+
+func (q *Queries) GetPromptByUserIDAndText(ctx context.Context, arg GetPromptByUserIDAndTextParams) (Prompt, error) {
+	row := q.db.QueryRow(ctx, getPromptByUserIDAndText, arg.UserID, arg.PromptText)
+	var i Prompt
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.PromptText,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listPromptsByUserID = `-- name: ListPromptsByUserID :many
 SELECT id, user_id, prompt_text, created_at, updated_at
 FROM prompts

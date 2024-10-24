@@ -11,6 +11,12 @@ SELECT id, user_id, prompt_text, created_at, updated_at
 FROM prompts
 WHERE id = $1;
 
+-- name: GetPromptByUserIDAndText :one
+SELECT id, user_id, prompt_text, created_at, updated_at
+FROM prompts
+WHERE user_id = $1 AND prompt_text = $2
+LIMIT 1;
+
 -- name: ListPromptsByUserID :many
 SELECT id, user_id, prompt_text, created_at, updated_at
 FROM prompts

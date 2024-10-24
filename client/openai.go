@@ -22,7 +22,7 @@ func NewOpenAIClient(apiKey string) *OpenAIClient {
 
 func (c *OpenAIClient) GenerateLinkedInPosts(topic string, numPosts int) ([]string, error) {
 	// Create a custom prompt for LinkedIn posts
-	prompt := fmt.Sprintf("You are an experienced software engineer and technical writer for a software company. Response should only be requested content string separated by '$$$$$'. This will be used to separate the posts. Strings should not have any other delimiter in the start or end or serial number, no summary at start or end, only postable content, it should be well formatted for posting on LinkedIn. Write brief, concise and professional, %d LinkedIn posts for description %s. Each post should be professional and informative with examples where relevant, and provide value to a technical audience. Each post should be self-explanatory and should not have past context linked. Do not repeat past responses.", numPosts, topic)
+	prompt := fmt.Sprintf("You are an experienced software engineer and technical writer for a software company. Response should only be requested content string separated by '$$$$$'. This will be used to separate the posts. Strings should not have any other delimiter in the start or end or serial number, no summary at start or end, only postable content, it should be well formatted for posting on LinkedIn. Write brief, concise and professional, %d LinkedIn posts for description %s. Each post should be professional and informative with examples where relevant, and provide value to a technical audience. Each post should be self-explanatory, unique. Do not repeat past responses.", numPosts, topic)
 
 	// Call the OpenAI ChatCompletion API
 	resp, err := c.Client.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{

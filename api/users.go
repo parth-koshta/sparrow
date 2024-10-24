@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
-	token "github.com/parth-koshta/sparrow/token"
 	"github.com/parth-koshta/sparrow/util"
 )
 
@@ -80,29 +79,18 @@ func (server *Server) GetUser(ctx *gin.Context) {
 		return
 	}
 
-	authPayload := ctx.MustGet(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
-	authUUID, err := authPayload.ID.UUIDValue()
+	parsedUUID, err := GetUserIDFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	authUUIDConverted, err := uuid.FromBytes(authUUID.Bytes[:])
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	if authUUIDConverted != requestUUID {
+	if parsedUUID != requestUUID {
 		err := fmt.Errorf("cannot access details of another user")
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
-	parsedUUID, err := uuid.Parse(req.ID)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
 	userID := pgtype.UUID{
 		Valid: true,
 		Bytes: parsedUUID,

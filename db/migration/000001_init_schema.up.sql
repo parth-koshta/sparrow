@@ -39,7 +39,8 @@ CREATE TABLE PostSuggestions (
     prompt_id UUID NOT NULL REFERENCES Prompts(id) ON DELETE CASCADE,
     suggestion_text TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, suggestion_text)
 );
 
 -- Create Drafts table
@@ -71,6 +72,7 @@ CREATE INDEX idx_socialaccounts_platform ON SocialAccounts (platform);
 
 CREATE INDEX idx_prompts_user_id ON Prompts (user_id);
 CREATE INDEX idx_prompts_prompt_text ON Prompts USING GIN (prompt_text gin_trgm_ops);
+CREATE INDEX idx_prompts_user_id_prompt_text ON Prompts (user_id, prompt_text);
 
 CREATE INDEX idx_postsuggestions_prompt_id ON PostSuggestions (prompt_id);
 CREATE INDEX idx_postsuggestions_suggestion_text ON PostSuggestions USING GIN (suggestion_text gin_trgm_ops);

@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	dbtypes "github.com/parth-koshta/sparrow/db/types"
-	"github.com/parth-koshta/sparrow/token"
 )
 
 type SocialAccountResponse struct {
@@ -31,14 +30,7 @@ func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
 		return
 	}
 
-	authPayload := ctx.MustGet(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
-	if !authPayload.ID.Valid {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(fmt.Errorf("invalid user ID in auth payload")))
-		return
-	}
-
-	userIDBytes := authPayload.ID.Bytes[:]
-	userID, err := uuid.FromBytes(userIDBytes)
+	userID, err := GetUserIDFromContext(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
 		return
@@ -101,15 +93,7 @@ func (server *Server) UpdateLinkedInAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	// Get user ID from the auth middleware
-	authPayload := ctx.MustGet(AUTHORIZATION_PAYLOAD_KEY).(*token.Payload)
-	if !authPayload.ID.Valid {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(fmt.Errorf("invalid user ID in auth payload")))
-		return
-	}
-
-	userIDBytes := authPayload.ID.Bytes[:]
-	userID, err := uuid.FromBytes(userIDBytes)
+	userID, err := GetUserIDFromContext(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
 		return
