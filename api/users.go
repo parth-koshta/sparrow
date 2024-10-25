@@ -4,13 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/util"
+	"github.com/parth-koshta/sparrow/worker"
 )
 
 type CreateUserRequest struct {
@@ -39,28 +42,41 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateUserParams{
-		Email: req.Email,
-		PasswordHash: pgtype.Text{
-			String: hashedPassword,
-			Valid:  true,
+	arg := db.CreateUserTxParams{
+		CreateUserParams: db.CreateUserParams{
+			Email: req.Email,
+			PasswordHash: pgtype.Text{
+				String: hashedPassword,
+				Valid:  true,
+			},
+		},
+		AfterCreate: func(user db.User) error {
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				Email: req.Email,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
 		},
 	}
 
-	user, err := server.store.CreateUser(ctx, arg)
-
+	txResult, err := server.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, &UserResponse{
-		ID:        user.ID,
-		Username:  user.Username,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	})
+	userResponse := &UserResponse{
+		ID:        txResult.User.ID,
+		Username:  txResult.User.Username,
+		Email:     txResult.User.Email,
+		CreatedAt: txResult.User.CreatedAt,
+		UpdatedAt: txResult.User.UpdatedAt,
+	}
+	ctx.JSON(http.StatusOK, userResponse)
 }
 
 type GetUserRequest struct {

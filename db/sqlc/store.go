@@ -11,6 +11,7 @@ import (
 type Store interface {
 	Querier
 	ExecTx(ctx context.Context, fn func(*Queries) error) error
+	CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserTxResult, error)
 }
 
 type SQLStore struct {

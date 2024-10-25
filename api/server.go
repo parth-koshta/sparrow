@@ -9,18 +9,20 @@ import (
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/token"
 	"github.com/parth-koshta/sparrow/util"
+	"github.com/parth-koshta/sparrow/worker"
 )
 
 type Server struct {
-	store          db.Store
-	tokenMaker     token.Maker
-	config         util.Config
-	router         *gin.Engine
-	linkedinClient *client.LinkedinClient
-	openaiClient   *client.OpenAIClient
+	store           db.Store
+	tokenMaker      token.Maker
+	config          util.Config
+	router          *gin.Engine
+	linkedinClient  *client.LinkedinClient
+	openaiClient    *client.OpenAIClient
+	taskDistributor worker.TaskDistributor
 }
 
-func NewServer(store db.Store, config util.Config) (*Server, error) {
+func NewServer(store db.Store, config util.Config, taskDistributor worker.TaskDistributor) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, err
@@ -29,7 +31,7 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 	linkedinClient := client.NewLinkedInClient(config.LinkedInClientID, config.LinkedInClientSecret)
 	openaiClient := client.NewOpenAIClient(config.OpenAIApiKey)
 
-	server := &Server{store: store, tokenMaker: tokenMaker, config: config, linkedinClient: linkedinClient, openaiClient: openaiClient}
+	server := &Server{store: store, tokenMaker: tokenMaker, config: config, linkedinClient: linkedinClient, openaiClient: openaiClient, taskDistributor: taskDistributor}
 
 	err = server.initializeSentry()
 	if err != nil {
@@ -43,8 +45,8 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
-
 	router.Use(sentrygin.New(sentrygin.Options{Repanic: true}))
+	router.Use(LoggerMiddleware)
 
 	router.GET("/", server.HealthCheck)
 
