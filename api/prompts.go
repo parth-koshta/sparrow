@@ -10,16 +10,16 @@ import (
 )
 
 type CreatePromptRequest struct {
-	UserID     string `json:"user_id" binding:"required,uuid"`
-	PromptText string `json:"prompt_text" binding:"required"`
+	UserID string `json:"user_id" binding:"required,uuid"`
+	Text   string `json:"text" binding:"required"`
 }
 
 type PromptResponse struct {
-	ID         pgtype.UUID
-	UserID     pgtype.UUID
-	PromptText string
-	CreatedAt  pgtype.Timestamp
-	UpdatedAt  pgtype.Timestamp
+	ID        pgtype.UUID
+	UserID    pgtype.UUID
+	Text      string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 func (server *Server) CreatePrompt(ctx *gin.Context) {
@@ -36,8 +36,8 @@ func (server *Server) CreatePrompt(ctx *gin.Context) {
 	}
 
 	arg := db.CreatePromptParams{
-		UserID:     pgtype.UUID{Bytes: parsedUUID, Valid: true},
-		PromptText: req.PromptText,
+		UserID: pgtype.UUID{Bytes: parsedUUID, Valid: true},
+		Text:   req.Text,
 	}
 
 	prompt, err := server.store.CreatePrompt(ctx, arg)
@@ -47,11 +47,11 @@ func (server *Server) CreatePrompt(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, PromptResponse{
-		ID:         prompt.ID,
-		UserID:     prompt.UserID,
-		PromptText: prompt.PromptText,
-		CreatedAt:  prompt.CreatedAt,
-		UpdatedAt:  prompt.UpdatedAt,
+		ID:        prompt.ID,
+		UserID:    prompt.UserID,
+		Text:      prompt.Text,
+		CreatedAt: prompt.CreatedAt,
+		UpdatedAt: prompt.UpdatedAt,
 	})
 }
 
@@ -79,11 +79,11 @@ func (server *Server) GetPrompt(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, PromptResponse{
-		ID:         prompt.ID,
-		UserID:     prompt.UserID,
-		PromptText: prompt.PromptText,
-		CreatedAt:  prompt.CreatedAt,
-		UpdatedAt:  prompt.UpdatedAt,
+		ID:        prompt.ID,
+		UserID:    prompt.UserID,
+		Text:      prompt.Text,
+		CreatedAt: prompt.CreatedAt,
+		UpdatedAt: prompt.UpdatedAt,
 	})
 }
 
@@ -124,8 +124,8 @@ func (server *Server) ListPromptsByUserID(ctx *gin.Context) {
 }
 
 type UpdatePromptRequest struct {
-	ID         string `json:"id" binding:"required,uuid"`
-	PromptText string `json:"prompt_text" binding:"required"`
+	ID   string `json:"id" binding:"required,uuid"`
+	Text string `json:"text" binding:"required"`
 }
 
 func (server *Server) UpdatePrompt(ctx *gin.Context) {
@@ -142,8 +142,8 @@ func (server *Server) UpdatePrompt(ctx *gin.Context) {
 	}
 
 	arg := db.UpdatePromptParams{
-		ID:         pgtype.UUID{Bytes: promptID, Valid: true},
-		PromptText: req.PromptText,
+		ID:   pgtype.UUID{Bytes: promptID, Valid: true},
+		Text: req.Text,
 	}
 
 	prompt, err := server.store.UpdatePrompt(ctx, arg)
@@ -153,11 +153,11 @@ func (server *Server) UpdatePrompt(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, PromptResponse{
-		ID:         prompt.ID,
-		UserID:     prompt.UserID,
-		PromptText: prompt.PromptText,
-		CreatedAt:  prompt.CreatedAt,
-		UpdatedAt:  prompt.UpdatedAt,
+		ID:        prompt.ID,
+		UserID:    prompt.UserID,
+		Text:      prompt.Text,
+		CreatedAt: prompt.CreatedAt,
+		UpdatedAt: prompt.UpdatedAt,
 	})
 }
 

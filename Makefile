@@ -43,7 +43,7 @@ dumpschema:
 	docker cp postgres16:/tmp/schema.sql db/schema.sql
 
 test:
-	go test -v -cover ./...
+	go test -v -cover -timeout 30s ./...
 
 server:
 	go run main.go

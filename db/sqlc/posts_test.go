@@ -14,18 +14,19 @@ func TestCreateDraft(t *testing.T) {
 		prompt := createRandomPrompt(t, testQueries, user.ID)
 		suggestion := createRandomPostSuggestion(t, testQueries, prompt.ID)
 
-		arg := CreateDraftParams{
+		arg := CreatePostParams{
 			UserID:       user.ID,
 			SuggestionID: suggestion.ID,
-			DraftText:    "This is a draft text for a blog post.",
+			Text:         "This is a draft text for a blog post.",
+			Status:       "draft",
 		}
-		draft, err := testQueries.CreateDraft(context.Background(), arg)
+		draft, err := testQueries.CreatePost(context.Background(), arg)
 		require.NoError(t, err)
 		require.NotEmpty(t, draft)
 
 		require.Equal(t, arg.UserID, draft.UserID)
 		require.Equal(t, arg.SuggestionID, draft.SuggestionID)
-		require.Equal(t, arg.DraftText, draft.DraftText)
+		require.Equal(t, arg.Text, draft.Text)
 		require.NotZero(t, draft.CreatedAt)
 	})
 }
@@ -39,17 +40,17 @@ func TestListDraftsByUserID(t *testing.T) {
 			createRandomDraft(t, testQueries, user.ID, suggestion.ID)
 		}
 
-		arg := ListDraftsByUserIDParams{
+		arg := ListPostsByUserIDParams{
 			UserID: user.ID,
 			Limit:  3,
 			Offset: 0,
 		}
-		drafts, err := testQueries.ListDraftsByUserID(context.Background(), arg)
+		drafts, err := testQueries.ListPostsByUserID(context.Background(), arg)
 		require.NoError(t, err)
 		require.Len(t, drafts, 3)
 
 		arg.Offset = 3
-		drafts, err = testQueries.ListDraftsByUserID(context.Background(), arg)
+		drafts, err = testQueries.ListPostsByUserID(context.Background(), arg)
 		require.NoError(t, err)
 		require.Len(t, drafts, 2)
 	})

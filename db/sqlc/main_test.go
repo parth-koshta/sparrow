@@ -115,8 +115,8 @@ func createRandomUser(t *testing.T, testQueries *Queries) User {
 
 func createRandomPrompt(t *testing.T, testQueries *Queries, userID pgtype.UUID) Prompt {
 	arg := CreatePromptParams{
-		UserID:     userID,
-		PromptText: "Example prompt text",
+		UserID: userID,
+		Text:   "Example prompt text",
 	}
 	prompt, err := testQueries.CreatePrompt(context.Background(), arg)
 	require.NoError(t, err)
@@ -125,21 +125,22 @@ func createRandomPrompt(t *testing.T, testQueries *Queries, userID pgtype.UUID) 
 
 func createRandomPostSuggestion(t *testing.T, testQueries *Queries, promptID pgtype.UUID) Postsuggestion {
 	arg := CreatePostSuggestionParams{
-		PromptID:       promptID,
-		SuggestionText: fmt.Sprintf("Example suggestion text %s", util.GenerateRandomString().String),
+		PromptID: promptID,
+		Text:     fmt.Sprintf("Example suggestion text %s", util.GenerateRandomString().String),
 	}
 	suggestion, err := testQueries.CreatePostSuggestion(context.Background(), arg)
 	require.NoError(t, err)
 	return suggestion
 }
 
-func createRandomDraft(t *testing.T, testQueries *Queries, userID pgtype.UUID, suggestionID pgtype.UUID) Draft {
-	arg := CreateDraftParams{
+func createRandomDraft(t *testing.T, testQueries *Queries, userID pgtype.UUID, suggestionID pgtype.UUID) Post {
+	arg := CreatePostParams{
 		UserID:       userID,
 		SuggestionID: suggestionID,
-		DraftText:    "Example draft text",
+		Text:         "Example draft text",
+		Status:       "draft",
 	}
-	draft, err := testQueries.CreateDraft(context.Background(), arg)
+	draft, err := testQueries.CreatePost(context.Background(), arg)
 	require.NoError(t, err)
 	return draft
 }

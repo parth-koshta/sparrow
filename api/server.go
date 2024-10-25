@@ -55,11 +55,11 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.GET("/users", server.ListUsers)
 	authenticatedRouter.GET("/users/:id", server.GetUser)
 
-	authenticatedRouter.POST("/drafts", server.CreateDraft)
-	authenticatedRouter.GET("/drafts/:id", server.GetDraft)
-	authenticatedRouter.PUT("/drafts/:id", server.UpdateDraft)
-	authenticatedRouter.DELETE("/drafts/:id", server.DeleteDraft)
-	authenticatedRouter.GET("/drafts/user/:id", server.ListDraftsByUserID)
+	// authenticatedRouter.POST("/drafts", server.CreateDraft)
+	// authenticatedRouter.GET("/drafts/:id", server.GetDraft)
+	// authenticatedRouter.PUT("/drafts/:id", server.UpdateDraft)
+	// authenticatedRouter.DELETE("/drafts/:id", server.DeleteDraft)
+	// authenticatedRouter.GET("/drafts/user/:id", server.ListDraftsByUserID)
 
 	authenticatedRouter.POST("/prompts", server.CreatePrompt)
 	authenticatedRouter.GET("/prompts/:id", server.GetPrompt)

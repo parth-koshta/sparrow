@@ -9,23 +9,23 @@ import (
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
 
-type CreateDraftRequest struct {
+type CreatePostRequest struct {
 	UserID       string `json:"user_id" binding:"required,uuid"`
 	SuggestionID string `json:"suggestion_id" binding:"required,uuid"`
-	DraftText    string `json:"draft_text" binding:"required"`
+	Text         string `json:"text" binding:"required"` // Changed from DraftText to Text
 }
 
-type DraftResponse struct {
+type PostResponse struct {
 	ID           pgtype.UUID
 	UserID       pgtype.UUID
 	SuggestionID pgtype.UUID
-	DraftText    string
+	Text         string // Changed from DraftText to Text
 	CreatedAt    pgtype.Timestamp
 	UpdatedAt    pgtype.Timestamp
 }
 
-func (server *Server) CreateDraft(ctx *gin.Context) {
-	var req CreateDraftRequest
+func (server *Server) CreatePost(ctx *gin.Context) {
+	var req CreatePostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -43,69 +43,69 @@ func (server *Server) CreateDraft(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateDraftParams{
+	arg := db.CreatePostParams{ // Changed from CreateDraftParams to CreatePostParams
 		UserID:       pgtype.UUID{Bytes: userID, Valid: true},
 		SuggestionID: pgtype.UUID{Bytes: suggestionID, Valid: true},
-		DraftText:    req.DraftText,
+		Text:         req.Text, // Changed from DraftText to Text
 	}
 
-	draft, err := server.store.CreateDraft(ctx, arg)
+	post, err := server.store.CreatePost(ctx, arg) // Changed from CreateDraft to CreatePost
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, DraftResponse{
-		ID:           draft.ID,
-		UserID:       draft.UserID,
-		SuggestionID: draft.SuggestionID,
-		DraftText:    draft.DraftText,
-		CreatedAt:    draft.CreatedAt,
-		UpdatedAt:    draft.UpdatedAt,
+	ctx.JSON(http.StatusOK, PostResponse{ // Changed from DraftResponse to PostResponse
+		ID:           post.ID,
+		UserID:       post.UserID,
+		SuggestionID: post.SuggestionID,
+		Text:         post.Text, // Changed from DraftText to Text
+		CreatedAt:    post.CreatedAt,
+		UpdatedAt:    post.UpdatedAt,
 	})
 }
 
-type GetDraftRequest struct {
+type GetPostRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) GetDraft(ctx *gin.Context) {
-	var req GetDraftRequest
+func (server *Server) GetPost(ctx *gin.Context) { // Changed from GetDraft to GetPost
+	var req GetPostRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	draftID, err := uuid.Parse(req.ID)
+	postID, err := uuid.Parse(req.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	draft, err := server.store.GetDraftByID(ctx, pgtype.UUID{Bytes: draftID, Valid: true})
+	post, err := server.store.GetPostByID(ctx, pgtype.UUID{Bytes: postID, Valid: true}) // Changed from GetDraftByID to GetPostByID
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, DraftResponse{
-		ID:           draft.ID,
-		UserID:       draft.UserID,
-		SuggestionID: draft.SuggestionID,
-		DraftText:    draft.DraftText,
-		CreatedAt:    draft.CreatedAt,
-		UpdatedAt:    draft.UpdatedAt,
+	ctx.JSON(http.StatusOK, PostResponse{ // Changed from DraftResponse to PostResponse
+		ID:           post.ID,
+		UserID:       post.UserID,
+		SuggestionID: post.SuggestionID,
+		Text:         post.Text, // Changed from DraftText to Text
+		CreatedAt:    post.CreatedAt,
+		UpdatedAt:    post.UpdatedAt,
 	})
 }
 
-type ListDraftsByUserIDRequest struct {
+type ListPostsByUserIDRequest struct { // Changed from ListDraftsByUserIDRequest to ListPostsByUserIDRequest
 	UserID   string `form:"user_id" binding:"required,uuid"`
 	Page     int32  `form:"page" binding:"required,min=1"`
 	PageSize int32  `form:"page_size" binding:"required,min=5,max=100"`
 }
 
-func (server *Server) ListDraftsByUserID(ctx *gin.Context) {
-	var req ListDraftsByUserIDRequest
+func (server *Server) ListPostsByUserID(ctx *gin.Context) { // Changed from ListDraftsByUserID to ListPostsByUserID
+	var req ListPostsByUserIDRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -120,7 +120,7 @@ func (server *Server) ListDraftsByUserID(ctx *gin.Context) {
 	limit := req.PageSize
 	offset := (req.Page - 1) * req.PageSize
 
-	drafts, err := server.store.ListDraftsByUserID(ctx, db.ListDraftsByUserIDParams{
+	posts, err := server.store.ListPostsByUserID(ctx, db.ListPostsByUserIDParams{ // Changed from ListDraftsByUserID to ListPostsByUserID
 		UserID: pgtype.UUID{Bytes: userID, Valid: true},
 		Limit:  limit,
 		Offset: offset,
@@ -131,66 +131,66 @@ func (server *Server) ListDraftsByUserID(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, drafts)
+	ctx.JSON(http.StatusOK, posts)
 }
 
-type UpdateDraftRequest struct {
-	ID        string `json:"id" binding:"required,uuid"`
-	DraftText string `json:"draft_text" binding:"required"`
+type UpdatePostRequest struct { // Changed from UpdateDraftRequest to UpdatePostRequest
+	ID   string `json:"id" binding:"required,uuid"`
+	Text string `json:"text" binding:"required"` // Changed from DraftText to Text
 }
 
-func (server *Server) UpdateDraft(ctx *gin.Context) {
-	var req UpdateDraftRequest
+func (server *Server) UpdatePost(ctx *gin.Context) { // Changed from UpdateDraft to UpdatePost
+	var req UpdatePostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	draftID, err := uuid.Parse(req.ID)
+	postID, err := uuid.Parse(req.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	arg := db.UpdateDraftParams{
-		ID:        pgtype.UUID{Bytes: draftID, Valid: true},
-		DraftText: req.DraftText,
+	arg := db.UpdatePostParams{ // Changed from UpdateDraftParams to UpdatePostParams
+		ID:   pgtype.UUID{Bytes: postID, Valid: true},
+		Text: req.Text, // Changed from DraftText to Text
 	}
 
-	draft, err := server.store.UpdateDraft(ctx, arg)
+	post, err := server.store.UpdatePost(ctx, arg) // Changed from UpdateDraft to UpdatePost
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, DraftResponse{
-		ID:           draft.ID,
-		UserID:       draft.UserID,
-		SuggestionID: draft.SuggestionID,
-		DraftText:    draft.DraftText,
-		CreatedAt:    draft.CreatedAt,
-		UpdatedAt:    draft.UpdatedAt,
+	ctx.JSON(http.StatusOK, PostResponse{ // Changed from DraftResponse to PostResponse
+		ID:           post.ID,
+		UserID:       post.UserID,
+		SuggestionID: post.SuggestionID,
+		Text:         post.Text, // Changed from DraftText to Text
+		CreatedAt:    post.CreatedAt,
+		UpdatedAt:    post.UpdatedAt,
 	})
 }
 
-type DeleteDraftRequest struct {
+type DeletePostRequest struct { // Changed from DeleteDraftRequest to DeletePostRequest
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) DeleteDraft(ctx *gin.Context) {
-	var req DeleteDraftRequest
+func (server *Server) DeletePost(ctx *gin.Context) { // Changed from DeleteDraft to DeletePost
+	var req DeletePostRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	draftID, err := uuid.Parse(req.ID)
+	postID, err := uuid.Parse(req.ID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	_, err = server.store.DeleteDraft(ctx, pgtype.UUID{Bytes: draftID, Valid: true})
+	_, err = server.store.DeletePost(ctx, pgtype.UUID{Bytes: postID, Valid: true}) // Changed from DeleteDraft to DeletePost
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

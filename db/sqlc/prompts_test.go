@@ -13,15 +13,15 @@ func TestCreatePrompt(t *testing.T) {
 		user := createRandomUser(t, testQueries)
 
 		arg := CreatePromptParams{
-			UserID:     user.ID,
-			PromptText: "Write a blog post about AI",
+			UserID: user.ID,
+			Text:   "Write a blog post about AI",
 		}
 		prompt, err := testQueries.CreatePrompt(context.Background(), arg)
 		require.NoError(t, err)
 		require.NotEmpty(t, prompt)
 
 		require.Equal(t, arg.UserID, prompt.UserID)
-		require.Equal(t, arg.PromptText, prompt.PromptText)
+		require.Equal(t, arg.Text, prompt.Text)
 		require.NotZero(t, prompt.CreatedAt)
 	})
 }

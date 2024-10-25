@@ -14,15 +14,15 @@ func TestCreatePostSuggestion(t *testing.T) {
 		prompt := createRandomPrompt(t, testQueries, user.ID)
 
 		arg := CreatePostSuggestionParams{
-			PromptID:       prompt.ID,
-			SuggestionText: "Use AI to automate content creation",
+			PromptID: prompt.ID,
+			Text:     "Use AI to automate content creation",
 		}
 		postSuggestion, err := testQueries.CreatePostSuggestion(context.Background(), arg)
 		require.NoError(t, err)
 		require.NotEmpty(t, postSuggestion)
 
 		require.Equal(t, arg.PromptID, postSuggestion.PromptID)
-		require.Equal(t, arg.SuggestionText, postSuggestion.SuggestionText)
+		require.Equal(t, arg.Text, postSuggestion.Text)
 		require.NotZero(t, postSuggestion.CreatedAt)
 	})
 }

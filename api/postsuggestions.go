@@ -34,8 +34,8 @@ func (s *Server) GetAISuggestionsByPrompt(ctx *gin.Context) {
 
 	// check if prompt already exists for this user
 	getPromptArgs := db.GetPromptByUserIDAndTextParams{
-		UserID:     pgtype.UUID{Bytes: userID, Valid: true},
-		PromptText: req.Prompt,
+		UserID: pgtype.UUID{Bytes: userID, Valid: true},
+		Text:   req.Prompt,
 	}
 	existingPrompt, err := s.store.GetPromptByUserIDAndText(ctx, getPromptArgs)
 	if err != nil {
@@ -48,8 +48,8 @@ func (s *Server) GetAISuggestionsByPrompt(ctx *gin.Context) {
 		promptID = existingPrompt.ID
 	} else {
 		promptArg := db.CreatePromptParams{
-			UserID:     pgtype.UUID{Bytes: userID, Valid: true},
-			PromptText: req.Prompt,
+			UserID: pgtype.UUID{Bytes: userID, Valid: true},
+			Text:   req.Prompt,
 		}
 
 		// Save the prompt to the database
@@ -88,16 +88,16 @@ func (s *Server) GetAISuggestionsByPrompt(ctx *gin.Context) {
 }
 
 type CreatePostSuggestionRequest struct {
-	PromptID       string `json:"prompt_id" binding:"required,uuid"`
-	SuggestionText string `json:"suggestion_text" binding:"required"`
+	PromptID string `json:"prompt_id" binding:"required,uuid"`
+	Text     string `json:"text" binding:"required"`
 }
 
 type PostSuggestionResponse struct {
-	ID             pgtype.UUID
-	PromptID       pgtype.UUID
-	SuggestionText string
-	CreatedAt      pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
+	ID        pgtype.UUID
+	PromptID  pgtype.UUID
+	Text      string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 func (server *Server) CreatePostSuggestion(ctx *gin.Context) {
@@ -114,8 +114,8 @@ func (server *Server) CreatePostSuggestion(ctx *gin.Context) {
 	}
 
 	arg := db.CreatePostSuggestionParams{
-		PromptID:       pgtype.UUID{Bytes: parsedUUID, Valid: true},
-		SuggestionText: req.SuggestionText,
+		PromptID: pgtype.UUID{Bytes: parsedUUID, Valid: true},
+		Text:     req.Text,
 	}
 
 	suggestion, err := server.store.CreatePostSuggestion(ctx, arg)
@@ -125,11 +125,11 @@ func (server *Server) CreatePostSuggestion(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, PostSuggestionResponse{
-		ID:             suggestion.ID,
-		PromptID:       suggestion.PromptID,
-		SuggestionText: suggestion.SuggestionText,
-		CreatedAt:      suggestion.CreatedAt,
-		UpdatedAt:      suggestion.UpdatedAt,
+		ID:        suggestion.ID,
+		PromptID:  suggestion.PromptID,
+		Text:      suggestion.Text,
+		CreatedAt: suggestion.CreatedAt,
+		UpdatedAt: suggestion.UpdatedAt,
 	})
 }
 
@@ -157,11 +157,11 @@ func (server *Server) GetPostSuggestion(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, PostSuggestionResponse{
-		ID:             suggestion.ID,
-		PromptID:       suggestion.PromptID,
-		SuggestionText: suggestion.SuggestionText,
-		CreatedAt:      suggestion.CreatedAt,
-		UpdatedAt:      suggestion.UpdatedAt,
+		ID:        suggestion.ID,
+		PromptID:  suggestion.PromptID,
+		Text:      suggestion.Text,
+		CreatedAt: suggestion.CreatedAt,
+		UpdatedAt: suggestion.UpdatedAt,
 	})
 }
 
@@ -202,8 +202,8 @@ func (server *Server) ListPostSuggestionsByPromptID(ctx *gin.Context) {
 }
 
 type UpdatePostSuggestionRequest struct {
-	ID             string `json:"id" binding:"required,uuid"`
-	SuggestionText string `json:"suggestion_text" binding:"required"`
+	ID   string `json:"id" binding:"required,uuid"`
+	Text string `json:"text" binding:"required"`
 }
 
 func (server *Server) UpdatePostSuggestion(ctx *gin.Context) {
@@ -220,8 +220,8 @@ func (server *Server) UpdatePostSuggestion(ctx *gin.Context) {
 	}
 
 	arg := db.UpdatePostSuggestionParams{
-		ID:             pgtype.UUID{Bytes: suggestionID, Valid: true},
-		SuggestionText: req.SuggestionText,
+		ID:   pgtype.UUID{Bytes: suggestionID, Valid: true},
+		Text: req.Text,
 	}
 
 	suggestion, err := server.store.UpdatePostSuggestion(ctx, arg)
@@ -231,11 +231,11 @@ func (server *Server) UpdatePostSuggestion(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, PostSuggestionResponse{
-		ID:             suggestion.ID,
-		PromptID:       suggestion.PromptID,
-		SuggestionText: suggestion.SuggestionText,
-		CreatedAt:      suggestion.CreatedAt,
-		UpdatedAt:      suggestion.UpdatedAt,
+		ID:        suggestion.ID,
+		PromptID:  suggestion.PromptID,
+		Text:      suggestion.Text,
+		CreatedAt: suggestion.CreatedAt,
+		UpdatedAt: suggestion.UpdatedAt,
 	})
 }
 

@@ -8,29 +8,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Draft struct {
+type Post struct {
 	ID           pgtype.UUID
 	UserID       pgtype.UUID
 	SuggestionID pgtype.UUID
-	DraftText    string
+	Text         string
+	Status       string
 	CreatedAt    pgtype.Timestamp
 	UpdatedAt    pgtype.Timestamp
 }
 
 type Postsuggestion struct {
-	ID             pgtype.UUID
-	PromptID       pgtype.UUID
-	SuggestionText string
-	CreatedAt      pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
+	ID        pgtype.UUID
+	PromptID  pgtype.UUID
+	Text      string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 type Prompt struct {
-	ID         pgtype.UUID
-	UserID     pgtype.UUID
-	PromptText string
-	CreatedAt  pgtype.Timestamp
-	UpdatedAt  pgtype.Timestamp
+	ID        pgtype.UUID
+	UserID    pgtype.UUID
+	Text      string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 type Scheduledpost struct {

@@ -13,25 +13,25 @@ import (
 
 const createPrompt = `-- name: CreatePrompt :one
 INSERT INTO prompts (
-  user_id, prompt_text
+  user_id, text
 ) VALUES (
   $1, $2
 )
-RETURNING id, user_id, prompt_text, created_at, updated_at
+RETURNING id, user_id, text, created_at, updated_at
 `
 
 type CreatePromptParams struct {
-	UserID     pgtype.UUID
-	PromptText string
+	UserID pgtype.UUID
+	Text   string
 }
 
 func (q *Queries) CreatePrompt(ctx context.Context, arg CreatePromptParams) (Prompt, error) {
-	row := q.db.QueryRow(ctx, createPrompt, arg.UserID, arg.PromptText)
+	row := q.db.QueryRow(ctx, createPrompt, arg.UserID, arg.Text)
 	var i Prompt
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.PromptText,
+		&i.Text,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -41,7 +41,7 @@ func (q *Queries) CreatePrompt(ctx context.Context, arg CreatePromptParams) (Pro
 const deletePrompt = `-- name: DeletePrompt :one
 DELETE FROM prompts
 WHERE id = $1
-RETURNING id, user_id, prompt_text, created_at, updated_at
+RETURNING id, user_id, text, created_at, updated_at
 `
 
 func (q *Queries) DeletePrompt(ctx context.Context, id pgtype.UUID) (Prompt, error) {
@@ -50,7 +50,7 @@ func (q *Queries) DeletePrompt(ctx context.Context, id pgtype.UUID) (Prompt, err
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.PromptText,
+		&i.Text,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -58,7 +58,7 @@ func (q *Queries) DeletePrompt(ctx context.Context, id pgtype.UUID) (Prompt, err
 }
 
 const getPromptByID = `-- name: GetPromptByID :one
-SELECT id, user_id, prompt_text, created_at, updated_at
+SELECT id, user_id, text, created_at, updated_at
 FROM prompts
 WHERE id = $1
 `
@@ -69,7 +69,7 @@ func (q *Queries) GetPromptByID(ctx context.Context, id pgtype.UUID) (Prompt, er
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.PromptText,
+		&i.Text,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -77,24 +77,24 @@ func (q *Queries) GetPromptByID(ctx context.Context, id pgtype.UUID) (Prompt, er
 }
 
 const getPromptByUserIDAndText = `-- name: GetPromptByUserIDAndText :one
-SELECT id, user_id, prompt_text, created_at, updated_at
+SELECT id, user_id, text, created_at, updated_at
 FROM prompts
-WHERE user_id = $1 AND prompt_text = $2
+WHERE user_id = $1 AND text = $2
 LIMIT 1
 `
 
 type GetPromptByUserIDAndTextParams struct {
-	UserID     pgtype.UUID
-	PromptText string
+	UserID pgtype.UUID
+	Text   string
 }
 
 func (q *Queries) GetPromptByUserIDAndText(ctx context.Context, arg GetPromptByUserIDAndTextParams) (Prompt, error) {
-	row := q.db.QueryRow(ctx, getPromptByUserIDAndText, arg.UserID, arg.PromptText)
+	row := q.db.QueryRow(ctx, getPromptByUserIDAndText, arg.UserID, arg.Text)
 	var i Prompt
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.PromptText,
+		&i.Text,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -102,7 +102,7 @@ func (q *Queries) GetPromptByUserIDAndText(ctx context.Context, arg GetPromptByU
 }
 
 const listPromptsByUserID = `-- name: ListPromptsByUserID :many
-SELECT id, user_id, prompt_text, created_at, updated_at
+SELECT id, user_id, text, created_at, updated_at
 FROM prompts
 WHERE user_id = $1
 ORDER BY created_at DESC
@@ -127,7 +127,7 @@ func (q *Queries) ListPromptsByUserID(ctx context.Context, arg ListPromptsByUser
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
-			&i.PromptText,
+			&i.Text,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -143,24 +143,24 @@ func (q *Queries) ListPromptsByUserID(ctx context.Context, arg ListPromptsByUser
 
 const updatePrompt = `-- name: UpdatePrompt :one
 UPDATE prompts
-SET prompt_text = $2,
+SET text = $2,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, user_id, prompt_text, created_at, updated_at
+RETURNING id, user_id, text, created_at, updated_at
 `
 
 type UpdatePromptParams struct {
-	ID         pgtype.UUID
-	PromptText string
+	ID   pgtype.UUID
+	Text string
 }
 
 func (q *Queries) UpdatePrompt(ctx context.Context, arg UpdatePromptParams) (Prompt, error) {
-	row := q.db.QueryRow(ctx, updatePrompt, arg.ID, arg.PromptText)
+	row := q.db.QueryRow(ctx, updatePrompt, arg.ID, arg.Text)
 	var i Prompt
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.PromptText,
+		&i.Text,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

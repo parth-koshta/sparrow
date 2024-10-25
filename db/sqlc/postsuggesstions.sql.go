@@ -12,10 +12,10 @@ import (
 )
 
 const bulkCreatePostSuggestions = `-- name: BulkCreatePostSuggestions :many
-INSERT INTO postsuggestions (prompt_id, suggestion_text)
+INSERT INTO postsuggestions (prompt_id, text)
 SELECT $1, unnest($2::text[])
-ON CONFLICT (prompt_id, suggestion_text) DO NOTHING
-RETURNING id, prompt_id, suggestion_text, created_at
+ON CONFLICT (prompt_id, text) DO NOTHING
+RETURNING id, prompt_id, text, created_at
 `
 
 type BulkCreatePostSuggestionsParams struct {
@@ -24,10 +24,10 @@ type BulkCreatePostSuggestionsParams struct {
 }
 
 type BulkCreatePostSuggestionsRow struct {
-	ID             pgtype.UUID
-	PromptID       pgtype.UUID
-	SuggestionText string
-	CreatedAt      pgtype.Timestamp
+	ID        pgtype.UUID
+	PromptID  pgtype.UUID
+	Text      string
+	CreatedAt pgtype.Timestamp
 }
 
 func (q *Queries) BulkCreatePostSuggestions(ctx context.Context, arg BulkCreatePostSuggestionsParams) ([]BulkCreatePostSuggestionsRow, error) {
@@ -42,7 +42,7 @@ func (q *Queries) BulkCreatePostSuggestions(ctx context.Context, arg BulkCreateP
 		if err := rows.Scan(
 			&i.ID,
 			&i.PromptID,
-			&i.SuggestionText,
+			&i.Text,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -57,25 +57,25 @@ func (q *Queries) BulkCreatePostSuggestions(ctx context.Context, arg BulkCreateP
 
 const createPostSuggestion = `-- name: CreatePostSuggestion :one
 INSERT INTO postsuggestions (
-  prompt_id, suggestion_text
+  prompt_id, text
 ) VALUES (
   $1, $2
 )
-RETURNING id, prompt_id, suggestion_text, created_at, updated_at
+RETURNING id, prompt_id, text, created_at, updated_at
 `
 
 type CreatePostSuggestionParams struct {
-	PromptID       pgtype.UUID
-	SuggestionText string
+	PromptID pgtype.UUID
+	Text     string
 }
 
 func (q *Queries) CreatePostSuggestion(ctx context.Context, arg CreatePostSuggestionParams) (Postsuggestion, error) {
-	row := q.db.QueryRow(ctx, createPostSuggestion, arg.PromptID, arg.SuggestionText)
+	row := q.db.QueryRow(ctx, createPostSuggestion, arg.PromptID, arg.Text)
 	var i Postsuggestion
 	err := row.Scan(
 		&i.ID,
 		&i.PromptID,
-		&i.SuggestionText,
+		&i.Text,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -85,7 +85,7 @@ func (q *Queries) CreatePostSuggestion(ctx context.Context, arg CreatePostSugges
 const deletePostSuggestion = `-- name: DeletePostSuggestion :one
 DELETE FROM postsuggestions
 WHERE id = $1
-RETURNING id, prompt_id, suggestion_text, created_at, updated_at
+RETURNING id, prompt_id, text, created_at, updated_at
 `
 
 func (q *Queries) DeletePostSuggestion(ctx context.Context, id pgtype.UUID) (Postsuggestion, error) {
@@ -94,7 +94,7 @@ func (q *Queries) DeletePostSuggestion(ctx context.Context, id pgtype.UUID) (Pos
 	err := row.Scan(
 		&i.ID,
 		&i.PromptID,
-		&i.SuggestionText,
+		&i.Text,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -102,7 +102,7 @@ func (q *Queries) DeletePostSuggestion(ctx context.Context, id pgtype.UUID) (Pos
 }
 
 const getPostSuggestionByID = `-- name: GetPostSuggestionByID :one
-SELECT id, prompt_id, suggestion_text, created_at, updated_at
+SELECT id, prompt_id, text, created_at, updated_at
 FROM postsuggestions
 WHERE id = $1
 `
@@ -113,7 +113,7 @@ func (q *Queries) GetPostSuggestionByID(ctx context.Context, id pgtype.UUID) (Po
 	err := row.Scan(
 		&i.ID,
 		&i.PromptID,
-		&i.SuggestionText,
+		&i.Text,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -121,7 +121,7 @@ func (q *Queries) GetPostSuggestionByID(ctx context.Context, id pgtype.UUID) (Po
 }
 
 const listPostSuggestionsByPromptID = `-- name: ListPostSuggestionsByPromptID :many
-SELECT id, prompt_id, suggestion_text, created_at, updated_at
+SELECT id, prompt_id, text, created_at, updated_at
 FROM postsuggestions
 WHERE prompt_id = $1
 ORDER BY created_at DESC
@@ -146,7 +146,7 @@ func (q *Queries) ListPostSuggestionsByPromptID(ctx context.Context, arg ListPos
 		if err := rows.Scan(
 			&i.ID,
 			&i.PromptID,
-			&i.SuggestionText,
+			&i.Text,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -162,24 +162,24 @@ func (q *Queries) ListPostSuggestionsByPromptID(ctx context.Context, arg ListPos
 
 const updatePostSuggestion = `-- name: UpdatePostSuggestion :one
 UPDATE postsuggestions
-SET suggestion_text = $2,
+SET text = $2,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, prompt_id, suggestion_text, created_at, updated_at
+RETURNING id, prompt_id, text, created_at, updated_at
 `
 
 type UpdatePostSuggestionParams struct {
-	ID             pgtype.UUID
-	SuggestionText string
+	ID   pgtype.UUID
+	Text string
 }
 
 func (q *Queries) UpdatePostSuggestion(ctx context.Context, arg UpdatePostSuggestionParams) (Postsuggestion, error) {
-	row := q.db.QueryRow(ctx, updatePostSuggestion, arg.ID, arg.SuggestionText)
+	row := q.db.QueryRow(ctx, updatePostSuggestion, arg.ID, arg.Text)
 	var i Postsuggestion
 	err := row.Scan(
 		&i.ID,
 		&i.PromptID,
-		&i.SuggestionText,
+		&i.Text,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
