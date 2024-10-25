@@ -35,14 +35,15 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: drafts; Type: TABLE; Schema: public; Owner: -
+-- Name: posts; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.drafts (
+CREATE TABLE public.posts (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     suggestion_id uuid NOT NULL,
-    draft_text text NOT NULL,
+    text text NOT NULL,
+    status character varying(50) NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -55,7 +56,7 @@ CREATE TABLE public.drafts (
 CREATE TABLE public.postsuggestions (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     prompt_id uuid NOT NULL,
-    suggestion_text text NOT NULL,
+    text text NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -68,7 +69,7 @@ CREATE TABLE public.postsuggestions (
 CREATE TABLE public.prompts (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
-    prompt_text text NOT NULL,
+    text text NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -132,11 +133,11 @@ CREATE TABLE public.users (
 
 
 --
--- Name: drafts drafts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: posts posts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.drafts
-    ADD CONSTRAINT drafts_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_pkey PRIMARY KEY (id);
 
 
 --
@@ -184,7 +185,7 @@ ALTER TABLE ONLY public.socialaccounts
 --
 
 ALTER TABLE ONLY public.postsuggestions
-    ADD CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, suggestion_text);
+    ADD CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, text);
 
 
 --
@@ -212,17 +213,24 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: idx_drafts_suggestion_id; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_posts_status; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_drafts_suggestion_id ON public.drafts USING btree (suggestion_id);
+CREATE INDEX idx_posts_status ON public.posts USING btree (status);
 
 
 --
--- Name: idx_drafts_user_id; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_posts_suggestion_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_drafts_user_id ON public.drafts USING btree (user_id);
+CREATE INDEX idx_posts_suggestion_id ON public.posts USING btree (suggestion_id);
+
+
+--
+-- Name: idx_posts_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_posts_user_id ON public.posts USING btree (user_id);
 
 
 --
@@ -233,17 +241,17 @@ CREATE INDEX idx_postsuggestions_prompt_id ON public.postsuggestions USING btree
 
 
 --
--- Name: idx_postsuggestions_suggestion_text; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_postsuggestions_text; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_postsuggestions_suggestion_text ON public.postsuggestions USING gin (suggestion_text public.gin_trgm_ops);
+CREATE INDEX idx_postsuggestions_text ON public.postsuggestions USING gin (text public.gin_trgm_ops);
 
 
 --
--- Name: idx_prompts_prompt_text; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_prompts_text; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_prompts_prompt_text ON public.prompts USING gin (prompt_text public.gin_trgm_ops);
+CREATE INDEX idx_prompts_text ON public.prompts USING gin (text public.gin_trgm_ops);
 
 
 --
@@ -251,6 +259,13 @@ CREATE INDEX idx_prompts_prompt_text ON public.prompts USING gin (prompt_text pu
 --
 
 CREATE INDEX idx_prompts_user_id ON public.prompts USING btree (user_id);
+
+
+--
+-- Name: idx_prompts_user_id_text; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_prompts_user_id_text ON public.prompts USING btree (user_id, text);
 
 
 --
@@ -303,19 +318,26 @@ CREATE INDEX idx_users_email ON public.users USING btree (email);
 
 
 --
--- Name: drafts drafts_suggestion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: idx_users_username; Type: INDEX; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.drafts
-    ADD CONSTRAINT drafts_suggestion_id_fkey FOREIGN KEY (suggestion_id) REFERENCES public.postsuggestions(id) ON DELETE CASCADE;
+CREATE INDEX idx_users_username ON public.users USING btree (username);
 
 
 --
--- Name: drafts drafts_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: posts posts_suggestion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.drafts
-    ADD CONSTRAINT drafts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_suggestion_id_fkey FOREIGN KEY (suggestion_id) REFERENCES public.postsuggestions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: posts posts_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -339,7 +361,7 @@ ALTER TABLE ONLY public.prompts
 --
 
 ALTER TABLE ONLY public.scheduledposts
-    ADD CONSTRAINT scheduledposts_draft_id_fkey FOREIGN KEY (draft_id) REFERENCES public.drafts(id) ON DELETE CASCADE;
+    ADD CONSTRAINT scheduledposts_draft_id_fkey FOREIGN KEY (draft_id) REFERENCES public.posts(id) ON DELETE CASCADE;
 
 
 --

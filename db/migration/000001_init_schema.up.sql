@@ -28,7 +28,7 @@ CREATE TABLE SocialAccounts (
 CREATE TABLE Prompts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
-    prompt_text TEXT NOT NULL,
+    text TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -37,18 +37,19 @@ CREATE TABLE Prompts (
 CREATE TABLE PostSuggestions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     prompt_id UUID NOT NULL REFERENCES Prompts(id) ON DELETE CASCADE,
-    suggestion_text TEXT NOT NULL,
+    text TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, suggestion_text)
+    CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, text)
 );
 
--- Create Drafts table
-CREATE TABLE Drafts (
+-- Create Posts table
+CREATE TABLE Posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
     suggestion_id UUID NOT NULL REFERENCES PostSuggestions(id) ON DELETE CASCADE,
-    draft_text TEXT NOT NULL,
+    text TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -57,7 +58,7 @@ CREATE TABLE Drafts (
 CREATE TABLE ScheduledPosts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
-    draft_id UUID NOT NULL REFERENCES Drafts(id) ON DELETE CASCADE,
+    draft_id UUID NOT NULL REFERENCES Posts(id) ON DELETE CASCADE,
     scheduled_time TIMESTAMP NOT NULL,
     status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -66,19 +67,21 @@ CREATE TABLE ScheduledPosts (
 
 -- Create indexes
 CREATE INDEX idx_users_email ON Users (email);
+CREATE INDEX idx_users_username ON Users (username);
 
 CREATE INDEX idx_socialaccounts_user_id ON SocialAccounts (user_id);
 CREATE INDEX idx_socialaccounts_platform ON SocialAccounts (platform);
 
 CREATE INDEX idx_prompts_user_id ON Prompts (user_id);
-CREATE INDEX idx_prompts_prompt_text ON Prompts USING GIN (prompt_text gin_trgm_ops);
-CREATE INDEX idx_prompts_user_id_prompt_text ON Prompts (user_id, prompt_text);
+CREATE INDEX idx_prompts_text ON Prompts USING GIN (text gin_trgm_ops);
+CREATE INDEX idx_prompts_user_id_text ON Prompts (user_id, text);
 
 CREATE INDEX idx_postsuggestions_prompt_id ON PostSuggestions (prompt_id);
-CREATE INDEX idx_postsuggestions_suggestion_text ON PostSuggestions USING GIN (suggestion_text gin_trgm_ops);
+CREATE INDEX idx_postsuggestions_text ON PostSuggestions USING GIN (text gin_trgm_ops);
 
-CREATE INDEX idx_drafts_user_id ON Drafts (user_id);
-CREATE INDEX idx_drafts_suggestion_id ON Drafts (suggestion_id);
+CREATE INDEX idx_posts_user_id ON Posts (user_id);
+CREATE INDEX idx_posts_suggestion_id ON Posts (suggestion_id);
+CREATE INDEX idx_posts_status ON Posts (status);
 
 CREATE INDEX idx_scheduledposts_user_id ON ScheduledPosts (user_id);
 CREATE INDEX idx_scheduledposts_draft_id ON ScheduledPosts (draft_id);
