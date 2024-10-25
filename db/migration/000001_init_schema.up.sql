@@ -47,7 +47,7 @@ CREATE TABLE PostSuggestions (
 CREATE TABLE Posts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
-    suggestion_id UUID NOT NULL REFERENCES PostSuggestions(id) ON DELETE CASCADE,
+    suggestion_id UUID REFERENCES PostSuggestions(id) ON DELETE SET NULL,
     text TEXT NOT NULL,
     status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),

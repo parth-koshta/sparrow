@@ -41,7 +41,7 @@ SET default_table_access_method = heap;
 CREATE TABLE public.posts (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
-    suggestion_id uuid NOT NULL,
+    suggestion_id uuid,
     text text NOT NULL,
     status character varying(50) NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
@@ -329,7 +329,7 @@ CREATE INDEX idx_users_username ON public.users USING btree (username);
 --
 
 ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT posts_suggestion_id_fkey FOREIGN KEY (suggestion_id) REFERENCES public.postsuggestions(id) ON DELETE CASCADE;
+    ADD CONSTRAINT posts_suggestion_id_fkey FOREIGN KEY (suggestion_id) REFERENCES public.postsuggestions(id) ON DELETE SET NULL;
 
 
 --
