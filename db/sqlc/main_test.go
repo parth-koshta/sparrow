@@ -126,7 +126,7 @@ func createRandomPrompt(t *testing.T, testQueries *Queries, userID pgtype.UUID) 
 func createRandomPostSuggestion(t *testing.T, testQueries *Queries, promptID pgtype.UUID) Postsuggestion {
 	arg := CreatePostSuggestionParams{
 		PromptID:       promptID,
-		SuggestionText: "Example suggestion text",
+		SuggestionText: fmt.Sprintf("Example suggestion text %s", util.GenerateRandomString().String),
 	}
 	suggestion, err := testQueries.CreatePostSuggestion(context.Background(), arg)
 	require.NoError(t, err)

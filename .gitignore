@@ -24,3 +24,6 @@ npm-debug.log*
 *.exe~
 *.out
 *.test
+
+#sqlc
+db/sqlc/__debug*
