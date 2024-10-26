@@ -7,6 +7,7 @@ import (
 
 	"github.com/hibiken/asynq"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
+	"github.com/parth-koshta/sparrow/mail"
 )
 
 const (
@@ -16,15 +17,17 @@ const (
 
 type TaskProcessor interface {
 	Start() error
+	Shutdown()
 	ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
 	server *asynq.Server
 	store  db.Store
+	mailer mail.EmailSender
 }
 
-func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store) TaskProcessor {
+func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, mailer mail.EmailSender) TaskProcessor {
 	server := asynq.NewServer(redisOptions, asynq.Config{
 		Queues: map[string]int{
 			QueueCritical: 10,
@@ -39,6 +42,7 @@ func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store) Ta
 	return &RedisTaskProcessor{
 		server: server,
 		store:  store,
+		mailer: mailer,
 	}
 }
 
@@ -47,4 +51,8 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
 	log.Info().Msg("starting task processor")
 	return processor.server.Start(mux)
+}
+
+func (processor *RedisTaskProcessor) Shutdown() {
+	processor.server.Shutdown()
 }

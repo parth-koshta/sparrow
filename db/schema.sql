@@ -127,9 +127,50 @@ CREATE TABLE public.users (
     username character varying(255),
     email character varying(255) NOT NULL,
     password_hash character varying(255),
+    is_email_verified boolean DEFAULT false NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
+
+
+--
+-- Name: verifyemails; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.verifyemails (
+    id bigint NOT NULL,
+    email character varying(255) NOT NULL,
+    secret_code character varying(255) NOT NULL,
+    is_used boolean DEFAULT false NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    expired_at timestamp without time zone DEFAULT (now() + '00:15:00'::interval) NOT NULL
+);
+
+
+--
+-- Name: verifyemails_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.verifyemails_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: verifyemails_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.verifyemails_id_seq OWNED BY public.verifyemails.id;
+
+
+--
+-- Name: verifyemails id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.verifyemails ALTER COLUMN id SET DEFAULT nextval('public.verifyemails_id_seq'::regclass);
 
 
 --
@@ -210,6 +251,14 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_username_key UNIQUE (username);
+
+
+--
+-- Name: verifyemails verifyemails_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.verifyemails
+    ADD CONSTRAINT verifyemails_pkey PRIMARY KEY (id);
 
 
 --
@@ -322,6 +371,13 @@ CREATE INDEX idx_users_email ON public.users USING btree (email);
 --
 
 CREATE INDEX idx_users_username ON public.users USING btree (username);
+
+
+--
+-- Name: idx_verifyemails_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_verifyemails_email ON public.verifyemails USING btree (email);
 
 
 --

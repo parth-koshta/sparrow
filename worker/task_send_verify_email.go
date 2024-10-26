@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	db "github.com/parth-koshta/sparrow/db/sqlc"
+	"github.com/parth-koshta/sparrow/util"
 	"github.com/rs/zerolog/log"
 
 	"github.com/hibiken/asynq"
@@ -38,7 +40,6 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		return fmt.Errorf("could not unmarshal task payload: %w", asynq.SkipRetry)
 	}
 
-	// Send verification email to the user
 	user, err := processor.store.GetUserByEmail(ctx, payload.Email)
 	if err == sql.ErrNoRows {
 		return fmt.Errorf("user does not exist: %w", asynq.SkipRetry)
@@ -47,6 +48,28 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 		return fmt.Errorf("could not get user: %w", err)
 	}
 
-	log.Info().Msgf("sending verification email to %s", user.Email)
+	verifyEmail, err := processor.store.CreateVerifyEmail(ctx, db.CreateVerifyEmailParams{
+		Email:      user.Email,
+		SecretCode: util.GenerateRandomString().String,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create verify email: %w", err)
+	}
+
+	subject := "Welcome to Sparrow!"
+	verifyUrl := fmt.Sprintf("http://localhost:8080/v1/verify_email?email_id=%d&secret_code=%s",
+		verifyEmail.ID, verifyEmail.SecretCode)
+	content := fmt.Sprintf(`Hello %s,<br/>
+	Thank you for registering with us!<br/>
+	Please <a href="%s">click here</a> to verify your email address.<br/>
+	`, user.Email, verifyUrl)
+	to := []string{user.Email}
+
+	err = processor.mailer.SendEmail(subject, content, to, nil, nil, nil)
+	if err != nil {
+		return fmt.Errorf("could not send verification email: %w", err)
+	}
+
+	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).Str("email", user.Email).Msg("task processed")
 	return nil
 }

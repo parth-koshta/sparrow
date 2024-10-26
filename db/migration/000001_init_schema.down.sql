@@ -1,4 +1,7 @@
 -- Drop indexes
+
+DROP INDEX IF EXISTS idx_verifyemails_email;
+
 DROP INDEX IF EXISTS idx_scheduledposts_status;
 DROP INDEX IF EXISTS idx_scheduledposts_scheduled_time;
 DROP INDEX IF EXISTS idx_scheduledposts_draft_id;
@@ -26,3 +29,4 @@ DROP TABLE IF EXISTS PostSuggestions;
 DROP TABLE IF EXISTS Prompts;
 DROP TABLE IF EXISTS SocialAccounts;
 DROP TABLE IF EXISTS Users;
+DROP TABLE IF EXISTS VerifyEmails;

@@ -58,10 +58,20 @@ type Socialaccount struct {
 }
 
 type User struct {
-	ID           pgtype.UUID
-	Username     pgtype.Text
-	Email        string
-	PasswordHash pgtype.Text
-	CreatedAt    pgtype.Timestamp
-	UpdatedAt    pgtype.Timestamp
+	ID              pgtype.UUID
+	Username        pgtype.Text
+	Email           string
+	PasswordHash    pgtype.Text
+	IsEmailVerified bool
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
+}
+
+type Verifyemail struct {
+	ID         int64
+	Email      string
+	SecretCode string
+	IsUsed     bool
+	CreatedAt  pgtype.Timestamp
+	ExpiredAt  pgtype.Timestamp
 }
