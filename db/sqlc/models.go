@@ -9,70 +9,70 @@ import (
 )
 
 type Post struct {
-	ID           pgtype.UUID
-	UserID       pgtype.UUID
-	SuggestionID pgtype.UUID
-	Text         string
-	Status       string
-	CreatedAt    pgtype.Timestamp
-	UpdatedAt    pgtype.Timestamp
+	ID           pgtype.UUID      `json:"id"`
+	UserID       pgtype.UUID      `json:"user_id"`
+	SuggestionID pgtype.UUID      `json:"suggestion_id"`
+	Text         string           `json:"text"`
+	Status       string           `json:"status"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
 }
 
 type Postschedule struct {
-	ID            pgtype.UUID
-	UserID        pgtype.UUID
-	PostID        pgtype.UUID
-	ScheduledTime pgtype.Timestamp
-	ExecutedTime  pgtype.Timestamp
-	Status        string
-	CreatedAt     pgtype.Timestamp
-	UpdatedAt     pgtype.Timestamp
+	ID            pgtype.UUID      `json:"id"`
+	UserID        pgtype.UUID      `json:"user_id"`
+	PostID        pgtype.UUID      `json:"post_id"`
+	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
+	ExecutedTime  pgtype.Timestamp `json:"executed_time"`
+	Status        string           `json:"status"`
+	CreatedAt     pgtype.Timestamp `json:"created_at"`
+	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
 }
 
 type Postsuggestion struct {
-	ID        pgtype.UUID
-	PromptID  pgtype.UUID
-	Text      string
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+	ID        pgtype.UUID      `json:"id"`
+	PromptID  pgtype.UUID      `json:"prompt_id"`
+	Text      string           `json:"text"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
 type Prompt struct {
-	ID        pgtype.UUID
-	UserID    pgtype.UUID
-	Text      string
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+	ID        pgtype.UUID      `json:"id"`
+	UserID    pgtype.UUID      `json:"user_id"`
+	Text      string           `json:"text"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
 type Socialaccount struct {
-	ID             pgtype.UUID
-	UserID         pgtype.UUID
-	Platform       string
-	AccountName    string
-	AccountEmail   string
-	AccessToken    string
-	IDToken        string
-	TokenExpiresAt pgtype.Timestamp
-	CreatedAt      pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
+	ID             pgtype.UUID      `json:"id"`
+	UserID         pgtype.UUID      `json:"user_id"`
+	Platform       string           `json:"platform"`
+	AccountName    string           `json:"account_name"`
+	AccountEmail   string           `json:"account_email"`
+	AccessToken    string           `json:"access_token"`
+	IDToken        string           `json:"id_token"`
+	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
+	CreatedAt      pgtype.Timestamp `json:"created_at"`
+	UpdatedAt      pgtype.Timestamp `json:"updated_at"`
 }
 
 type User struct {
-	ID              pgtype.UUID
-	Username        pgtype.Text
-	Email           string
-	PasswordHash    pgtype.Text
-	IsEmailVerified bool
-	CreatedAt       pgtype.Timestamp
-	UpdatedAt       pgtype.Timestamp
+	ID              pgtype.UUID      `json:"id"`
+	Username        pgtype.Text      `json:"username"`
+	Email           string           `json:"email"`
+	PasswordHash    pgtype.Text      `json:"password_hash"`
+	IsEmailVerified bool             `json:"is_email_verified"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
 }
 
 type Verifyemail struct {
-	ID         int64
-	Email      string
-	SecretCode string
-	IsUsed     bool
-	CreatedAt  pgtype.Timestamp
-	ExpiredAt  pgtype.Timestamp
+	ID         int64            `json:"id"`
+	Email      string           `json:"email"`
+	SecretCode string           `json:"secret_code"`
+	IsUsed     bool             `json:"is_used"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	ExpiredAt  pgtype.Timestamp `json:"expired_at"`
 }

@@ -21,13 +21,13 @@ RETURNING id, user_id, platform, account_name, account_email, access_token, id_t
 `
 
 type CreateSocialAccountParams struct {
-	UserID         pgtype.UUID
-	Platform       string
-	AccountName    string
-	AccountEmail   string
-	AccessToken    string
-	IDToken        string
-	TokenExpiresAt pgtype.Timestamp
+	UserID         pgtype.UUID      `json:"user_id"`
+	Platform       string           `json:"platform"`
+	AccountName    string           `json:"account_name"`
+	AccountEmail   string           `json:"account_email"`
+	AccessToken    string           `json:"access_token"`
+	IDToken        string           `json:"id_token"`
+	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
 }
 
 func (q *Queries) CreateSocialAccount(ctx context.Context, arg CreateSocialAccountParams) (Socialaccount, error) {
@@ -87,11 +87,11 @@ WHERE id = $1
 `
 
 type GetSocialAccountByIDRow struct {
-	Platform       string
-	AccountName    string
-	AccessToken    string
-	TokenExpiresAt pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
+	Platform       string           `json:"platform"`
+	AccountName    string           `json:"account_name"`
+	AccessToken    string           `json:"access_token"`
+	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
+	UpdatedAt      pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (GetSocialAccountByIDRow, error) {
@@ -116,19 +116,19 @@ LIMIT $2 OFFSET $3
 `
 
 type ListSocialAccountsByUserIDParams struct {
-	UserID pgtype.UUID
-	Limit  int32
-	Offset int32
+	UserID pgtype.UUID `json:"user_id"`
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
 }
 
 type ListSocialAccountsByUserIDRow struct {
-	ID             pgtype.UUID
-	UserID         pgtype.UUID
-	Platform       string
-	AccountName    string
-	TokenExpiresAt pgtype.Timestamp
-	CreatedAt      pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
+	ID             pgtype.UUID      `json:"id"`
+	UserID         pgtype.UUID      `json:"user_id"`
+	Platform       string           `json:"platform"`
+	AccountName    string           `json:"account_name"`
+	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
+	CreatedAt      pgtype.Timestamp `json:"created_at"`
+	UpdatedAt      pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) ListSocialAccountsByUserID(ctx context.Context, arg ListSocialAccountsByUserIDParams) ([]ListSocialAccountsByUserIDRow, error) {
@@ -170,10 +170,10 @@ RETURNING id, user_id, platform, account_name, account_email, access_token, id_t
 `
 
 type UpdateSocialAccountParams struct {
-	ID          pgtype.UUID
-	Platform    string
-	AccountName string
-	AccessToken string
+	ID          pgtype.UUID `json:"id"`
+	Platform    string      `json:"platform"`
+	AccountName string      `json:"account_name"`
+	AccessToken string      `json:"access_token"`
 }
 
 func (q *Queries) UpdateSocialAccount(ctx context.Context, arg UpdateSocialAccountParams) (Socialaccount, error) {
@@ -210,10 +210,10 @@ RETURNING id, user_id, platform, account_name, account_email, access_token, id_t
 `
 
 type UpdateSocialAccountTokenParams struct {
-	UserID         pgtype.UUID
-	AccessToken    string
-	IDToken        string
-	TokenExpiresAt pgtype.Timestamp
+	UserID         pgtype.UUID      `json:"user_id"`
+	AccessToken    string           `json:"access_token"`
+	IDToken        string           `json:"id_token"`
+	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
 }
 
 func (q *Queries) UpdateSocialAccountToken(ctx context.Context, arg UpdateSocialAccountTokenParams) (Socialaccount, error) {

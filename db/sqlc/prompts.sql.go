@@ -21,8 +21,8 @@ RETURNING id, user_id, text, created_at, updated_at
 `
 
 type CreatePromptParams struct {
-	UserID pgtype.UUID
-	Text   string
+	UserID pgtype.UUID `json:"user_id"`
+	Text   string      `json:"text"`
 }
 
 func (q *Queries) CreatePrompt(ctx context.Context, arg CreatePromptParams) (Prompt, error) {
@@ -84,8 +84,8 @@ LIMIT 1
 `
 
 type GetPromptByUserIDAndTextParams struct {
-	UserID pgtype.UUID
-	Text   string
+	UserID pgtype.UUID `json:"user_id"`
+	Text   string      `json:"text"`
 }
 
 func (q *Queries) GetPromptByUserIDAndText(ctx context.Context, arg GetPromptByUserIDAndTextParams) (Prompt, error) {
@@ -110,9 +110,9 @@ LIMIT $2 OFFSET $3
 `
 
 type ListPromptsByUserIDParams struct {
-	UserID pgtype.UUID
-	Limit  int32
-	Offset int32
+	UserID pgtype.UUID `json:"user_id"`
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
 }
 
 func (q *Queries) ListPromptsByUserID(ctx context.Context, arg ListPromptsByUserIDParams) ([]Prompt, error) {
@@ -150,8 +150,8 @@ RETURNING id, user_id, text, created_at, updated_at
 `
 
 type UpdatePromptParams struct {
-	ID   pgtype.UUID
-	Text string
+	ID   pgtype.UUID `json:"id"`
+	Text string      `json:"text"`
 }
 
 func (q *Queries) UpdatePrompt(ctx context.Context, arg UpdatePromptParams) (Prompt, error) {

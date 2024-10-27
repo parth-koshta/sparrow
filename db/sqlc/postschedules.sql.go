@@ -21,10 +21,10 @@ RETURNING id, user_id, post_id, scheduled_time, executed_time, status, created_a
 `
 
 type CreatePostScheduleParams struct {
-	UserID        pgtype.UUID
-	PostID        pgtype.UUID
-	ScheduledTime pgtype.Timestamp
-	Status        string
+	UserID        pgtype.UUID      `json:"user_id"`
+	PostID        pgtype.UUID      `json:"post_id"`
+	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
+	Status        string           `json:"status"`
 }
 
 func (q *Queries) CreatePostSchedule(ctx context.Context, arg CreatePostScheduleParams) (Postschedule, error) {
@@ -77,13 +77,13 @@ WHERE id = $1
 `
 
 type GetPostScheduleByIDRow struct {
-	ID            pgtype.UUID
-	UserID        pgtype.UUID
-	PostID        pgtype.UUID
-	ScheduledTime pgtype.Timestamp
-	Status        string
-	CreatedAt     pgtype.Timestamp
-	UpdatedAt     pgtype.Timestamp
+	ID            pgtype.UUID      `json:"id"`
+	UserID        pgtype.UUID      `json:"user_id"`
+	PostID        pgtype.UUID      `json:"post_id"`
+	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
+	Status        string           `json:"status"`
+	CreatedAt     pgtype.Timestamp `json:"created_at"`
+	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) GetPostScheduleByID(ctx context.Context, id pgtype.UUID) (GetPostScheduleByIDRow, error) {
@@ -110,19 +110,19 @@ LIMIT $2 OFFSET $3
 `
 
 type ListPostSchedulesByUserIDParams struct {
-	UserID pgtype.UUID
-	Limit  int32
-	Offset int32
+	UserID pgtype.UUID `json:"user_id"`
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
 }
 
 type ListPostSchedulesByUserIDRow struct {
-	ID            pgtype.UUID
-	UserID        pgtype.UUID
-	PostID        pgtype.UUID
-	ScheduledTime pgtype.Timestamp
-	Status        string
-	CreatedAt     pgtype.Timestamp
-	UpdatedAt     pgtype.Timestamp
+	ID            pgtype.UUID      `json:"id"`
+	UserID        pgtype.UUID      `json:"user_id"`
+	PostID        pgtype.UUID      `json:"post_id"`
+	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
+	Status        string           `json:"status"`
+	CreatedAt     pgtype.Timestamp `json:"created_at"`
+	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) ListPostSchedulesByUserID(ctx context.Context, arg ListPostSchedulesByUserIDParams) ([]ListPostSchedulesByUserIDRow, error) {
@@ -163,9 +163,9 @@ RETURNING id, user_id, post_id, scheduled_time, executed_time, status, created_a
 `
 
 type UpdatePostScheduleParams struct {
-	ID            pgtype.UUID
-	ScheduledTime pgtype.Timestamp
-	Status        string
+	ID            pgtype.UUID      `json:"id"`
+	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
+	Status        string           `json:"status"`
 }
 
 func (q *Queries) UpdatePostSchedule(ctx context.Context, arg UpdatePostScheduleParams) (Postschedule, error) {

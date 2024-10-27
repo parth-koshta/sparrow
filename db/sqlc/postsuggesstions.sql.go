@@ -19,15 +19,15 @@ RETURNING id, prompt_id, text, created_at
 `
 
 type BulkCreatePostSuggestionsParams struct {
-	PromptID    pgtype.UUID
-	Suggestions []string
+	PromptID    pgtype.UUID `json:"prompt_id"`
+	Suggestions []string    `json:"suggestions"`
 }
 
 type BulkCreatePostSuggestionsRow struct {
-	ID        pgtype.UUID
-	PromptID  pgtype.UUID
-	Text      string
-	CreatedAt pgtype.Timestamp
+	ID        pgtype.UUID      `json:"id"`
+	PromptID  pgtype.UUID      `json:"prompt_id"`
+	Text      string           `json:"text"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
 }
 
 func (q *Queries) BulkCreatePostSuggestions(ctx context.Context, arg BulkCreatePostSuggestionsParams) ([]BulkCreatePostSuggestionsRow, error) {
@@ -65,8 +65,8 @@ RETURNING id, prompt_id, text, created_at, updated_at
 `
 
 type CreatePostSuggestionParams struct {
-	PromptID pgtype.UUID
-	Text     string
+	PromptID pgtype.UUID `json:"prompt_id"`
+	Text     string      `json:"text"`
 }
 
 func (q *Queries) CreatePostSuggestion(ctx context.Context, arg CreatePostSuggestionParams) (Postsuggestion, error) {
@@ -129,9 +129,9 @@ LIMIT $2 OFFSET $3
 `
 
 type ListPostSuggestionsByPromptIDParams struct {
-	PromptID pgtype.UUID
-	Limit    int32
-	Offset   int32
+	PromptID pgtype.UUID `json:"prompt_id"`
+	Limit    int32       `json:"limit"`
+	Offset   int32       `json:"offset"`
 }
 
 func (q *Queries) ListPostSuggestionsByPromptID(ctx context.Context, arg ListPostSuggestionsByPromptIDParams) ([]Postsuggestion, error) {
@@ -169,8 +169,8 @@ RETURNING id, prompt_id, text, created_at, updated_at
 `
 
 type UpdatePostSuggestionParams struct {
-	ID   pgtype.UUID
-	Text string
+	ID   pgtype.UUID `json:"id"`
+	Text string      `json:"text"`
 }
 
 func (q *Queries) UpdatePostSuggestion(ctx context.Context, arg UpdatePostSuggestionParams) (Postsuggestion, error) {

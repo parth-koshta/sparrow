@@ -21,8 +21,8 @@ RETURNING id, username, email, password_hash, is_email_verified, created_at, upd
 `
 
 type CreateUserParams struct {
-	Email        string
-	PasswordHash pgtype.Text
+	Email        string      `json:"email"`
+	PasswordHash pgtype.Text `json:"password_hash"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -47,12 +47,12 @@ WHERE email = $1
 `
 
 type GetUserByEmailRow struct {
-	ID           pgtype.UUID
-	Username     pgtype.Text
-	Email        string
-	PasswordHash pgtype.Text
-	CreatedAt    pgtype.Timestamp
-	UpdatedAt    pgtype.Timestamp
+	ID           pgtype.UUID      `json:"id"`
+	Username     pgtype.Text      `json:"username"`
+	Email        string           `json:"email"`
+	PasswordHash pgtype.Text      `json:"password_hash"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
@@ -76,11 +76,11 @@ WHERE id = $1
 `
 
 type GetUserByIDRow struct {
-	ID        pgtype.UUID
-	Username  pgtype.Text
-	Email     string
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+	ID        pgtype.UUID      `json:"id"`
+	Username  pgtype.Text      `json:"username"`
+	Email     string           `json:"email"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error) {
@@ -104,17 +104,17 @@ LIMIT $1 OFFSET $2
 `
 
 type ListUsersParams struct {
-	Limit  int32
-	Offset int32
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
 type ListUsersRow struct {
-	ID           pgtype.UUID
-	Username     pgtype.Text
-	Email        string
-	PasswordHash pgtype.Text
-	CreatedAt    pgtype.Timestamp
-	UpdatedAt    pgtype.Timestamp
+	ID           pgtype.UUID      `json:"id"`
+	Username     pgtype.Text      `json:"username"`
+	Email        string           `json:"email"`
+	PasswordHash pgtype.Text      `json:"password_hash"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error) {
@@ -157,10 +157,10 @@ RETURNING id, username, email, password_hash, is_email_verified, created_at, upd
 `
 
 type UpdateUserParams struct {
-	PasswordHash    pgtype.Text
-	Username        pgtype.Text
-	Email           pgtype.Text
-	IsEmailVerified pgtype.Bool
+	PasswordHash    pgtype.Text `json:"password_hash"`
+	Username        pgtype.Text `json:"username"`
+	Email           pgtype.Text `json:"email"`
+	IsEmailVerified pgtype.Bool `json:"is_email_verified"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
