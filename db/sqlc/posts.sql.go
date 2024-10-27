@@ -21,10 +21,10 @@ RETURNING id, user_id, suggestion_id, text, status, created_at, updated_at
 `
 
 type CreatePostParams struct {
-	UserID       pgtype.UUID
-	SuggestionID pgtype.UUID
-	Text         string
-	Status       string
+	UserID       pgtype.UUID `json:"user_id"`
+	SuggestionID pgtype.UUID `json:"suggestion_id"`
+	Text         string      `json:"text"`
+	Status       string      `json:"status"`
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
@@ -75,12 +75,12 @@ WHERE id = $1
 `
 
 type GetPostByIDRow struct {
-	ID           pgtype.UUID
-	UserID       pgtype.UUID
-	SuggestionID pgtype.UUID
-	Text         string
-	CreatedAt    pgtype.Timestamp
-	UpdatedAt    pgtype.Timestamp
+	ID           pgtype.UUID      `json:"id"`
+	UserID       pgtype.UUID      `json:"user_id"`
+	SuggestionID pgtype.UUID      `json:"suggestion_id"`
+	Text         string           `json:"text"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) GetPostByID(ctx context.Context, id pgtype.UUID) (GetPostByIDRow, error) {
@@ -106,18 +106,18 @@ LIMIT $2 OFFSET $3
 `
 
 type ListPostsByUserIDParams struct {
-	UserID pgtype.UUID
-	Limit  int32
-	Offset int32
+	UserID pgtype.UUID `json:"user_id"`
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
 }
 
 type ListPostsByUserIDRow struct {
-	ID           pgtype.UUID
-	UserID       pgtype.UUID
-	SuggestionID pgtype.UUID
-	Text         string
-	CreatedAt    pgtype.Timestamp
-	UpdatedAt    pgtype.Timestamp
+	ID           pgtype.UUID      `json:"id"`
+	UserID       pgtype.UUID      `json:"user_id"`
+	SuggestionID pgtype.UUID      `json:"suggestion_id"`
+	Text         string           `json:"text"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
 }
 
 func (q *Queries) ListPostsByUserID(ctx context.Context, arg ListPostsByUserIDParams) ([]ListPostsByUserIDRow, error) {
@@ -156,8 +156,8 @@ RETURNING id, user_id, suggestion_id, text, status, created_at, updated_at
 `
 
 type UpdatePostParams struct {
-	ID   pgtype.UUID
-	Text string
+	ID   pgtype.UUID `json:"id"`
+	Text string      `json:"text"`
 }
 
 func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {

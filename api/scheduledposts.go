@@ -11,7 +11,7 @@ import (
 
 type CreateScheduledPostRequest struct {
 	UserID        string           `json:"user_id" binding:"required,uuid"`
-	DraftID       string           `json:"draft_id" binding:"required,uuid"`
+	PostID        string           `json:"post_id" binding:"required,uuid"`
 	ScheduledTime pgtype.Timestamp `json:"scheduled_time" binding:"required"`
 	Status        string           `json:"status" binding:"required"`
 }
@@ -29,20 +29,20 @@ func (server *Server) CreateScheduledPost(ctx *gin.Context) {
 		return
 	}
 
-	draftID, err := uuid.Parse(req.DraftID)
+	PostID, err := uuid.Parse(req.PostID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	arg := db.CreateScheduledPostParams{
+	arg := db.CreatePostScheduleParams{
 		UserID:        pgtype.UUID{Bytes: userID, Valid: true},
-		DraftID:       pgtype.UUID{Bytes: draftID, Valid: true},
+		PostID:        pgtype.UUID{Bytes: PostID, Valid: true},
 		ScheduledTime: req.ScheduledTime,
 		Status:        req.Status,
 	}
 
-	scheduledPost, err := server.store.CreateScheduledPost(ctx, arg)
+	scheduledPost, err := server.store.CreatePostSchedule(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -68,7 +68,7 @@ func (server *Server) GetScheduledPost(ctx *gin.Context) {
 		return
 	}
 
-	scheduledPost, err := server.store.GetScheduledPostByID(ctx, pgtype.UUID{Bytes: postID, Valid: true})
+	scheduledPost, err := server.store.GetPostScheduleByID(ctx, pgtype.UUID{Bytes: postID, Valid: true})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -99,7 +99,7 @@ func (server *Server) ListScheduledPostsByUserID(ctx *gin.Context) {
 	limit := req.PageSize
 	offset := (req.Page - 1) * req.PageSize
 
-	scheduledPosts, err := server.store.ListScheduledPostsByUserID(ctx, db.ListScheduledPostsByUserIDParams{
+	scheduledPosts, err := server.store.ListPostSchedulesByUserID(ctx, db.ListPostSchedulesByUserIDParams{
 		UserID: pgtype.UUID{Bytes: userID, Valid: true},
 		Limit:  limit,
 		Offset: offset,
@@ -132,13 +132,13 @@ func (server *Server) UpdateScheduledPost(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.UpdateScheduledPostParams{
+	arg := db.UpdatePostScheduleParams{
 		ID:            pgtype.UUID{Bytes: postID, Valid: true},
 		ScheduledTime: req.ScheduledTime,
 		Status:        req.Status,
 	}
 
-	scheduledPost, err := server.store.UpdateScheduledPost(ctx, arg)
+	scheduledPost, err := server.store.UpdatePostSchedule(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -164,7 +164,7 @@ func (server *Server) DeleteScheduledPost(ctx *gin.Context) {
 		return
 	}
 
-	_, err = server.store.DeleteScheduledPost(ctx, pgtype.UUID{Bytes: postID, Valid: true})
+	_, err = server.store.DeletePostSchedule(ctx, pgtype.UUID{Bytes: postID, Valid: true})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

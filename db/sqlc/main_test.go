@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"testing"
@@ -12,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/parth-koshta/sparrow/util"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/require"
 )
 
@@ -40,13 +40,13 @@ func TestMain(m *testing.M) {
 	// Connect to the main database to create a test database
 	mainConn, err := pgxpool.New(ctx, dbSource+"postgres?sslmode=disable")
 	if err != nil {
-		log.Fatal("cannot connect to main db: ", err)
+		log.Error().Err(err).Msg("cannot connect to main db")
 	}
 
 	// Create the test database
 	_, err = mainConn.Exec(ctx, fmt.Sprintf("CREATE DATABASE %s", testDBName))
 	if err != nil {
-		log.Fatal("cannot create test db: ", err)
+		log.Error().Err(err).Msg("cannot create test db")
 	}
 
 	// Close the main connection
@@ -55,14 +55,14 @@ func TestMain(m *testing.M) {
 	// Connect to the test database
 	testDBPool, err = pgxpool.New(ctx, dbSource+testDBName+"?sslmode=disable")
 	if err != nil {
-		log.Fatal("cannot connect to test db: ", err)
+		log.Error().Err(err).Msg("cannot connect to test db")
 	}
 
 	testQueries = New(testDBPool)
 
 	// Run migrations on the test database
 	if err := runMigrations(testDBName); err != nil {
-		log.Fatal("failed to run migrations: ", err)
+		log.Error().Err(err).Msg("failed to run migrations")
 	}
 
 	// Run tests
@@ -72,11 +72,11 @@ func TestMain(m *testing.M) {
 	testDBPool.Close()
 	mainConn, err = pgxpool.New(ctx, dbSource+"postgres?sslmode=disable")
 	if err != nil {
-		log.Fatal("cannot connect to main db for cleanup: ", err)
+		log.Error().Err(err).Msg("cannot connect to main db for cleanup")
 	}
 	_, err = mainConn.Exec(ctx, fmt.Sprintf("DROP DATABASE %s", testDBName))
 	if err != nil {
-		log.Fatal("cannot drop test db: ", err)
+		log.Error().Err(err).Msg("cannot drop test db")
 	}
 	mainConn.Close()
 
@@ -145,14 +145,14 @@ func createRandomDraft(t *testing.T, testQueries *Queries, userID pgtype.UUID, s
 	return draft
 }
 
-func createRandomScheduledPost(t *testing.T, testQueries *Queries, userID pgtype.UUID, draftID pgtype.UUID) Scheduledpost {
-	arg := CreateScheduledPostParams{
+func createRandomScheduledPost(t *testing.T, testQueries *Queries, userID pgtype.UUID, draftID pgtype.UUID) Postschedule {
+	arg := CreatePostScheduleParams{
 		UserID:        userID,
-		DraftID:       draftID,
+		PostID:        draftID,
 		ScheduledTime: pgtype.Timestamp{Time: time.Now().Add(24 * time.Hour), Valid: true},
 		Status:        "scheduled",
 	}
-	post, err := testQueries.CreateScheduledPost(context.Background(), arg)
+	post, err := testQueries.CreatePostSchedule(context.Background(), arg)
 	require.NoError(t, err)
 	return post
 }

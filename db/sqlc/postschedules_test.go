@@ -24,21 +24,21 @@ func TestCreateScheduledPost(t *testing.T) {
 		}
 
 		// Prepare the argument for creating a scheduled post
-		arg := CreateScheduledPostParams{
+		arg := CreatePostScheduleParams{
 			UserID:        user.ID,
-			DraftID:       draft.ID,
+			PostID:        draft.ID,
 			ScheduledTime: scheduledTime,
 			Status:        "scheduled",
 		}
 
 		// Create the scheduled post
-		scheduledPost, err := testQueries.CreateScheduledPost(context.Background(), arg)
+		scheduledPost, err := testQueries.CreatePostSchedule(context.Background(), arg)
 		require.NoError(t, err)
 		require.NotEmpty(t, scheduledPost)
 
 		// Validate the properties of the created scheduled post
 		require.Equal(t, arg.UserID, scheduledPost.UserID)
-		require.Equal(t, arg.DraftID, scheduledPost.DraftID)
+		require.Equal(t, arg.PostID, scheduledPost.PostID)
 		require.True(t, scheduledPost.ScheduledTime.Valid)
 
 		// Use the scheduledTime for comparison
@@ -56,17 +56,17 @@ func TestListScheduledPostsByUserID(t *testing.T) {
 			createRandomScheduledPost(t, testQueries, user.ID, draft.ID)
 		}
 
-		arg := ListScheduledPostsByUserIDParams{
+		arg := ListPostSchedulesByUserIDParams{
 			UserID: user.ID,
 			Limit:  3,
 			Offset: 0,
 		}
-		posts, err := testQueries.ListScheduledPostsByUserID(context.Background(), arg)
+		posts, err := testQueries.ListPostSchedulesByUserID(context.Background(), arg)
 		require.NoError(t, err)
 		require.Len(t, posts, 3)
 
 		arg.Offset = 3
-		posts, err = testQueries.ListScheduledPostsByUserID(context.Background(), arg)
+		posts, err = testQueries.ListPostSchedulesByUserID(context.Background(), arg)
 		require.NoError(t, err)
 		require.Len(t, posts, 2)
 	})

@@ -11,6 +11,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    ports:
+      - "5432:5432"
+    volumes:
+      - data-volume:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   api:
     build:
       context: .
@@ -20,6 +31,14 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - DB_SOURCE=postgresql://root:secret@postgres:5432/sparrow-dev?sslmode=disable
-      - GIN_MODE=release
+      - GIN_MODE=debug
+      - REDIS_ADDRESS=redis:6379
+    entrypoint:
+      [ "/app/start.sh" ]
+    command: [ "/app/main" ]
+volumes:
+  data-volume:

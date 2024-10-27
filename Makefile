@@ -5,6 +5,9 @@ DB_SOURCE=postgresql://root:secret@localhost:5432/sparrow-dev?sslmode=disable
 postgres:
 	docker run --name $(POSTGRES_CONTAINER) --network=sparrow-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
 
+redis:
+	docker run --name redis -p 6379:6379 -d redis:7-alpine
+
 createdb:
 	docker exec -it $(POSTGRES_CONTAINER) createdb --username=root --owner=root sparrow-dev
 
@@ -39,11 +42,11 @@ sqlc:
 	sqlc generate
 
 dumpschema:
-	docker exec -it postgres16 pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev
-	docker cp postgres16:/tmp/schema.sql db/schema.sql
+	docker exec -it $(POSTGRES_CONTAINER) pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev
+	docker cp $(POSTGRES_CONTAINER):/tmp/schema.sql db/schema.sql
 
 test:
-	go test -v -cover -timeout 30s ./...
+	go test -v -cover -timeout 30s -short ./...
 
 server:
 	go run main.go
@@ -54,4 +57,4 @@ mock:
 generate:
 	make sqlc; make dumpschema; make mock
 
-.PHONY: postgres createdb dropdb migratecreate migrateup migratedown sqlc test server mock generate
+.PHONY: postgres createdb dropdb migratecreate migrateup migratedown sqlc test server mock generate redis

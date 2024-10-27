@@ -1,26 +1,35 @@
 package api
 
 import (
-	"github.com/getsentry/sentry-go"
-	sentrygin "github.com/getsentry/sentry-go/gin"
-	"github.com/gin-gonic/gin"
+	"context"
+	"errors"
+	"net/http"
+	"time"
 
+	"github.com/getsentry/sentry-go"
+	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
+
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/parth-koshta/sparrow/client"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/token"
 	"github.com/parth-koshta/sparrow/util"
+	"github.com/parth-koshta/sparrow/worker"
 )
 
 type Server struct {
-	store          db.Store
-	tokenMaker     token.Maker
-	config         util.Config
-	router         *gin.Engine
-	linkedinClient *client.LinkedinClient
-	openaiClient   *client.OpenAIClient
+	store           db.Store
+	tokenMaker      token.Maker
+	config          util.Config
+	router          *gin.Engine
+	httpServer      *http.Server
+	linkedinClient  *client.LinkedinClient
+	openaiClient    *client.OpenAIClient
+	taskDistributor worker.TaskDistributor
 }
 
-func NewServer(store db.Store, config util.Config) (*Server, error) {
+func NewServer(store db.Store, config util.Config, taskDistributor worker.TaskDistributor) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, err
@@ -29,7 +38,7 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 	linkedinClient := client.NewLinkedInClient(config.LinkedInClientID, config.LinkedInClientSecret)
 	openaiClient := client.NewOpenAIClient(config.OpenAIApiKey)
 
-	server := &Server{store: store, tokenMaker: tokenMaker, config: config, linkedinClient: linkedinClient, openaiClient: openaiClient}
+	server := &Server{store: store, tokenMaker: tokenMaker, config: config, linkedinClient: linkedinClient, openaiClient: openaiClient, taskDistributor: taskDistributor}
 
 	err = server.initializeSentry()
 	if err != nil {
@@ -38,22 +47,28 @@ func NewServer(store db.Store, config util.Config) (*Server, error) {
 
 	server.setupRouter()
 
+	server.httpServer = &http.Server{
+		Addr:    config.ServerAddress,
+		Handler: server.router,
+	}
+
 	return server, nil
 }
 
 func (server *Server) setupRouter() {
 	router := gin.Default()
-
 	router.Use(sentrygin.New(sentrygin.Options{Repanic: true}))
+	router.Use(LoggerMiddleware)
 
 	router.GET("/", server.HealthCheck)
 
-	router.POST("/users/login", server.LoginUser)
-	router.POST("/users", server.CreateUser)
+	router.POST("/v1/users/login", server.LoginUser)
+	router.POST("/v1/users", server.CreateUser)
+	router.GET("/v1/users/verify/email", server.VerifyUserEmail)
 
 	authenticatedRouter := router.Group("/").Use(AuthMiddleware(server.tokenMaker))
-	authenticatedRouter.GET("/users", server.ListUsers)
-	authenticatedRouter.GET("/users/:id", server.GetUser)
+	authenticatedRouter.GET("/v1/users", server.ListUsers)
+	authenticatedRouter.GET("/v1/users/:id", server.GetUser)
 
 	// authenticatedRouter.POST("/drafts", server.CreateDraft)
 	// authenticatedRouter.GET("/drafts/:id", server.GetDraft)
@@ -61,36 +76,55 @@ func (server *Server) setupRouter() {
 	// authenticatedRouter.DELETE("/drafts/:id", server.DeleteDraft)
 	// authenticatedRouter.GET("/drafts/user/:id", server.ListDraftsByUserID)
 
-	authenticatedRouter.POST("/prompts", server.CreatePrompt)
-	authenticatedRouter.GET("/prompts/:id", server.GetPrompt)
-	authenticatedRouter.PUT("/prompts/:id", server.UpdatePrompt)
-	authenticatedRouter.DELETE("/prompts/:id", server.DeletePrompt)
-	authenticatedRouter.GET("/prompts/user/:id", server.ListPromptsByUserID)
+	authenticatedRouter.POST("/v1/prompts", server.CreatePrompt)
+	authenticatedRouter.GET("/v1/prompts/:id", server.GetPrompt)
+	authenticatedRouter.PUT("/v1/prompts/:id", server.UpdatePrompt)
+	authenticatedRouter.DELETE("/v1/prompts/:id", server.DeletePrompt)
+	authenticatedRouter.GET("/v1/prompts/user/:id", server.ListPromptsByUserID)
 
-	authenticatedRouter.POST("/suggestions", server.CreatePostSuggestion)
-	authenticatedRouter.GET("/suggestions/:id", server.GetPostSuggestion)
-	authenticatedRouter.PUT("/suggestions/:id", server.UpdatePostSuggestion)
-	authenticatedRouter.DELETE("/suggestions/:id", server.DeletePostSuggestion)
-	authenticatedRouter.GET("/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
-	authenticatedRouter.POST("/suggestions/ai", server.GetAISuggestionsByPrompt)
+	authenticatedRouter.POST("/v1/suggestions", server.CreatePostSuggestion)
+	authenticatedRouter.GET("/v1/suggestions/:id", server.GetPostSuggestion)
+	authenticatedRouter.PUT("/v1/suggestions/:id", server.UpdatePostSuggestion)
+	authenticatedRouter.DELETE("/v1/suggestions/:id", server.DeletePostSuggestion)
+	authenticatedRouter.GET("/v1/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
+	authenticatedRouter.POST("/v1/suggestions/ai", server.GetAISuggestionsByPrompt)
 
-	authenticatedRouter.GET("/socialaccounts/:id", server.GetSocialAccount)
-	authenticatedRouter.DELETE("/socialaccounts/:id", server.DeleteSocialAccount)
-	authenticatedRouter.GET("/socialaccounts/user/:id", server.ListSocialAccountsByUserID)
-	authenticatedRouter.POST("/socialaccounts/linkedin", server.AddLinkedInAccount)
-	authenticatedRouter.PUT("/socialaccounts/accesstoken/linkedin", server.UpdateLinkedInAccessToken)
+	authenticatedRouter.GET("/v1/socialaccounts/:id", server.GetSocialAccount)
+	authenticatedRouter.DELETE("/v1/socialaccounts/:id", server.DeleteSocialAccount)
+	authenticatedRouter.GET("/v1/socialaccounts/user/:id", server.ListSocialAccountsByUserID)
+	authenticatedRouter.POST("/v1/socialaccounts/linkedin", server.AddLinkedInAccount)
+	authenticatedRouter.PUT("/v1/socialaccounts/accesstoken/linkedin", server.UpdateLinkedInAccessToken)
 
-	authenticatedRouter.POST("/posts", server.CreateScheduledPost)
-	authenticatedRouter.GET("/posts/:id", server.GetScheduledPost)
-	authenticatedRouter.PUT("/posts/:id", server.UpdateScheduledPost)
-	authenticatedRouter.DELETE("/posts/:id", server.DeleteScheduledPost)
-	authenticatedRouter.GET("/posts/user/:id", server.ListScheduledPostsByUserID)
+	authenticatedRouter.POST("/v1/schedules", server.CreateScheduledPost)
+	authenticatedRouter.GET("/v1/schedules/:id", server.GetScheduledPost)
+	authenticatedRouter.PUT("/v1/schedules/:id", server.UpdateScheduledPost)
+	authenticatedRouter.DELETE("/v1/schedules/:id", server.DeleteScheduledPost)
+	authenticatedRouter.GET("/v1/schedules/user/:id", server.ListScheduledPostsByUserID)
 
 	server.router = router
 }
 
 func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+	err := server.httpServer.ListenAndServe()
+	if err != nil {
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+		log.Error().Err(err).Msg("HTTP server failed to serve")
+		return err
+	}
+	return nil
+}
+
+func (server *Server) Stop(ctx context.Context) error {
+	shutdownCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	if err := server.httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Error().Err(err).Msg("server shutdown error")
+		return err
+	}
+	return nil
 }
 
 func errorResponse(err error) gin.H {

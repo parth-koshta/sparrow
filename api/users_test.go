@@ -44,7 +44,7 @@ func TestGetUserApi(t *testing.T) {
 	mockStore.On("GetUserByID", mock.Anything, testPgxUUID).Return(expectedUserRow, nil)
 
 	// Create a test request
-	req, err := http.NewRequest(http.MethodGet, "/users/"+testUUID.String(), nil)
+	req, err := http.NewRequest(http.MethodGet, "/v1/users/"+testUUID.String(), nil)
 	// set auth header
 	addAuthorization(t, req, server.tokenMaker, AUTHORIZATION_TYPE_BEARER, testPgxUUID, "user", server.config.AccessTokenDuration)
 	require.NoError(t, err)
