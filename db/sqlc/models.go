@@ -18,6 +18,17 @@ type Post struct {
 	UpdatedAt    pgtype.Timestamp
 }
 
+type Postschedule struct {
+	ID            pgtype.UUID
+	UserID        pgtype.UUID
+	PostID        pgtype.UUID
+	ScheduledTime pgtype.Timestamp
+	ExecutedTime  pgtype.Timestamp
+	Status        string
+	CreatedAt     pgtype.Timestamp
+	UpdatedAt     pgtype.Timestamp
+}
+
 type Postsuggestion struct {
 	ID        pgtype.UUID
 	PromptID  pgtype.UUID
@@ -32,16 +43,6 @@ type Prompt struct {
 	Text      string
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
-}
-
-type Scheduledpost struct {
-	ID            pgtype.UUID
-	UserID        pgtype.UUID
-	DraftID       pgtype.UUID
-	ScheduledTime pgtype.Timestamp
-	Status        string
-	CreatedAt     pgtype.Timestamp
-	UpdatedAt     pgtype.Timestamp
 }
 
 type Socialaccount struct {

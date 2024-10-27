@@ -56,12 +56,13 @@ CREATE TABLE IF NOT EXISTS Posts (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- Create ScheduledPosts table
-CREATE TABLE IF NOT EXISTS ScheduledPosts (
+-- Create PostSchedules table
+CREATE TABLE IF NOT EXISTS PostSchedules (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES Users(id) ON DELETE CASCADE,
-    draft_id UUID NOT NULL REFERENCES Posts(id) ON DELETE CASCADE,
+    post_id UUID NOT NULL REFERENCES Posts(id) ON DELETE CASCADE,
     scheduled_time TIMESTAMP NOT NULL,
+    executed_time TIMESTAMP,
     status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -70,7 +71,7 @@ CREATE TABLE IF NOT EXISTS ScheduledPosts (
 -- Create VerifyEmails table
 CREATE TABLE IF NOT EXISTS VerifyEmails (
     id BIGSERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL REFERENCES Users(email) ON DELETE CASCADE,
     secret_code VARCHAR(255) NOT NULL,
     is_used BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -99,11 +100,11 @@ CREATE INDEX IF NOT EXISTS idx_posts_user_id ON Posts (user_id);
 CREATE INDEX IF NOT EXISTS idx_posts_suggestion_id ON Posts (suggestion_id);
 CREATE INDEX IF NOT EXISTS idx_posts_status ON Posts (status);
 
--- Create indexes for ScheduledPosts table
-CREATE INDEX IF NOT EXISTS idx_scheduledposts_user_id ON ScheduledPosts (user_id);
-CREATE INDEX IF NOT EXISTS idx_scheduledposts_draft_id ON ScheduledPosts (draft_id);
-CREATE INDEX IF NOT EXISTS idx_scheduledposts_scheduled_time ON ScheduledPosts (scheduled_time);
-CREATE INDEX IF NOT EXISTS idx_scheduledposts_status ON ScheduledPosts (status);
+-- Create indexes for PostSchedules table
+CREATE INDEX IF NOT EXISTS idx_postschedules_user_id ON PostSchedules (user_id);
+CREATE INDEX IF NOT EXISTS idx_postschedules_post_id ON PostSchedules (post_id);
+CREATE INDEX IF NOT EXISTS idx_postschedules_scheduled_time ON PostSchedules (scheduled_time);
+CREATE INDEX IF NOT EXISTS idx_postschedules_status ON PostSchedules (status);
 
 -- Create indexes for VerifyEmails table
 CREATE INDEX IF NOT EXISTS idx_verifyemails_email ON VerifyEmails (email);

@@ -145,14 +145,14 @@ func createRandomDraft(t *testing.T, testQueries *Queries, userID pgtype.UUID, s
 	return draft
 }
 
-func createRandomScheduledPost(t *testing.T, testQueries *Queries, userID pgtype.UUID, draftID pgtype.UUID) Scheduledpost {
-	arg := CreateScheduledPostParams{
+func createRandomScheduledPost(t *testing.T, testQueries *Queries, userID pgtype.UUID, draftID pgtype.UUID) Postschedule {
+	arg := CreatePostScheduleParams{
 		UserID:        userID,
-		DraftID:       draftID,
+		PostID:        draftID,
 		ScheduledTime: pgtype.Timestamp{Time: time.Now().Add(24 * time.Hour), Valid: true},
 		Status:        "scheduled",
 	}
-	post, err := testQueries.CreateScheduledPost(context.Background(), arg)
+	post, err := testQueries.CreatePostSchedule(context.Background(), arg)
 	require.NoError(t, err)
 	return post
 }

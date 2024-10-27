@@ -50,6 +50,22 @@ CREATE TABLE public.posts (
 
 
 --
+-- Name: postschedules; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.postschedules (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    post_id uuid NOT NULL,
+    scheduled_time timestamp without time zone NOT NULL,
+    executed_time timestamp without time zone,
+    status character varying(50) NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: postsuggestions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -182,6 +198,14 @@ ALTER TABLE ONLY public.posts
 
 
 --
+-- Name: postschedules postschedules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.postschedules
+    ADD CONSTRAINT postschedules_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: postsuggestions postsuggestions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -280,6 +304,34 @@ CREATE INDEX idx_posts_suggestion_id ON public.posts USING btree (suggestion_id)
 --
 
 CREATE INDEX idx_posts_user_id ON public.posts USING btree (user_id);
+
+
+--
+-- Name: idx_postschedules_post_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_postschedules_post_id ON public.postschedules USING btree (post_id);
+
+
+--
+-- Name: idx_postschedules_scheduled_time; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_postschedules_scheduled_time ON public.postschedules USING btree (scheduled_time);
+
+
+--
+-- Name: idx_postschedules_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_postschedules_status ON public.postschedules USING btree (status);
+
+
+--
+-- Name: idx_postschedules_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_postschedules_user_id ON public.postschedules USING btree (user_id);
 
 
 --
@@ -397,6 +449,22 @@ ALTER TABLE ONLY public.posts
 
 
 --
+-- Name: postschedules postschedules_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.postschedules
+    ADD CONSTRAINT postschedules_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: postschedules postschedules_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.postschedules
+    ADD CONSTRAINT postschedules_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: postsuggestions postsuggestions_prompt_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -434,6 +502,14 @@ ALTER TABLE ONLY public.scheduledposts
 
 ALTER TABLE ONLY public.socialaccounts
     ADD CONSTRAINT socialaccounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: verifyemails verifyemails_email_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.verifyemails
+    ADD CONSTRAINT verifyemails_email_fkey FOREIGN KEY (email) REFERENCES public.users(email) ON DELETE CASCADE;
 
 
 --
