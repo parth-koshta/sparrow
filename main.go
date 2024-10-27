@@ -66,7 +66,7 @@ func main() {
 
 func runTaskProcessor(ctx context.Context, waitGroup *errgroup.Group, redisOptions asynq.RedisClientOpt, store db.Store, config util.Config) {
 	mailer := mail.NewGmailSender(config.EmailSenderName, config.EmailSenderAddress, config.EmailSenderPassword)
-	taskProcessor := worker.NewRedisTaskProcessor(redisOptions, store, mailer)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOptions, store, mailer, config)
 
 	if err := taskProcessor.Start(); err != nil {
 		log.Error().Err(err).Msg("cannot start task processor")

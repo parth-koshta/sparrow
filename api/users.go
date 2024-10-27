@@ -206,3 +206,37 @@ func (server *Server) LoginUser(ctx *gin.Context) {
 		},
 	})
 }
+
+type VerifyUserEmailRequest struct {
+	Email      string `form:"email" binding:"required,min=6"`
+	SecretCode string `form:"secret_code" binding:"required"`
+}
+
+type VerifyUserEmailResponse struct {
+	IsVerified bool `json:"is_verified"`
+}
+
+func (server *Server) VerifyUserEmail(ctx *gin.Context) {
+	var req VerifyUserEmailRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	txResult, err := server.store.VerifyEmailTx(ctx, db.VerifyEmailTxParams{
+		EmailId:    req.Email,
+		SecretCode: req.SecretCode,
+	})
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := &VerifyUserEmailResponse{
+		IsVerified: txResult.User.IsEmailVerified,
+	}
+	ctx.JSON(http.StatusOK, rsp)
+}

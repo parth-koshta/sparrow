@@ -42,7 +42,7 @@ UPDATE verifyemails
 SET
     is_used = TRUE
 WHERE
-    id = $1
+    email = $1
     AND secret_code = $2
     AND is_used = FALSE
     AND expired_at > now()
@@ -50,12 +50,12 @@ RETURNING id, email, secret_code, is_used, created_at, expired_at
 `
 
 type UpdateVerifyEmailParams struct {
-	ID         int64
+	Email      string
 	SecretCode string
 }
 
 func (q *Queries) UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (Verifyemail, error) {
-	row := q.db.QueryRow(ctx, updateVerifyEmail, arg.ID, arg.SecretCode)
+	row := q.db.QueryRow(ctx, updateVerifyEmail, arg.Email, arg.SecretCode)
 	var i Verifyemail
 	err := row.Scan(
 		&i.ID,

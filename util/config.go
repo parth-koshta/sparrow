@@ -11,6 +11,7 @@ type Config struct {
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
 	ServerAddress        string        `mapstructure:"SERVER_ADDRESS"`
+	ServerUrl            string        `mapstructure:"SERVER_URL"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	LinkedInClientID     string        `mapstructure:"LINKEDIN_CLIENT_ID"`

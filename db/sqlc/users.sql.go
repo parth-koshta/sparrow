@@ -143,3 +143,42 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUse
 	}
 	return items, nil
 }
+
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET
+  password_hash = COALESCE($1, password_hash),
+  username = COALESCE($2, username),
+  email = COALESCE($3, email),
+  is_email_verified = COALESCE($4, is_email_verified)
+WHERE
+  email = $3
+RETURNING id, username, email, password_hash, is_email_verified, created_at, updated_at
+`
+
+type UpdateUserParams struct {
+	PasswordHash    pgtype.Text
+	Username        pgtype.Text
+	Email           pgtype.Text
+	IsEmailVerified pgtype.Bool
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.PasswordHash,
+		arg.Username,
+		arg.Email,
+		arg.IsEmailVerified,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.PasswordHash,
+		&i.IsEmailVerified,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

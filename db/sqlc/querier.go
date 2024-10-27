@@ -44,6 +44,7 @@ type Querier interface {
 	UpdatePrompt(ctx context.Context, arg UpdatePromptParams) (Prompt, error)
 	UpdateSocialAccount(ctx context.Context, arg UpdateSocialAccountParams) (Socialaccount, error)
 	UpdateSocialAccountToken(ctx context.Context, arg UpdateSocialAccountTokenParams) (Socialaccount, error)
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (Verifyemail, error)
 }
 

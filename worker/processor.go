@@ -8,6 +8,7 @@ import (
 	"github.com/hibiken/asynq"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/mail"
+	"github.com/parth-koshta/sparrow/util"
 )
 
 const (
@@ -25,9 +26,10 @@ type RedisTaskProcessor struct {
 	server *asynq.Server
 	store  db.Store
 	mailer mail.EmailSender
+	config util.Config
 }
 
-func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, mailer mail.EmailSender) TaskProcessor {
+func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, mailer mail.EmailSender, config util.Config) TaskProcessor {
 	server := asynq.NewServer(redisOptions, asynq.Config{
 		Queues: map[string]int{
 			QueueCritical: 10,
@@ -43,6 +45,7 @@ func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, ma
 		server: server,
 		store:  store,
 		mailer: mailer,
+		config: config,
 	}
 }
 

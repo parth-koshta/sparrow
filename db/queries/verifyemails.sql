@@ -11,7 +11,7 @@ UPDATE verifyemails
 SET
     is_used = TRUE
 WHERE
-    id = @id
+    email = @email
     AND secret_code = @secret_code
     AND is_used = FALSE
     AND expired_at > now()
