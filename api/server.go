@@ -1,10 +1,16 @@
 package api
 
 import (
-	"github.com/getsentry/sentry-go"
-	sentrygin "github.com/getsentry/sentry-go/gin"
-	"github.com/gin-gonic/gin"
+	"context"
+	"errors"
+	"net/http"
+	"time"
 
+	"github.com/getsentry/sentry-go"
+	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
+
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/parth-koshta/sparrow/client"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/token"
@@ -17,6 +23,7 @@ type Server struct {
 	tokenMaker      token.Maker
 	config          util.Config
 	router          *gin.Engine
+	httpServer      *http.Server
 	linkedinClient  *client.LinkedinClient
 	openaiClient    *client.OpenAIClient
 	taskDistributor worker.TaskDistributor
@@ -40,6 +47,11 @@ func NewServer(store db.Store, config util.Config, taskDistributor worker.TaskDi
 
 	server.setupRouter()
 
+	server.httpServer = &http.Server{
+		Addr:    config.ServerAddress,
+		Handler: server.router,
+	}
+
 	return server, nil
 }
 
@@ -50,8 +62,8 @@ func (server *Server) setupRouter() {
 
 	router.GET("/", server.HealthCheck)
 
-	router.POST("/users/login", server.LoginUser)
-	router.POST("/users", server.CreateUser)
+	router.POST("/v1/users/login", server.LoginUser)
+	router.POST("/v1/users", server.CreateUser)
 
 	authenticatedRouter := router.Group("/").Use(AuthMiddleware(server.tokenMaker))
 	authenticatedRouter.GET("/v1/users", server.ListUsers)
@@ -92,7 +104,26 @@ func (server *Server) setupRouter() {
 }
 
 func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+	err := server.httpServer.ListenAndServe()
+	if err != nil {
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+		log.Error().Err(err).Msg("HTTP server failed to serve")
+		return err
+	}
+	return nil
+}
+
+func (server *Server) Stop(ctx context.Context) error {
+	shutdownCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	if err := server.httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Error().Err(err).Msg("server shutdown error")
+		return err
+	}
+	return nil
 }
 
 func errorResponse(err error) gin.H {

@@ -57,23 +57,7 @@ func main() {
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
 	runTaskProcessor(ctx, waitGroup, redisOptions, store, config)
-
-	server, err := api.NewServer(store, config, taskDistributor)
-	if err != nil {
-		log.Error().Err(err).Msg("cannot create server")
-		return
-	}
-
-	waitGroup.Go(func() error {
-		log.Info().Msgf("starting server at %s", config.ServerAddress)
-		return server.Start(config.ServerAddress)
-	})
-
-	waitGroup.Go(func() error {
-		<-ctx.Done()
-		log.Info().Msg("shutdown signal received, shutting down...")
-		return nil
-	})
+	runServer(ctx, waitGroup, store, config, taskDistributor)
 
 	if err := waitGroup.Wait(); err != nil {
 		log.Error().Err(err).Msg("error from server or task processor")
@@ -91,9 +75,28 @@ func runTaskProcessor(ctx context.Context, waitGroup *errgroup.Group, redisOptio
 
 	waitGroup.Go(func() error {
 		<-ctx.Done()
-		log.Info().Msg("graceful shutdown of task processor")
 		taskProcessor.Shutdown()
-		log.Info().Msg("task processor stopped")
+		return nil
+	})
+}
+
+func runServer(ctx context.Context, waitGroup *errgroup.Group, store db.Store, config util.Config, taskDistributor worker.TaskDistributor) {
+	server, err := api.NewServer(store, config, taskDistributor)
+	if err != nil {
+		log.Error().Err(err).Msg("cannot create server")
+		return
+	}
+
+	waitGroup.Go(func() error {
+		log.Info().Msgf("starting server at %s", config.ServerAddress)
+		return server.Start(config.ServerAddress)
+	})
+
+	waitGroup.Go(func() error {
+		<-ctx.Done()
+		if err := server.Stop(ctx); err != nil {
+			log.Error().Err(err).Msg("server shutdown error")
+		}
 		return nil
 	})
 }
