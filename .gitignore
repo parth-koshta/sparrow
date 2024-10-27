@@ -1,4 +1,5 @@
 # Ignore environment files
+app.env
 app-local.env
 app.env
 

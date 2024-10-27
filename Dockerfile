@@ -10,7 +10,6 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 COPY app.env .
-COPY app-local.env .
 COPY db/migration ./migration
 COPY start.sh .
 COPY --from=builder /app/migrate ./migrate
