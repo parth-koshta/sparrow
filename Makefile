@@ -42,8 +42,8 @@ sqlc:
 	sqlc generate
 
 dumpschema:
-	docker exec -it postgres16 pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev
-	docker cp postgres16:/tmp/schema.sql db/schema.sql
+	docker exec -it $(POSTGRES_CONTAINER) pg_dump --schema-only --no-owner --file=/tmp/schema.sql sparrow-dev
+	docker cp $(POSTGRES_CONTAINER):/tmp/schema.sql db/schema.sql
 
 test:
 	go test -v -cover -timeout 30s -short ./...

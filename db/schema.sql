@@ -92,21 +92,6 @@ CREATE TABLE public.prompts (
 
 
 --
--- Name: scheduledposts; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.scheduledposts (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid NOT NULL,
-    draft_id uuid NOT NULL,
-    scheduled_time timestamp without time zone NOT NULL,
-    status character varying(50) NOT NULL,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL
-);
-
-
---
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -219,14 +204,6 @@ ALTER TABLE ONLY public.postsuggestions
 
 ALTER TABLE ONLY public.prompts
     ADD CONSTRAINT prompts_pkey PRIMARY KEY (id);
-
-
---
--- Name: scheduledposts scheduledposts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.scheduledposts
-    ADD CONSTRAINT scheduledposts_pkey PRIMARY KEY (id);
 
 
 --
@@ -370,34 +347,6 @@ CREATE INDEX idx_prompts_user_id_text ON public.prompts USING btree (user_id, te
 
 
 --
--- Name: idx_scheduledposts_draft_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_scheduledposts_draft_id ON public.scheduledposts USING btree (draft_id);
-
-
---
--- Name: idx_scheduledposts_scheduled_time; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_scheduledposts_scheduled_time ON public.scheduledposts USING btree (scheduled_time);
-
-
---
--- Name: idx_scheduledposts_status; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_scheduledposts_status ON public.scheduledposts USING btree (status);
-
-
---
--- Name: idx_scheduledposts_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_scheduledposts_user_id ON public.scheduledposts USING btree (user_id);
-
-
---
 -- Name: idx_socialaccounts_platform; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -478,22 +427,6 @@ ALTER TABLE ONLY public.postsuggestions
 
 ALTER TABLE ONLY public.prompts
     ADD CONSTRAINT prompts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: scheduledposts scheduledposts_draft_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.scheduledposts
-    ADD CONSTRAINT scheduledposts_draft_id_fkey FOREIGN KEY (draft_id) REFERENCES public.posts(id) ON DELETE CASCADE;
-
-
---
--- Name: scheduledposts scheduledposts_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.scheduledposts
-    ADD CONSTRAINT scheduledposts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
