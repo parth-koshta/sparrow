@@ -1,0 +1,78 @@
+{
+    "family": "redis-task-definition",
+    "taskRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+      {
+        "name": "redis",
+        "image": "redis:7-alpine",
+        "cpu": 0,
+        "portMappings": [
+          {
+            "containerPort": 6379,
+            "hostPort": 6379,
+            "protocol": "tcp",
+            "name": "redis-port",
+            "appProtocol": "http"
+          }
+        ],
+        "essential": true,
+        "environment": [],
+        "environmentFiles": [],
+        "mountPoints": [
+          {
+            "sourceVolume": "redis-data",
+            "containerPath": "/data",
+            "readOnly": false
+          }
+        ],
+        "volumesFrom": [],
+        "ulimits": [],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "/ecs/redis-task-definition",
+            "mode": "non-blocking",
+            "awslogs-create-group": "true",
+            "max-buffer-size": "25m",
+            "awslogs-region": "ap-south-1",
+            "awslogs-stream-prefix": "ecs"
+          },
+          "secretOptions": []
+        },
+        "healthCheck": {
+          "command": ["CMD-SHELL", "redis-cli ping || exit 1"],
+          "interval": 30,
+          "timeout": 5,
+          "retries": 3,
+          "startPeriod": 10
+        },
+        "systemControls": []
+      }
+    ],
+    "volumes": [
+      {
+        "name": "redis-data",
+        "efsVolumeConfiguration": {
+          "fileSystemId": "fs-0ce3d46366116ae74",
+          "rootDirectory": "/",
+          "transitEncryption": "ENABLED",
+          "authorizationConfig": {
+            "accessPointId": "fsap-0472959e32474f4a2",
+            "iam": "ENABLED"
+          }
+        }
+      }
+    ],
+    "requiresCompatibilities": ["FARGATE"],
+    "cpu": "512",
+    "memory": "1024",
+    "tags": [
+      {
+        "key": "Environment",
+        "value": "Production"
+      }
+    ]
+  }
+  
