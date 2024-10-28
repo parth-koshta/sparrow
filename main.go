@@ -57,6 +57,7 @@ func main() {
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
 	runTaskProcessor(ctx, waitGroup, redisOptions, store, config)
+	// runTaskScheduler(ctx, waitGroup, redisOptions)
 	runServer(ctx, waitGroup, store, config, taskDistributor)
 
 	if err := waitGroup.Wait(); err != nil {
@@ -76,6 +77,26 @@ func runTaskProcessor(ctx context.Context, waitGroup *errgroup.Group, redisOptio
 	waitGroup.Go(func() error {
 		<-ctx.Done()
 		taskProcessor.Shutdown()
+		return nil
+	})
+}
+
+func runTaskScheduler(ctx context.Context, waitGroup *errgroup.Group, redisOptions asynq.RedisClientOpt) {
+	scheduler := worker.NewRedisTaskScheduler(redisOptions)
+
+	if err := scheduler.Start(); err != nil {
+		log.Error().Err(err).Msg("cannot start task scheduler")
+		return
+	}
+
+	if err := scheduler.ScheduleTaskEnqueueScheduledPosts(ctx); err != nil {
+		log.Error().Err(err).Msg("cannot schedule task: enqueue scheduled posts")
+		return
+	}
+
+	waitGroup.Go(func() error {
+		<-ctx.Done()
+		scheduler.Stop()
 		return nil
 	})
 }
