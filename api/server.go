@@ -56,6 +56,7 @@ func NewServer(store db.Store, config util.Config, taskDistributor worker.TaskDi
 }
 
 func (server *Server) setupRouter() {
+	gin.SetMode(server.config.GinMode)
 	router := gin.Default()
 	router.Use(sentrygin.New(sentrygin.Options{Repanic: true}))
 	router.Use(LoggerMiddleware)
@@ -83,11 +84,10 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.GET("/v1/prompts/user/:id", server.ListPromptsByUserID)
 
 	authenticatedRouter.POST("/v1/suggestions", server.CreatePostSuggestion)
-	authenticatedRouter.GET("/v1/suggestions/:id", server.GetPostSuggestion)
-	authenticatedRouter.PUT("/v1/suggestions/:id", server.UpdatePostSuggestion)
 	authenticatedRouter.DELETE("/v1/suggestions/:id", server.DeletePostSuggestion)
 	authenticatedRouter.GET("/v1/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
 	authenticatedRouter.POST("/v1/suggestions/ai", server.GetAISuggestionsByPrompt)
+	authenticatedRouter.POST("/v1/suggestions/accept", server.AcceptPostSuggestion)
 
 	authenticatedRouter.GET("/v1/socialaccounts/:id", server.GetSocialAccount)
 	authenticatedRouter.DELETE("/v1/socialaccounts/:id", server.DeleteSocialAccount)
@@ -95,11 +95,9 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.POST("/v1/socialaccounts/linkedin", server.AddLinkedInAccount)
 	authenticatedRouter.PUT("/v1/socialaccounts/accesstoken/linkedin", server.UpdateLinkedInAccessToken)
 
-	authenticatedRouter.POST("/v1/schedules", server.CreateScheduledPost)
-	authenticatedRouter.GET("/v1/schedules/:id", server.GetScheduledPost)
-	authenticatedRouter.PUT("/v1/schedules/:id", server.UpdateScheduledPost)
-	authenticatedRouter.DELETE("/v1/schedules/:id", server.DeleteScheduledPost)
-	authenticatedRouter.GET("/v1/schedules/user/:id", server.ListScheduledPostsByUserID)
+	authenticatedRouter.POST("/v1/schedules", server.CreatePostSchedule)
+	authenticatedRouter.GET("/v1/schedules/:id", server.GetPostSchedule)
+	authenticatedRouter.DELETE("/v1/schedules/:id", server.DeletePostSchedule)
 
 	server.router = router
 }

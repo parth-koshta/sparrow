@@ -74,7 +74,8 @@ CREATE TABLE public.postsuggestions (
     prompt_id uuid NOT NULL,
     text text NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    status character varying(50) DEFAULT 'pending'::character varying NOT NULL
 );
 
 
@@ -223,11 +224,27 @@ ALTER TABLE ONLY public.socialaccounts
 
 
 --
+-- Name: posts unique_post_suggestion_id; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT unique_post_suggestion_id UNIQUE (suggestion_id);
+
+
+--
 -- Name: postsuggestions unique_prompt_suggestion; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.postsuggestions
     ADD CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, text);
+
+
+--
+-- Name: posts unique_suggestion_id; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT unique_suggestion_id UNIQUE (suggestion_id);
 
 
 --

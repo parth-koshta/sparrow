@@ -13,6 +13,7 @@ type Store interface {
 	ExecTx(ctx context.Context, fn func(*Queries) error) error
 	CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserTxResult, error)
 	VerifyEmailTx(ctx context.Context, arg VerifyEmailTxParams) (VerifyEmailTxResult, error)
+	AcceptPostSuggestionTx(ctx context.Context, arg AcceptPostSuggestionTxParams) (AcceptPostSuggestionTxResult, error)
 }
 
 type SQLStore struct {

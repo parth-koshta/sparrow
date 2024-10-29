@@ -33,6 +33,7 @@ type Postsuggestion struct {
 	ID        pgtype.UUID      `json:"id"`
 	PromptID  pgtype.UUID      `json:"prompt_id"`
 	Text      string           `json:"text"`
+	Status    string           `json:"status"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }

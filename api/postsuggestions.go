@@ -1,11 +1,13 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
@@ -39,8 +41,10 @@ func (s *Server) GetAISuggestionsByPrompt(ctx *gin.Context) {
 	}
 	existingPrompt, err := s.store.GetPromptByUserIDAndText(ctx, getPromptArgs)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+		if !errors.Is(err, pgx.ErrNoRows) {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
 	}
 
 	var promptID pgtype.UUID
@@ -133,38 +137,6 @@ func (server *Server) CreatePostSuggestion(ctx *gin.Context) {
 	})
 }
 
-type GetPostSuggestionRequest struct {
-	ID string `uri:"id" binding:"required,uuid"`
-}
-
-func (server *Server) GetPostSuggestion(ctx *gin.Context) {
-	var req GetPostSuggestionRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	suggestionID, err := uuid.Parse(req.ID)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	suggestion, err := server.store.GetPostSuggestionByID(ctx, pgtype.UUID{Bytes: suggestionID, Valid: true})
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, PostSuggestionResponse{
-		ID:        suggestion.ID,
-		PromptID:  suggestion.PromptID,
-		Text:      suggestion.Text,
-		CreatedAt: suggestion.CreatedAt,
-		UpdatedAt: suggestion.UpdatedAt,
-	})
-}
-
 type ListPostSuggestionsByPromptIDRequest struct {
 	PromptID string `form:"prompt_id" binding:"required,uuid"`
 	Page     int32  `form:"page" binding:"required,min=1"`
@@ -201,44 +173,6 @@ func (server *Server) ListPostSuggestionsByPromptID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, suggestions)
 }
 
-type UpdatePostSuggestionRequest struct {
-	ID   string `json:"id" binding:"required,uuid"`
-	Text string `json:"text" binding:"required"`
-}
-
-func (server *Server) UpdatePostSuggestion(ctx *gin.Context) {
-	var req UpdatePostSuggestionRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	suggestionID, err := uuid.Parse(req.ID)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	arg := db.UpdatePostSuggestionParams{
-		ID:   pgtype.UUID{Bytes: suggestionID, Valid: true},
-		Text: req.Text,
-	}
-
-	suggestion, err := server.store.UpdatePostSuggestion(ctx, arg)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, PostSuggestionResponse{
-		ID:        suggestion.ID,
-		PromptID:  suggestion.PromptID,
-		Text:      suggestion.Text,
-		CreatedAt: suggestion.CreatedAt,
-		UpdatedAt: suggestion.UpdatedAt,
-	})
-}
-
 type DeletePostSuggestionRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
@@ -263,4 +197,47 @@ func (server *Server) DeletePostSuggestion(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusNoContent, nil)
+}
+
+type AcceptPostSuggestionRequest struct {
+	ID string `json:"id" binding:"required,uuid"`
+}
+type AcceptPostSuggestionResponse struct {
+	PostID pgtype.UUID
+}
+
+func (s *Server) AcceptPostSuggestion(ctx *gin.Context) {
+	var req AcceptPostSuggestionRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	suggestionID, err := uuid.Parse(req.ID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	userID, err := GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
+		return
+	}
+
+	var result db.AcceptPostSuggestionTxResult
+	arg := db.AcceptPostSuggestionTxParams{
+		UserID:       pgtype.UUID{Bytes: userID, Valid: true},
+		SuggestionID: pgtype.UUID{Bytes: suggestionID, Valid: true},
+	}
+
+	result, err = s.store.AcceptPostSuggestionTx(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, AcceptPostSuggestionResponse{
+		PostID: result.PostID,
+	})
 }

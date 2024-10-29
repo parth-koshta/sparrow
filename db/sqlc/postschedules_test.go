@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateScheduledPost(t *testing.T) {
+func TestCreatePostSchedule(t *testing.T) {
 	runTestInTransaction(t, func(testQueries *Queries) {
 		// Create a user, prompt, suggestion, draft
 		user := createRandomUser(t, testQueries)
