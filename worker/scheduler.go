@@ -36,5 +36,4 @@ func (s *RedisTaskScheduler) Start() error {
 
 func (s *RedisTaskScheduler) Stop() {
 	s.scheduler.Shutdown()
-	log.Info().Msg("Scheduler stopped")
 }
