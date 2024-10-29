@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
-	dbtypes "github.com/parth-koshta/sparrow/db/types"
 )
 
 type GetAISuggestionsRequest struct {
@@ -220,41 +219,25 @@ func (s *Server) AcceptPostSuggestion(ctx *gin.Context) {
 		return
 	}
 
-	suggestion, err := s.store.GetPostSuggestionByID(ctx, pgtype.UUID{Bytes: suggestionID, Valid: true})
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
 	userID, err := GetUserIDFromContext(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
 		return
 	}
 
-	postArg := db.CreatePostParams{
+	var result db.AcceptPostSuggestionTxResult
+	arg := db.AcceptPostSuggestionTxParams{
 		UserID:       pgtype.UUID{Bytes: userID, Valid: true},
 		SuggestionID: pgtype.UUID{Bytes: suggestionID, Valid: true},
-		Text:         suggestion.Text,
-		Status:       string(dbtypes.PostStatusDraft),
-	}
-	post, err := s.store.CreatePost(ctx, postArg)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
 	}
 
-	updateSuggestionStatusArg := db.UpdatePostSuggestionStatusParams{
-		ID:     pgtype.UUID{Bytes: suggestionID, Valid: true},
-		Status: string(dbtypes.PostSuggestionStatusAccepted),
-	}
-	_, err = s.store.UpdatePostSuggestionStatus(ctx, updateSuggestionStatusArg)
+	result, err = s.store.AcceptPostSuggestionTx(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, AcceptPostSuggestionResponse{
-		PostID: post.ID,
+		PostID: result.PostID,
 	})
 }
