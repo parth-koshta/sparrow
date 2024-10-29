@@ -69,10 +69,10 @@ jobs:
 
         echo "Using image: $IMAGE"
         
-        TASK_DEFINITION=$(jq --arg IMAGE "$IMAGE" '.containerDefinitions[0].image = $IMAGE' ecs/task-definition.json)
-        echo "$TASK_DEFINITION" > new-task-def.json
+        TASK_DEFINITION=$(jq --arg IMAGE "$IMAGE" '.containerDefinitions[0].image = $IMAGE' ecs/sparrow-api-task-definition.json)
+        echo "$TASK_DEFINITION" > sparrow-api-task-def.json
         
-        aws ecs register-task-definition --cli-input-json file://new-task-def.json
+        aws ecs register-task-definition --cli-input-json file://sparrow-api-task-def.json
 
     - name: Update ECS service
       run: |
