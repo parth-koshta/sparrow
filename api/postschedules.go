@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +11,6 @@ import (
 )
 
 type CreatePostScheduleRequest struct {
-	UserID        string           `json:"user_id" binding:"required,uuid"`
 	PostID        string           `json:"post_id" binding:"required,uuid"`
 	ScheduledTime pgtype.Timestamp `json:"scheduled_time" binding:"required"`
 	Status        string           `json:"status" binding:"required"`
@@ -23,13 +23,13 @@ func (server *Server) CreatePostSchedule(ctx *gin.Context) {
 		return
 	}
 
-	userID, err := uuid.Parse(req.UserID)
+	userID, err := GetUserIDFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
 		return
 	}
 
-	PostID, err := uuid.Parse(req.PostID)
+	postID, err := uuid.Parse(req.PostID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -37,7 +37,7 @@ func (server *Server) CreatePostSchedule(ctx *gin.Context) {
 
 	arg := db.CreatePostScheduleParams{
 		UserID:        pgtype.UUID{Bytes: userID, Valid: true},
-		PostID:        pgtype.UUID{Bytes: PostID, Valid: true},
+		PostID:        pgtype.UUID{Bytes: postID, Valid: true},
 		ScheduledTime: req.ScheduledTime,
 		Status:        req.Status,
 	}

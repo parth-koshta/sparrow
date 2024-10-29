@@ -84,11 +84,10 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.GET("/v1/prompts/user/:id", server.ListPromptsByUserID)
 
 	authenticatedRouter.POST("/v1/suggestions", server.CreatePostSuggestion)
-	authenticatedRouter.GET("/v1/suggestions/:id", server.GetPostSuggestion)
-	authenticatedRouter.PUT("/v1/suggestions/:id", server.UpdatePostSuggestion)
 	authenticatedRouter.DELETE("/v1/suggestions/:id", server.DeletePostSuggestion)
 	authenticatedRouter.GET("/v1/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
 	authenticatedRouter.POST("/v1/suggestions/ai", server.GetAISuggestionsByPrompt)
+	authenticatedRouter.POST("/v1/suggestions/accept", server.AcceptPostSuggestion)
 
 	authenticatedRouter.GET("/v1/socialaccounts/:id", server.GetSocialAccount)
 	authenticatedRouter.DELETE("/v1/socialaccounts/:id", server.DeleteSocialAccount)

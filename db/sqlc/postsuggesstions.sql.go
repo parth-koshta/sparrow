@@ -61,7 +61,7 @@ INSERT INTO postsuggestions (
 ) VALUES (
   $1, $2
 )
-RETURNING id, prompt_id, text, created_at, updated_at
+RETURNING id, prompt_id, text, status, created_at, updated_at
 `
 
 type CreatePostSuggestionParams struct {
@@ -76,6 +76,7 @@ func (q *Queries) CreatePostSuggestion(ctx context.Context, arg CreatePostSugges
 		&i.ID,
 		&i.PromptID,
 		&i.Text,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -85,7 +86,7 @@ func (q *Queries) CreatePostSuggestion(ctx context.Context, arg CreatePostSugges
 const deletePostSuggestion = `-- name: DeletePostSuggestion :one
 DELETE FROM postsuggestions
 WHERE id = $1
-RETURNING id, prompt_id, text, created_at, updated_at
+RETURNING id, prompt_id, text, status, created_at, updated_at
 `
 
 func (q *Queries) DeletePostSuggestion(ctx context.Context, id pgtype.UUID) (Postsuggestion, error) {
@@ -95,6 +96,7 @@ func (q *Queries) DeletePostSuggestion(ctx context.Context, id pgtype.UUID) (Pos
 		&i.ID,
 		&i.PromptID,
 		&i.Text,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -107,9 +109,17 @@ FROM postsuggestions
 WHERE id = $1
 `
 
-func (q *Queries) GetPostSuggestionByID(ctx context.Context, id pgtype.UUID) (Postsuggestion, error) {
+type GetPostSuggestionByIDRow struct {
+	ID        pgtype.UUID      `json:"id"`
+	PromptID  pgtype.UUID      `json:"prompt_id"`
+	Text      string           `json:"text"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) GetPostSuggestionByID(ctx context.Context, id pgtype.UUID) (GetPostSuggestionByIDRow, error) {
 	row := q.db.QueryRow(ctx, getPostSuggestionByID, id)
-	var i Postsuggestion
+	var i GetPostSuggestionByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.PromptID,
@@ -134,15 +144,23 @@ type ListPostSuggestionsByPromptIDParams struct {
 	Offset   int32       `json:"offset"`
 }
 
-func (q *Queries) ListPostSuggestionsByPromptID(ctx context.Context, arg ListPostSuggestionsByPromptIDParams) ([]Postsuggestion, error) {
+type ListPostSuggestionsByPromptIDRow struct {
+	ID        pgtype.UUID      `json:"id"`
+	PromptID  pgtype.UUID      `json:"prompt_id"`
+	Text      string           `json:"text"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) ListPostSuggestionsByPromptID(ctx context.Context, arg ListPostSuggestionsByPromptIDParams) ([]ListPostSuggestionsByPromptIDRow, error) {
 	rows, err := q.db.Query(ctx, listPostSuggestionsByPromptID, arg.PromptID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Postsuggestion
+	var items []ListPostSuggestionsByPromptIDRow
 	for rows.Next() {
-		var i Postsuggestion
+		var i ListPostSuggestionsByPromptIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.PromptID,
@@ -160,26 +178,26 @@ func (q *Queries) ListPostSuggestionsByPromptID(ctx context.Context, arg ListPos
 	return items, nil
 }
 
-const updatePostSuggestion = `-- name: UpdatePostSuggestion :one
+const updatePostSuggestionStatus = `-- name: UpdatePostSuggestionStatus :one
 UPDATE postsuggestions
-SET text = $2,
-    updated_at = NOW()
+SET status = $2
 WHERE id = $1
-RETURNING id, prompt_id, text, created_at, updated_at
+RETURNING id, prompt_id, text, status, created_at, updated_at
 `
 
-type UpdatePostSuggestionParams struct {
-	ID   pgtype.UUID `json:"id"`
-	Text string      `json:"text"`
+type UpdatePostSuggestionStatusParams struct {
+	ID     pgtype.UUID `json:"id"`
+	Status string      `json:"status"`
 }
 
-func (q *Queries) UpdatePostSuggestion(ctx context.Context, arg UpdatePostSuggestionParams) (Postsuggestion, error) {
-	row := q.db.QueryRow(ctx, updatePostSuggestion, arg.ID, arg.Text)
+func (q *Queries) UpdatePostSuggestionStatus(ctx context.Context, arg UpdatePostSuggestionStatusParams) (Postsuggestion, error) {
+	row := q.db.QueryRow(ctx, updatePostSuggestionStatus, arg.ID, arg.Status)
 	var i Postsuggestion
 	err := row.Scan(
 		&i.ID,
 		&i.PromptID,
 		&i.Text,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
