@@ -2,10 +2,10 @@ package worker
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/util"
 	"github.com/rs/zerolog/log"
@@ -41,7 +41,7 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 	}
 
 	user, err := processor.store.GetUserByEmail(ctx, payload.Email)
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return fmt.Errorf("user does not exist: %w", asynq.SkipRetry)
 	}
 	if err != nil {

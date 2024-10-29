@@ -1,11 +1,13 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
@@ -39,8 +41,10 @@ func (s *Server) GetAISuggestionsByPrompt(ctx *gin.Context) {
 	}
 	existingPrompt, err := s.store.GetPromptByUserIDAndText(ctx, getPromptArgs)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+		if !errors.Is(err, pgx.ErrNoRows) {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
 	}
 
 	var promptID pgtype.UUID

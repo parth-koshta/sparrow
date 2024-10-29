@@ -96,11 +96,9 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.POST("/v1/socialaccounts/linkedin", server.AddLinkedInAccount)
 	authenticatedRouter.PUT("/v1/socialaccounts/accesstoken/linkedin", server.UpdateLinkedInAccessToken)
 
-	authenticatedRouter.POST("/v1/schedules", server.CreateScheduledPost)
-	authenticatedRouter.GET("/v1/schedules/:id", server.GetScheduledPost)
-	authenticatedRouter.PUT("/v1/schedules/:id", server.UpdateScheduledPost)
-	authenticatedRouter.DELETE("/v1/schedules/:id", server.DeleteScheduledPost)
-	authenticatedRouter.GET("/v1/schedules/user/:id", server.ListScheduledPostsByUserID)
+	authenticatedRouter.POST("/v1/schedules", server.CreatePostSchedule)
+	authenticatedRouter.GET("/v1/schedules/:id", server.GetPostSchedule)
+	authenticatedRouter.DELETE("/v1/schedules/:id", server.DeletePostSchedule)
 
 	server.router = router
 }

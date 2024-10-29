@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/hibiken/asynq"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/util"
@@ -168,7 +168,7 @@ func (server *Server) LoginUser(ctx *gin.Context) {
 	// Get the user from the database
 	user, err := server.store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -227,7 +227,7 @@ func (server *Server) VerifyUserEmail(ctx *gin.Context) {
 		SecretCode: req.SecretCode,
 	})
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
