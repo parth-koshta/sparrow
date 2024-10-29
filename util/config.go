@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	ENVIRONMENT          string        `mapstructure:"ENVIRONMENT"`
+	GinMode              string        `mapstructure:"GIN_MODE"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
 	ServerAddress        string        `mapstructure:"SERVER_ADDRESS"`

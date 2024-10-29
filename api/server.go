@@ -56,6 +56,7 @@ func NewServer(store db.Store, config util.Config, taskDistributor worker.TaskDi
 }
 
 func (server *Server) setupRouter() {
+	gin.SetMode(server.config.GinMode)
 	router := gin.Default()
 	router.Use(sentrygin.New(sentrygin.Options{Repanic: true}))
 	router.Use(LoggerMiddleware)
