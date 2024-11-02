@@ -123,7 +123,7 @@ func createRandomPrompt(t *testing.T, testQueries *Queries, userID pgtype.UUID) 
 	return prompt
 }
 
-func createRandomPostSuggestion(t *testing.T, testQueries *Queries, promptID pgtype.UUID) Postsuggestion {
+func createRandomPostSuggestion(t *testing.T, testQueries *Queries, promptID pgtype.UUID) PostSuggestion {
 	arg := CreatePostSuggestionParams{
 		PromptID: promptID,
 		Text:     fmt.Sprintf("Example suggestion text %s", util.GenerateRandomString().String),
@@ -145,7 +145,7 @@ func createRandomDraft(t *testing.T, testQueries *Queries, userID pgtype.UUID, s
 	return draft
 }
 
-func createRandomScheduledPost(t *testing.T, testQueries *Queries, userID pgtype.UUID, draftID pgtype.UUID) Postschedule {
+func createRandomScheduledPost(t *testing.T, testQueries *Queries, userID pgtype.UUID, draftID pgtype.UUID) PostSchedule {
 	arg := CreatePostScheduleParams{
 		UserID:        userID,
 		PostID:        draftID,
@@ -157,7 +157,7 @@ func createRandomScheduledPost(t *testing.T, testQueries *Queries, userID pgtype
 	return post
 }
 
-func createRandomSocialAccount(t *testing.T, testQueries *Queries, userID pgtype.UUID) Socialaccount {
+func createRandomSocialAccount(t *testing.T, testQueries *Queries, userID pgtype.UUID) SocialAccount {
 	arg := CreateSocialAccountParams{
 		UserID:         userID,
 		Platform:       "ExamplePlatform",

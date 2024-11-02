@@ -35,25 +35,10 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: posts; Type: TABLE; Schema: public; Owner: -
+-- Name: post_schedules; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.posts (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid NOT NULL,
-    suggestion_id uuid,
-    text text NOT NULL,
-    status character varying(50) NOT NULL,
-    created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL
-);
-
-
---
--- Name: postschedules; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.postschedules (
+CREATE TABLE public.post_schedules (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     post_id uuid NOT NULL,
@@ -66,16 +51,31 @@ CREATE TABLE public.postschedules (
 
 
 --
--- Name: postsuggestions; Type: TABLE; Schema: public; Owner: -
+-- Name: post_suggestions; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.postsuggestions (
+CREATE TABLE public.post_suggestions (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     prompt_id uuid NOT NULL,
     text text NOT NULL,
+    status character varying(50) DEFAULT 'pending'::character varying NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL,
-    status character varying(50) DEFAULT 'pending'::character varying NOT NULL
+    updated_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: posts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.posts (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    suggestion_id uuid,
+    text text NOT NULL,
+    status character varying(50) NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL,
+    updated_at timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
@@ -103,10 +103,10 @@ CREATE TABLE public.schema_migrations (
 
 
 --
--- Name: socialaccounts; Type: TABLE; Schema: public; Owner: -
+-- Name: social_accounts; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.socialaccounts (
+CREATE TABLE public.social_accounts (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     platform character varying(255) NOT NULL,
@@ -136,10 +136,10 @@ CREATE TABLE public.users (
 
 
 --
--- Name: verifyemails; Type: TABLE; Schema: public; Owner: -
+-- Name: verify_emails; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.verifyemails (
+CREATE TABLE public.verify_emails (
     id bigint NOT NULL,
     email character varying(255) NOT NULL,
     secret_code character varying(255) NOT NULL,
@@ -150,10 +150,10 @@ CREATE TABLE public.verifyemails (
 
 
 --
--- Name: verifyemails_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: verify_emails_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.verifyemails_id_seq
+CREATE SEQUENCE public.verify_emails_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -162,17 +162,33 @@ CREATE SEQUENCE public.verifyemails_id_seq
 
 
 --
--- Name: verifyemails_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: verify_emails_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.verifyemails_id_seq OWNED BY public.verifyemails.id;
+ALTER SEQUENCE public.verify_emails_id_seq OWNED BY public.verify_emails.id;
 
 
 --
--- Name: verifyemails id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: verify_emails id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.verifyemails ALTER COLUMN id SET DEFAULT nextval('public.verifyemails_id_seq'::regclass);
+ALTER TABLE ONLY public.verify_emails ALTER COLUMN id SET DEFAULT nextval('public.verify_emails_id_seq'::regclass);
+
+
+--
+-- Name: post_schedules post_schedules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_schedules
+    ADD CONSTRAINT post_schedules_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: post_suggestions post_suggestions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_suggestions
+    ADD CONSTRAINT post_suggestions_pkey PRIMARY KEY (id);
 
 
 --
@@ -181,22 +197,6 @@ ALTER TABLE ONLY public.verifyemails ALTER COLUMN id SET DEFAULT nextval('public
 
 ALTER TABLE ONLY public.posts
     ADD CONSTRAINT posts_pkey PRIMARY KEY (id);
-
-
---
--- Name: postschedules postschedules_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.postschedules
-    ADD CONSTRAINT postschedules_pkey PRIMARY KEY (id);
-
-
---
--- Name: postsuggestions postsuggestions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.postsuggestions
-    ADD CONSTRAINT postsuggestions_pkey PRIMARY KEY (id);
 
 
 --
@@ -216,11 +216,11 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
--- Name: socialaccounts socialaccounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: social_accounts social_accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.socialaccounts
-    ADD CONSTRAINT socialaccounts_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.social_accounts
+    ADD CONSTRAINT social_accounts_pkey PRIMARY KEY (id);
 
 
 --
@@ -232,19 +232,11 @@ ALTER TABLE ONLY public.posts
 
 
 --
--- Name: postsuggestions unique_prompt_suggestion; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: post_suggestions unique_prompt_suggestion; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.postsuggestions
+ALTER TABLE ONLY public.post_suggestions
     ADD CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, text);
-
-
---
--- Name: posts unique_suggestion_id; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT unique_suggestion_id UNIQUE (suggestion_id);
 
 
 --
@@ -272,11 +264,53 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: verifyemails verifyemails_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: verify_emails verify_emails_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.verifyemails
-    ADD CONSTRAINT verifyemails_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.verify_emails
+    ADD CONSTRAINT verify_emails_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_post_schedules_post_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_post_schedules_post_id ON public.post_schedules USING btree (post_id);
+
+
+--
+-- Name: idx_post_schedules_scheduled_time; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_post_schedules_scheduled_time ON public.post_schedules USING btree (scheduled_time);
+
+
+--
+-- Name: idx_post_schedules_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_post_schedules_status ON public.post_schedules USING btree (status);
+
+
+--
+-- Name: idx_post_schedules_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_post_schedules_user_id ON public.post_schedules USING btree (user_id);
+
+
+--
+-- Name: idx_post_suggestions_prompt_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_post_suggestions_prompt_id ON public.post_suggestions USING btree (prompt_id);
+
+
+--
+-- Name: idx_post_suggestions_text; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_post_suggestions_text ON public.post_suggestions USING gin (text public.gin_trgm_ops);
 
 
 --
@@ -301,48 +335,6 @@ CREATE INDEX idx_posts_user_id ON public.posts USING btree (user_id);
 
 
 --
--- Name: idx_postschedules_post_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_postschedules_post_id ON public.postschedules USING btree (post_id);
-
-
---
--- Name: idx_postschedules_scheduled_time; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_postschedules_scheduled_time ON public.postschedules USING btree (scheduled_time);
-
-
---
--- Name: idx_postschedules_status; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_postschedules_status ON public.postschedules USING btree (status);
-
-
---
--- Name: idx_postschedules_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_postschedules_user_id ON public.postschedules USING btree (user_id);
-
-
---
--- Name: idx_postsuggestions_prompt_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_postsuggestions_prompt_id ON public.postsuggestions USING btree (prompt_id);
-
-
---
--- Name: idx_postsuggestions_text; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX idx_postsuggestions_text ON public.postsuggestions USING gin (text public.gin_trgm_ops);
-
-
---
 -- Name: idx_prompts_text; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -364,17 +356,17 @@ CREATE INDEX idx_prompts_user_id_text ON public.prompts USING btree (user_id, te
 
 
 --
--- Name: idx_socialaccounts_platform; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_social_accounts_platform; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_socialaccounts_platform ON public.socialaccounts USING btree (platform);
+CREATE INDEX idx_social_accounts_platform ON public.social_accounts USING btree (platform);
 
 
 --
--- Name: idx_socialaccounts_user_id; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_social_accounts_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_socialaccounts_user_id ON public.socialaccounts USING btree (user_id);
+CREATE INDEX idx_social_accounts_user_id ON public.social_accounts USING btree (user_id);
 
 
 --
@@ -392,10 +384,34 @@ CREATE INDEX idx_users_username ON public.users USING btree (username);
 
 
 --
--- Name: idx_verifyemails_email; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_verify_emails_email; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_verifyemails_email ON public.verifyemails USING btree (email);
+CREATE INDEX idx_verify_emails_email ON public.verify_emails USING btree (email);
+
+
+--
+-- Name: post_schedules post_schedules_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_schedules
+    ADD CONSTRAINT post_schedules_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_schedules post_schedules_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_schedules
+    ADD CONSTRAINT post_schedules_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_suggestions post_suggestions_prompt_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_suggestions
+    ADD CONSTRAINT post_suggestions_prompt_id_fkey FOREIGN KEY (prompt_id) REFERENCES public.prompts(id) ON DELETE CASCADE;
 
 
 --
@@ -403,7 +419,7 @@ CREATE INDEX idx_verifyemails_email ON public.verifyemails USING btree (email);
 --
 
 ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT posts_suggestion_id_fkey FOREIGN KEY (suggestion_id) REFERENCES public.postsuggestions(id) ON DELETE SET NULL;
+    ADD CONSTRAINT posts_suggestion_id_fkey FOREIGN KEY (suggestion_id) REFERENCES public.post_suggestions(id) ON DELETE SET NULL;
 
 
 --
@@ -415,30 +431,6 @@ ALTER TABLE ONLY public.posts
 
 
 --
--- Name: postschedules postschedules_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.postschedules
-    ADD CONSTRAINT postschedules_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE;
-
-
---
--- Name: postschedules postschedules_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.postschedules
-    ADD CONSTRAINT postschedules_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: postsuggestions postsuggestions_prompt_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.postsuggestions
-    ADD CONSTRAINT postsuggestions_prompt_id_fkey FOREIGN KEY (prompt_id) REFERENCES public.prompts(id) ON DELETE CASCADE;
-
-
---
 -- Name: prompts prompts_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -447,19 +439,19 @@ ALTER TABLE ONLY public.prompts
 
 
 --
--- Name: socialaccounts socialaccounts_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: social_accounts social_accounts_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.socialaccounts
-    ADD CONSTRAINT socialaccounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.social_accounts
+    ADD CONSTRAINT social_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
--- Name: verifyemails verifyemails_email_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: verify_emails verify_emails_email_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.verifyemails
-    ADD CONSTRAINT verifyemails_email_fkey FOREIGN KEY (email) REFERENCES public.users(email) ON DELETE CASCADE;
+ALTER TABLE ONLY public.verify_emails
+    ADD CONSTRAINT verify_emails_email_fkey FOREIGN KEY (email) REFERENCES public.users(email) ON DELETE CASCADE;
 
 
 --

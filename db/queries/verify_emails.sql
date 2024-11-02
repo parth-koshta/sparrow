@@ -1,5 +1,5 @@
 -- name: CreateVerifyEmail :one
-INSERT INTO verifyemails (
+INSERT INTO verify_emails (
     email,
     secret_code
 ) VALUES (
@@ -7,7 +7,7 @@ INSERT INTO verifyemails (
 ) RETURNING *;
 
 -- name: UpdateVerifyEmail :one
-UPDATE verifyemails
+UPDATE verify_emails
 SET
     is_used = TRUE
 WHERE

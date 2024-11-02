@@ -13,7 +13,7 @@ type VerifyEmailTxParams struct {
 
 type VerifyEmailTxResult struct {
 	User        User
-	VerifyEmail Verifyemail
+	VerifyEmail VerifyEmail
 }
 
 func (store *SQLStore) VerifyEmailTx(ctx context.Context, arg VerifyEmailTxParams) (VerifyEmailTxResult, error) {

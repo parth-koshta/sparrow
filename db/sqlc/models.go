@@ -18,7 +18,7 @@ type Post struct {
 	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
 }
 
-type Postschedule struct {
+type PostSchedule struct {
 	ID            pgtype.UUID      `json:"id"`
 	UserID        pgtype.UUID      `json:"user_id"`
 	PostID        pgtype.UUID      `json:"post_id"`
@@ -29,7 +29,7 @@ type Postschedule struct {
 	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
 }
 
-type Postsuggestion struct {
+type PostSuggestion struct {
 	ID        pgtype.UUID      `json:"id"`
 	PromptID  pgtype.UUID      `json:"prompt_id"`
 	Text      string           `json:"text"`
@@ -46,7 +46,7 @@ type Prompt struct {
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
-type Socialaccount struct {
+type SocialAccount struct {
 	ID             pgtype.UUID      `json:"id"`
 	UserID         pgtype.UUID      `json:"user_id"`
 	Platform       string           `json:"platform"`
@@ -69,7 +69,7 @@ type User struct {
 	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
 }
 
-type Verifyemail struct {
+type VerifyEmail struct {
 	ID         int64            `json:"id"`
 	Email      string           `json:"email"`
 	SecretCode string           `json:"secret_code"`
