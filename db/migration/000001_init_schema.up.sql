@@ -42,8 +42,7 @@ CREATE TABLE IF NOT EXISTS post_suggestions (
     text TEXT NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, text)
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- Create posts table
@@ -63,6 +62,7 @@ CREATE TABLE IF NOT EXISTS post_schedules (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    social_account_id UUID NOT NULL REFERENCES social_accounts(id) ON DELETE CASCADE,
     scheduled_time TIMESTAMP NOT NULL,
     executed_time TIMESTAMP,
     status VARCHAR(50) NOT NULL,

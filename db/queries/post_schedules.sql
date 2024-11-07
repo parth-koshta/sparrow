@@ -1,8 +1,8 @@
 -- name: CreatePostSchedule :one
 INSERT INTO post_schedules (
-  user_id, post_id, scheduled_time, status
+  user_id, post_id, social_account_id, scheduled_time, status
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING *;
 

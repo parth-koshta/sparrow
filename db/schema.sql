@@ -42,6 +42,7 @@ CREATE TABLE public.post_schedules (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     post_id uuid NOT NULL,
+    social_account_id uuid NOT NULL,
     scheduled_time timestamp without time zone NOT NULL,
     executed_time timestamp without time zone,
     status character varying(50) NOT NULL,
@@ -232,14 +233,6 @@ ALTER TABLE ONLY public.posts
 
 
 --
--- Name: post_suggestions unique_prompt_suggestion; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.post_suggestions
-    ADD CONSTRAINT unique_prompt_suggestion UNIQUE (prompt_id, text);
-
-
---
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -396,6 +389,14 @@ CREATE INDEX idx_verify_emails_email ON public.verify_emails USING btree (email)
 
 ALTER TABLE ONLY public.post_schedules
     ADD CONSTRAINT post_schedules_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE;
+
+
+--
+-- Name: post_schedules post_schedules_social_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.post_schedules
+    ADD CONSTRAINT post_schedules_social_account_id_fkey FOREIGN KEY (social_account_id) REFERENCES public.social_accounts(id) ON DELETE CASCADE;
 
 
 --

@@ -32,7 +32,7 @@ func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
 
 	userID, err := GetUserIDFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
@@ -95,7 +95,7 @@ func (server *Server) UpdateLinkedInAccessToken(ctx *gin.Context) {
 
 	userID, err := GetUserIDFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 

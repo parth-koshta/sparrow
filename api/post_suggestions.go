@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,7 +29,7 @@ func (s *Server) GetAISuggestionsByPrompt(ctx *gin.Context) {
 
 	userID, err := GetUserIDFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
@@ -192,6 +191,10 @@ func (server *Server) DeletePostSuggestion(ctx *gin.Context) {
 
 	_, err = server.store.DeletePostSuggestion(ctx, pgtype.UUID{Bytes: suggestionID, Valid: true})
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			ctx.JSON(http.StatusNoContent, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -221,7 +224,7 @@ func (s *Server) AcceptPostSuggestion(ctx *gin.Context) {
 
 	userID, err := GetUserIDFromContext(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to parse user ID: %v", err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 

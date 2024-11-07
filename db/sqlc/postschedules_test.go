@@ -13,6 +13,7 @@ func TestCreatePostSchedule(t *testing.T) {
 	runTestInTransaction(t, func(testQueries *Queries) {
 		// Create a user, prompt, suggestion, draft
 		user := createRandomUser(t, testQueries)
+		socialAccount := createRandomSocialAccount(t, testQueries, user.ID)
 		prompt := createRandomPrompt(t, testQueries, user.ID)
 		suggestion := createRandomPostSuggestion(t, testQueries, prompt.ID)
 		draft := createRandomDraft(t, testQueries, user.ID, suggestion.ID)
@@ -25,10 +26,11 @@ func TestCreatePostSchedule(t *testing.T) {
 
 		// Prepare the argument for creating a scheduled post
 		arg := CreatePostScheduleParams{
-			UserID:        user.ID,
-			PostID:        draft.ID,
-			ScheduledTime: scheduledTime,
-			Status:        "scheduled",
+			UserID:          user.ID,
+			PostID:          draft.ID,
+			ScheduledTime:   scheduledTime,
+			Status:          "scheduled",
+			SocialAccountID: socialAccount.ID,
 		}
 
 		// Create the scheduled post

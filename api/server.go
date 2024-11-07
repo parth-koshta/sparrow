@@ -73,9 +73,9 @@ func (server *Server) setupRouter() {
 
 	// authenticatedRouter.POST("/drafts", server.CreateDraft)
 	// authenticatedRouter.GET("/drafts/:id", server.GetDraft)
-	// authenticatedRouter.PUT("/drafts/:id", server.UpdateDraft)
-	// authenticatedRouter.DELETE("/drafts/:id", server.DeleteDraft)
-	// authenticatedRouter.GET("/drafts/user/:id", server.ListDraftsByUserID)
+	authenticatedRouter.PUT("/posts/:id", server.UpdatePost)
+	authenticatedRouter.DELETE("/posts/:id", server.DeletePost)
+	authenticatedRouter.GET("/drafts", server.ListPostsByUserID)
 
 	authenticatedRouter.POST("/v1/prompts", server.CreatePrompt)
 	authenticatedRouter.GET("/v1/prompts/:id", server.GetPrompt)
@@ -88,6 +88,7 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.GET("/v1/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
 	authenticatedRouter.POST("/v1/suggestions/ai", server.GetAISuggestionsByPrompt)
 	authenticatedRouter.POST("/v1/suggestions/accept", server.AcceptPostSuggestion)
+	authenticatedRouter.POST("/v1/suggestions/discard", server.DeletePostSuggestion)
 
 	authenticatedRouter.GET("/v1/social_accounts/:id", server.GetSocialAccount)
 	authenticatedRouter.DELETE("/v1/social_accounts/:id", server.DeleteSocialAccount)
@@ -97,6 +98,7 @@ func (server *Server) setupRouter() {
 
 	authenticatedRouter.POST("/v1/schedules", server.CreatePostSchedule)
 	authenticatedRouter.GET("/v1/schedules/:id", server.GetPostSchedule)
+	authenticatedRouter.GET("/v1/schedules", server.ListPostSchedulesForUser)
 	authenticatedRouter.DELETE("/v1/schedules/:id", server.DeletePostSchedule)
 
 	server.router = router

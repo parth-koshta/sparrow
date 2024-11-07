@@ -170,6 +170,7 @@ func (server *Server) LoginUser(ctx *gin.Context) {
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -194,7 +195,6 @@ func (server *Server) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	// Return the access token
 	ctx.JSON(http.StatusOK, &LoginUserResponse{
 		Token: accessToken,
 		User: UserResponse{

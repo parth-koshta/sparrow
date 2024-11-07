@@ -81,13 +81,14 @@ func (q *Queries) DeleteSocialAccount(ctx context.Context, id pgtype.UUID) (Soci
 }
 
 const getSocialAccountByID = `-- name: GetSocialAccountByID :one
-SELECT platform, account_name, access_token, token_expires_at, updated_at
+SELECT platform, user_id, account_name, access_token, token_expires_at, updated_at
 FROM social_accounts
 WHERE id = $1
 `
 
 type GetSocialAccountByIDRow struct {
 	Platform       string           `json:"platform"`
+	UserID         pgtype.UUID      `json:"user_id"`
 	AccountName    string           `json:"account_name"`
 	AccessToken    string           `json:"access_token"`
 	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
@@ -99,6 +100,7 @@ func (q *Queries) GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (Get
 	var i GetSocialAccountByIDRow
 	err := row.Scan(
 		&i.Platform,
+		&i.UserID,
 		&i.AccountName,
 		&i.AccessToken,
 		&i.TokenExpiresAt,

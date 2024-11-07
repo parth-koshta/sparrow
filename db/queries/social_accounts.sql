@@ -7,7 +7,7 @@ INSERT INTO social_accounts (
 RETURNING *;
 
 -- name: GetSocialAccountByID :one
-SELECT platform, account_name, access_token, token_expires_at, updated_at
+SELECT platform, user_id, account_name, access_token, token_expires_at, updated_at
 FROM social_accounts
 WHERE id = $1;
 

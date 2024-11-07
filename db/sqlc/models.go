@@ -19,14 +19,15 @@ type Post struct {
 }
 
 type PostSchedule struct {
-	ID            pgtype.UUID      `json:"id"`
-	UserID        pgtype.UUID      `json:"user_id"`
-	PostID        pgtype.UUID      `json:"post_id"`
-	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
-	ExecutedTime  pgtype.Timestamp `json:"executed_time"`
-	Status        string           `json:"status"`
-	CreatedAt     pgtype.Timestamp `json:"created_at"`
-	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
+	ID              pgtype.UUID      `json:"id"`
+	UserID          pgtype.UUID      `json:"user_id"`
+	PostID          pgtype.UUID      `json:"post_id"`
+	SocialAccountID pgtype.UUID      `json:"social_account_id"`
+	ScheduledTime   pgtype.Timestamp `json:"scheduled_time"`
+	ExecutedTime    pgtype.Timestamp `json:"executed_time"`
+	Status          string           `json:"status"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
 }
 
 type PostSuggestion struct {

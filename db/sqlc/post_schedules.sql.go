@@ -13,24 +13,26 @@ import (
 
 const createPostSchedule = `-- name: CreatePostSchedule :one
 INSERT INTO post_schedules (
-  user_id, post_id, scheduled_time, status
+  user_id, post_id, social_account_id, scheduled_time, status
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
-RETURNING id, user_id, post_id, scheduled_time, executed_time, status, created_at, updated_at
+RETURNING id, user_id, post_id, social_account_id, scheduled_time, executed_time, status, created_at, updated_at
 `
 
 type CreatePostScheduleParams struct {
-	UserID        pgtype.UUID      `json:"user_id"`
-	PostID        pgtype.UUID      `json:"post_id"`
-	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
-	Status        string           `json:"status"`
+	UserID          pgtype.UUID      `json:"user_id"`
+	PostID          pgtype.UUID      `json:"post_id"`
+	SocialAccountID pgtype.UUID      `json:"social_account_id"`
+	ScheduledTime   pgtype.Timestamp `json:"scheduled_time"`
+	Status          string           `json:"status"`
 }
 
 func (q *Queries) CreatePostSchedule(ctx context.Context, arg CreatePostScheduleParams) (PostSchedule, error) {
 	row := q.db.QueryRow(ctx, createPostSchedule,
 		arg.UserID,
 		arg.PostID,
+		arg.SocialAccountID,
 		arg.ScheduledTime,
 		arg.Status,
 	)
@@ -39,6 +41,7 @@ func (q *Queries) CreatePostSchedule(ctx context.Context, arg CreatePostSchedule
 		&i.ID,
 		&i.UserID,
 		&i.PostID,
+		&i.SocialAccountID,
 		&i.ScheduledTime,
 		&i.ExecutedTime,
 		&i.Status,
@@ -51,7 +54,7 @@ func (q *Queries) CreatePostSchedule(ctx context.Context, arg CreatePostSchedule
 const deletePostSchedule = `-- name: DeletePostSchedule :one
 DELETE FROM post_schedules
 WHERE id = $1
-RETURNING id, user_id, post_id, scheduled_time, executed_time, status, created_at, updated_at
+RETURNING id, user_id, post_id, social_account_id, scheduled_time, executed_time, status, created_at, updated_at
 `
 
 func (q *Queries) DeletePostSchedule(ctx context.Context, id pgtype.UUID) (PostSchedule, error) {
@@ -61,6 +64,7 @@ func (q *Queries) DeletePostSchedule(ctx context.Context, id pgtype.UUID) (PostS
 		&i.ID,
 		&i.UserID,
 		&i.PostID,
+		&i.SocialAccountID,
 		&i.ScheduledTime,
 		&i.ExecutedTime,
 		&i.Status,
@@ -159,7 +163,7 @@ SET scheduled_time = $2,
     status = $3,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, user_id, post_id, scheduled_time, executed_time, status, created_at, updated_at
+RETURNING id, user_id, post_id, social_account_id, scheduled_time, executed_time, status, created_at, updated_at
 `
 
 type UpdatePostScheduleParams struct {
@@ -175,6 +179,7 @@ func (q *Queries) UpdatePostSchedule(ctx context.Context, arg UpdatePostSchedule
 		&i.ID,
 		&i.UserID,
 		&i.PostID,
+		&i.SocialAccountID,
 		&i.ScheduledTime,
 		&i.ExecutedTime,
 		&i.Status,
