@@ -57,7 +57,7 @@ func main() {
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
 	runTaskProcessor(ctx, waitGroup, redisOptions, store, config)
-	// runTaskScheduler(ctx, waitGroup, redisOptions)
+	runTaskScheduler(ctx, waitGroup, redisOptions)
 	runServer(ctx, waitGroup, store, config, taskDistributor)
 
 	if err := waitGroup.Wait(); err != nil {

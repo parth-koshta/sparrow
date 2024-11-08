@@ -88,7 +88,7 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.GET("/v1/suggestions/prompt/:id", server.ListPostSuggestionsByPromptID)
 	authenticatedRouter.POST("/v1/suggestions/ai", server.GetAISuggestionsByPrompt)
 	authenticatedRouter.POST("/v1/suggestions/accept", server.AcceptPostSuggestion)
-	authenticatedRouter.POST("/v1/suggestions/discard", server.DeletePostSuggestion)
+	authenticatedRouter.POST("/v1/suggestions/reject", server.RejectPostSuggestion)
 
 	authenticatedRouter.GET("/v1/social_accounts/:id", server.GetSocialAccount)
 	authenticatedRouter.DELETE("/v1/social_accounts/:id", server.DeleteSocialAccount)

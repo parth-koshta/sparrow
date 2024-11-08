@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
+	dbtypes "github.com/parth-koshta/sparrow/db/types"
 )
 
 type GetAISuggestionsRequest struct {
@@ -243,4 +244,31 @@ func (s *Server) AcceptPostSuggestion(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, AcceptPostSuggestionResponse{
 		PostID: result.PostID,
 	})
+}
+
+func (s *Server) RejectPostSuggestion(ctx *gin.Context) {
+	var req AcceptPostSuggestionRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	suggestionID, err := uuid.Parse(req.ID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	updatePostSuggestionStatusArg := db.UpdatePostSuggestionStatusParams{
+		ID:     pgtype.UUID{Bytes: suggestionID, Valid: true},
+		Status: string(dbtypes.PostSuggestionStatusRejected),
+	}
+
+	_, err = s.store.UpdatePostSuggestionStatus(ctx, updatePostSuggestionStatusArg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, nil)
 }

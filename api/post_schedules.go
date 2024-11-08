@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
-	dbtypes "github.com/parth-koshta/sparrow/db/types"
 )
 
 type CreatePostScheduleRequest struct {
@@ -52,15 +51,14 @@ func (server *Server) CreatePostSchedule(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreatePostScheduleParams{
+	createPostScheduleTxArg := db.SchedulePostTxParams{
 		UserID:          pgtype.UUID{Bytes: userID, Valid: true},
 		PostID:          pgtype.UUID{Bytes: postID, Valid: true},
 		ScheduledTime:   req.ScheduledTime,
-		Status:          string(dbtypes.PostStatusScheduled),
 		SocialAccountID: pgtype.UUID{Bytes: socialAccountID, Valid: true},
 	}
 
-	scheduledPost, err := server.store.CreatePostSchedule(ctx, arg)
+	scheduledPost, err := server.store.SchedulePostTx(ctx, createPostScheduleTxArg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

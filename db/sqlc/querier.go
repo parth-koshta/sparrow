@@ -40,6 +40,7 @@ type Querier interface {
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
 	UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error)
 	UpdatePostSchedule(ctx context.Context, arg UpdatePostScheduleParams) (PostSchedule, error)
+	UpdatePostStatus(ctx context.Context, arg UpdatePostStatusParams) (Post, error)
 	UpdatePostSuggestionStatus(ctx context.Context, arg UpdatePostSuggestionStatusParams) (PostSuggestion, error)
 	UpdatePrompt(ctx context.Context, arg UpdatePromptParams) (Prompt, error)
 	UpdateSocialAccount(ctx context.Context, arg UpdateSocialAccountParams) (SocialAccount, error)

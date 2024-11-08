@@ -27,7 +27,6 @@ RETURNING *;
 -- name: BulkCreatePostSuggestions :many
 INSERT INTO post_suggestions (prompt_id, text)
 SELECT @prompt_id, unnest(@suggestions::text[])
-ON CONFLICT (prompt_id, text) DO NOTHING
 RETURNING id, prompt_id, text, created_at;
 
 -- name: UpdatePostSuggestionStatus :one
