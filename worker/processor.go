@@ -20,16 +20,19 @@ type TaskProcessor interface {
 	Start() error
 	Shutdown()
 	ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error
+	ProcessTaskEnqueueScheduledPosts(ctx context.Context, task *asynq.Task) error
+	// ProcessTaskPublishPost(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
-	server *asynq.Server
-	store  db.Store
-	mailer mail.EmailSender
-	config util.Config
+	server      *asynq.Server
+	store       db.Store
+	mailer      mail.EmailSender
+	config      util.Config
+	distributor TaskDistributor
 }
 
-func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, mailer mail.EmailSender, config util.Config) TaskProcessor {
+func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, mailer mail.EmailSender, config util.Config, distributor TaskDistributor) TaskProcessor {
 	server := asynq.NewServer(redisOptions, asynq.Config{
 		Queues: map[string]int{
 			QueueCritical: 10,
@@ -42,10 +45,11 @@ func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, ma
 	})
 
 	return &RedisTaskProcessor{
-		server: server,
-		store:  store,
-		mailer: mailer,
-		config: config,
+		server:      server,
+		store:       store,
+		mailer:      mailer,
+		config:      config,
+		distributor: distributor,
 	}
 }
 
@@ -53,6 +57,7 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 	mux.HandleFunc(TaskSendVerifyEmail, processor.ProcessTaskSendVerifyEmail)
 	mux.HandleFunc(TaskEnqueueScheduledPosts, processor.ProcessTaskEnqueueScheduledPosts)
+	mux.HandleFunc(TaskPublishPosts, processor.ProcessTaskPublishPost)
 	log.Info().Msg("starting task processor")
 	return processor.server.Start(mux)
 }

@@ -65,6 +65,71 @@ func (q *Queries) GetPostScheduleByID(ctx context.Context, id pgtype.UUID) (GetP
 	return i, err
 }
 
+const getScheduledPostsWithinTimeframe = `-- name: GetScheduledPostsWithinTimeframe :many
+SELECT p.id, 
+       p.user_id, 
+       p.suggestion_id, 
+       p.text, 
+       p.status, 
+       p.created_at, 
+       p.updated_at, 
+       ps.scheduled_time,
+       ps.id AS schedule_id
+FROM posts p
+JOIN post_schedules ps ON p.id = ps.post_id
+WHERE p.status = 'scheduled'
+  AND ps.scheduled_time BETWEEN NOW() - ($1::int * INTERVAL '1 hour') 
+  AND NOW() + ($2::int * INTERVAL '1 hour')
+ORDER BY ps.scheduled_time ASC
+`
+
+type GetScheduledPostsWithinTimeframeParams struct {
+	HoursFrom int32 `json:"hours_from"`
+	HoursTill int32 `json:"hours_till"`
+}
+
+type GetScheduledPostsWithinTimeframeRow struct {
+	ID            pgtype.UUID      `json:"id"`
+	UserID        pgtype.UUID      `json:"user_id"`
+	SuggestionID  pgtype.UUID      `json:"suggestion_id"`
+	Text          string           `json:"text"`
+	Status        string           `json:"status"`
+	CreatedAt     pgtype.Timestamp `json:"created_at"`
+	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
+	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
+	ScheduleID    pgtype.UUID      `json:"schedule_id"`
+}
+
+func (q *Queries) GetScheduledPostsWithinTimeframe(ctx context.Context, arg GetScheduledPostsWithinTimeframeParams) ([]GetScheduledPostsWithinTimeframeRow, error) {
+	rows, err := q.db.Query(ctx, getScheduledPostsWithinTimeframe, arg.HoursFrom, arg.HoursTill)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetScheduledPostsWithinTimeframeRow
+	for rows.Next() {
+		var i GetScheduledPostsWithinTimeframeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.SuggestionID,
+			&i.Text,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ScheduledTime,
+			&i.ScheduleID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPostSchedulesByUserID = `-- name: ListPostSchedulesByUserID :many
 SELECT id, user_id, post_id, scheduled_time, status, created_at, updated_at
 FROM post_schedules
@@ -174,6 +239,32 @@ type UpdatePostScheduleParams struct {
 
 func (q *Queries) UpdatePostSchedule(ctx context.Context, arg UpdatePostScheduleParams) (PostSchedule, error) {
 	row := q.db.QueryRow(ctx, updatePostSchedule, arg.ID, arg.ScheduledTime, arg.Status)
+	var i PostSchedule
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.PostID,
+		&i.SocialAccountID,
+		&i.ScheduledTime,
+		&i.ExecutedTime,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updatePostScheduleExectued = `-- name: UpdatePostScheduleExectued :one
+UPDATE post_schedules
+SET executed_time = NOW(),
+    status = 'executed',
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, user_id, post_id, social_account_id, scheduled_time, executed_time, status, created_at, updated_at
+`
+
+func (q *Queries) UpdatePostScheduleExectued(ctx context.Context, id pgtype.UUID) (PostSchedule, error) {
+	row := q.db.QueryRow(ctx, updatePostScheduleExectued, id)
 	var i PostSchedule
 	err := row.Scan(
 		&i.ID,

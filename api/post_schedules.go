@@ -1,7 +1,9 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,6 +22,16 @@ func (server *Server) SchedulePost(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
+	}
+
+	scheduledTime, err := req.ScheduledTime.Value()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("invalid scheduled_time format: %w", err)))
+		return
+	}
+
+	if t, ok := scheduledTime.(time.Time); ok {
+		scheduledTime = t.UTC()
 	}
 
 	userID, err := GetUserIDFromContext(ctx)
@@ -54,7 +66,7 @@ func (server *Server) SchedulePost(ctx *gin.Context) {
 	createPostScheduleTxArg := db.SchedulePostTxParams{
 		UserID:          pgtype.UUID{Bytes: userID, Valid: true},
 		PostID:          pgtype.UUID{Bytes: postID, Valid: true},
-		ScheduledTime:   req.ScheduledTime,
+		ScheduledTime:   pgtype.Timestamp{Time: scheduledTime.(time.Time), Valid: true},
 		SocialAccountID: pgtype.UUID{Bytes: socialAccountID, Valid: true},
 	}
 
