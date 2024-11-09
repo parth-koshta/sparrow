@@ -9,14 +9,14 @@ import (
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 )
 
-type CreatePostScheduleRequest struct {
+type SchedulePostRequest struct {
 	PostID          string           `json:"post_id" binding:"required,uuid"`
 	ScheduledTime   pgtype.Timestamp `json:"scheduled_time" binding:"required"`
 	SocialAccountID string           `json:"social_account_id" binding:"required,uuid"`
 }
 
-func (server *Server) CreatePostSchedule(ctx *gin.Context) {
-	var req CreatePostScheduleRequest
+func (server *Server) SchedulePost(ctx *gin.Context) {
+	var req SchedulePostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -67,12 +67,12 @@ func (server *Server) CreatePostSchedule(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, scheduledPost)
 }
 
-type GetPostScheduleRequest struct {
+type GetScheduleRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) GetPostSchedule(ctx *gin.Context) {
-	var req GetPostScheduleRequest
+func (server *Server) GetSchedule(ctx *gin.Context) {
+	var req GetScheduleRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -93,12 +93,12 @@ func (server *Server) GetPostSchedule(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, scheduledPost)
 }
 
-type DeletePostScheduleRequest struct {
+type DeleteScheduleRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) DeletePostSchedule(ctx *gin.Context) {
-	var req DeletePostScheduleRequest
+func (server *Server) DeleteSchedule(ctx *gin.Context) {
+	var req DeleteScheduleRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -110,7 +110,7 @@ func (server *Server) DeletePostSchedule(ctx *gin.Context) {
 		return
 	}
 
-	_, err = server.store.DeletePostSchedule(ctx, pgtype.UUID{Bytes: postID, Valid: true})
+	_, err = server.store.DeleteSchedule(ctx, pgtype.UUID{Bytes: postID, Valid: true})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -119,13 +119,13 @@ func (server *Server) DeletePostSchedule(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, nil)
 }
 
-type ListPostSchedulesByUserIDRequest struct {
+type ListSchedulesByUserIDRequest struct {
 	Limit  int32 `form:"limit" binding:"required"`
 	Offset int32 `form:"offset" binding:"required"`
 }
 
 func (server *Server) ListPostSchedulesForUser(ctx *gin.Context) {
-	var req ListPostSchedulesByUserIDRequest
+	var req ListSchedulesByUserIDRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

@@ -1,4 +1,4 @@
--- name: CreatePostSchedule :one
+-- name: SchedulePost :one
 INSERT INTO post_schedules (
   user_id, post_id, social_account_id, scheduled_time, status
 ) VALUES (
@@ -26,7 +26,7 @@ SET scheduled_time = $2,
 WHERE id = $1
 RETURNING *;
 
--- name: DeletePostSchedule :one
+-- name: DeleteSchedule :one
 DELETE FROM post_schedules
 WHERE id = $1
 RETURNING *;

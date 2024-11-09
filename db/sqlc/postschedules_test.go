@@ -25,7 +25,7 @@ func TestCreatePostSchedule(t *testing.T) {
 		}
 
 		// Prepare the argument for creating a scheduled post
-		arg := CreatePostScheduleParams{
+		arg := SchedulePostParams{
 			UserID:          user.ID,
 			PostID:          draft.ID,
 			ScheduledTime:   scheduledTime,
@@ -34,7 +34,7 @@ func TestCreatePostSchedule(t *testing.T) {
 		}
 
 		// Create the scheduled post
-		scheduledPost, err := testQueries.CreatePostSchedule(context.Background(), arg)
+		scheduledPost, err := testQueries.SchedulePost(context.Background(), arg)
 		require.NoError(t, err)
 		require.NotEmpty(t, scheduledPost)
 

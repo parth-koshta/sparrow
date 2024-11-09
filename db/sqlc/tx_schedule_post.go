@@ -22,7 +22,7 @@ type SchedulePostTxResult struct {
 func (store *SQLStore) SchedulePostTx(ctx context.Context, arg SchedulePostTxParams) (SchedulePostTxResult, error) {
 	var result SchedulePostTxResult
 	err := store.ExecTx(ctx, func(q *Queries) error {
-		scheduleArg := CreatePostScheduleParams{
+		scheduleArg := SchedulePostParams{
 			UserID:          arg.UserID,
 			PostID:          arg.PostID,
 			ScheduledTime:   arg.ScheduledTime,
@@ -30,7 +30,7 @@ func (store *SQLStore) SchedulePostTx(ctx context.Context, arg SchedulePostTxPar
 			Status:          string(dbtypes.PostStatusScheduled),
 		}
 
-		scheduledPost, err := q.CreatePostSchedule(ctx, scheduleArg)
+		scheduledPost, err := q.SchedulePost(ctx, scheduleArg)
 		if err != nil {
 			return err
 		}

@@ -11,54 +11,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createPostSchedule = `-- name: CreatePostSchedule :one
-INSERT INTO post_schedules (
-  user_id, post_id, social_account_id, scheduled_time, status
-) VALUES (
-  $1, $2, $3, $4, $5
-)
-RETURNING id, user_id, post_id, social_account_id, scheduled_time, executed_time, status, created_at, updated_at
-`
-
-type CreatePostScheduleParams struct {
-	UserID          pgtype.UUID      `json:"user_id"`
-	PostID          pgtype.UUID      `json:"post_id"`
-	SocialAccountID pgtype.UUID      `json:"social_account_id"`
-	ScheduledTime   pgtype.Timestamp `json:"scheduled_time"`
-	Status          string           `json:"status"`
-}
-
-func (q *Queries) CreatePostSchedule(ctx context.Context, arg CreatePostScheduleParams) (PostSchedule, error) {
-	row := q.db.QueryRow(ctx, createPostSchedule,
-		arg.UserID,
-		arg.PostID,
-		arg.SocialAccountID,
-		arg.ScheduledTime,
-		arg.Status,
-	)
-	var i PostSchedule
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.PostID,
-		&i.SocialAccountID,
-		&i.ScheduledTime,
-		&i.ExecutedTime,
-		&i.Status,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const deletePostSchedule = `-- name: DeletePostSchedule :one
+const deleteSchedule = `-- name: DeleteSchedule :one
 DELETE FROM post_schedules
 WHERE id = $1
 RETURNING id, user_id, post_id, social_account_id, scheduled_time, executed_time, status, created_at, updated_at
 `
 
-func (q *Queries) DeletePostSchedule(ctx context.Context, id pgtype.UUID) (PostSchedule, error) {
-	row := q.db.QueryRow(ctx, deletePostSchedule, id)
+func (q *Queries) DeleteSchedule(ctx context.Context, id pgtype.UUID) (PostSchedule, error) {
+	row := q.db.QueryRow(ctx, deleteSchedule, id)
 	var i PostSchedule
 	err := row.Scan(
 		&i.ID,
@@ -155,6 +115,46 @@ func (q *Queries) ListPostSchedulesByUserID(ctx context.Context, arg ListPostSch
 		return nil, err
 	}
 	return items, nil
+}
+
+const schedulePost = `-- name: SchedulePost :one
+INSERT INTO post_schedules (
+  user_id, post_id, social_account_id, scheduled_time, status
+) VALUES (
+  $1, $2, $3, $4, $5
+)
+RETURNING id, user_id, post_id, social_account_id, scheduled_time, executed_time, status, created_at, updated_at
+`
+
+type SchedulePostParams struct {
+	UserID          pgtype.UUID      `json:"user_id"`
+	PostID          pgtype.UUID      `json:"post_id"`
+	SocialAccountID pgtype.UUID      `json:"social_account_id"`
+	ScheduledTime   pgtype.Timestamp `json:"scheduled_time"`
+	Status          string           `json:"status"`
+}
+
+func (q *Queries) SchedulePost(ctx context.Context, arg SchedulePostParams) (PostSchedule, error) {
+	row := q.db.QueryRow(ctx, schedulePost,
+		arg.UserID,
+		arg.PostID,
+		arg.SocialAccountID,
+		arg.ScheduledTime,
+		arg.Status,
+	)
+	var i PostSchedule
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.PostID,
+		&i.SocialAccountID,
+		&i.ScheduledTime,
+		&i.ExecutedTime,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updatePostSchedule = `-- name: UpdatePostSchedule :one
