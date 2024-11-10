@@ -6,7 +6,10 @@ postgres:
 	docker run --name $(POSTGRES_CONTAINER) --network=sparrow-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:16-alpine
 
 redis:
-	docker run --name redis -p 6379:6379 -d redis:7-alpine
+	docker run --name redis --network=sparrow-network -p 6379:6379 -d redis:7-alpine
+
+worker-ui:
+	docker run --name=asynqmon-ui --network=sparrow-network -p 8081:8081 -d hibiken/asynqmon --port 8081 --redis-addr redis:6379
 
 createdb:
 	docker exec -it $(POSTGRES_CONTAINER) createdb --username=root --owner=root sparrow-dev
@@ -57,4 +60,4 @@ mock:
 generate:
 	make sqlc; make dumpschema; make mock
 
-.PHONY: postgres createdb dropdb migratecreate migrateup migratedown sqlc test server mock generate redis
+.PHONY: postgres createdb dropdb migratecreate migrateup migratedown sqlc test server mock generate redis worker-ui

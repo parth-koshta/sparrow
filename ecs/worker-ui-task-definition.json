@@ -1,0 +1,52 @@
+{
+  "family": "worker-ui-task-definition",
+  "executionRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "worker-ui",
+      "image": "050752639725.dkr.ecr.ap-south-1.amazonaws.com/tool/worker-ui:latest",
+      "cpu": 0,
+      "memory": 1024,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8081,
+          "hostPort": 8081,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "PORT",
+          "value": "8081"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "REDIS_ADDR",
+          "valueFrom": "arn:aws:secretsmanager:ap-south-1:050752639725:secret:sparrow-test-CzGVOg:REDIS_ADDRESS::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/worker-ui-task-definition",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "ephemeralStorage": {
+    "sizeInGiB": 21
+  },
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  }
+}
