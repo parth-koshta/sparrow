@@ -7,7 +7,6 @@ import (
 
 	openai "github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
-	"github.com/rs/zerolog/log"
 )
 
 type OpenAIClient struct {
@@ -35,11 +34,9 @@ func (c *OpenAIClient) GenerateLinkedInPosts(topic string, numPosts int) ([]stri
 		TopP:        openai.Float(0.95), // Adjust for response diversity
 	})
 	if err != nil {
-		log.Info().Msgf("OpenAI error: %v", err)
 		return nil, err
 	}
 
-	log.Info().Msgf("OpenAI response: %v", resp)
 	// Check if there are any responses
 	if len(resp.Choices) == 0 {
 		return nil, fmt.Errorf("no choices received in response")
