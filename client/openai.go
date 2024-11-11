@@ -17,9 +17,6 @@ type OpenAIClient struct {
 func NewOpenAIClient(apiKey string) *OpenAIClient {
 	// Initialize the OpenAI SDK client
 	log.Info().Msgf("Initializing OpenAI client %d", len(apiKey))
-	if apiKey == "" {
-		log.Error().Msg("OpenAI API key is empty")
-	}
 	return &OpenAIClient{
 		Client: openai.NewClient(option.WithAPIKey(apiKey)),
 	}
@@ -39,9 +36,11 @@ func (c *OpenAIClient) GenerateLinkedInPosts(topic string, numPosts int) ([]stri
 		TopP:        openai.Float(0.95), // Adjust for response diversity
 	})
 	if err != nil {
+		log.Info().Msgf("OpenAI error: %v", err)
 		return nil, err
 	}
 
+	log.Info().Msgf("OpenAI response: %v", resp)
 	// Check if there are any responses
 	if len(resp.Choices) == 0 {
 		return nil, fmt.Errorf("no choices received in response")
