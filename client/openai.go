@@ -17,6 +17,7 @@ type OpenAIClient struct {
 func NewOpenAIClient(apiKey string) *OpenAIClient {
 	// Initialize the OpenAI SDK client
 	log.Info().Msgf("Initializing OpenAI client %d", len(apiKey))
+	log.Info().Msgf("Loaded API key: %s...%s", apiKey[:10], apiKey[len(apiKey)-10:])
 	return &OpenAIClient{
 		Client: openai.NewClient(option.WithAPIKey(apiKey)),
 	}
