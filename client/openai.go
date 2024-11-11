@@ -7,6 +7,7 @@ import (
 
 	openai "github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
+	"github.com/rs/zerolog/log"
 )
 
 type OpenAIClient struct {
@@ -15,6 +16,10 @@ type OpenAIClient struct {
 
 func NewOpenAIClient(apiKey string) *OpenAIClient {
 	// Initialize the OpenAI SDK client
+	log.Info().Msgf("Initializing OpenAI client %d", len(apiKey))
+	if apiKey == "" {
+		log.Error().Msg("OpenAI API key is empty")
+	}
 	return &OpenAIClient{
 		Client: openai.NewClient(option.WithAPIKey(apiKey)),
 	}
