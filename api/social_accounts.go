@@ -66,6 +66,7 @@ func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
 		AccessToken:    accessToken,
 		IDToken:        idToken,
 		TokenExpiresAt: tokenExpiresAtPg,
+		LinkedinSub:    pgtype.Text{String: userInfo.Sub, Valid: true},
 	}
 
 	socialAccount, err := server.store.CreateSocialAccount(ctx, arg)

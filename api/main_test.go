@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
+	"github.com/parth-koshta/sparrow/mocks"
 	"github.com/parth-koshta/sparrow/util"
 	"github.com/stretchr/testify/require"
 )
@@ -16,8 +17,9 @@ func NewTestServer(t *testing.T, store db.Store) *Server {
 		TokenSymmetricKey:   util.GenerateRandomString().String,
 		AccessTokenDuration: time.Minute * 5,
 	}
-
-	server, err := NewServer(store, config, nil)
+	mockTaskDistributor := mocks.NewTaskDistributor(t)
+	mockLinkedinClient := mocks.NewLinkedinAPIClient(t)
+	server, err := NewServer(store, config, mockTaskDistributor, mockLinkedinClient)
 	require.NoError(t, err)
 
 	return server

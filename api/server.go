@@ -24,18 +24,17 @@ type Server struct {
 	config          util.Config
 	router          *gin.Engine
 	httpServer      *http.Server
-	linkedinClient  *client.LinkedinClient
+	linkedinClient  client.LinkedinAPIClient
 	openaiClient    *client.OpenAIClient
 	taskDistributor worker.TaskDistributor
 }
 
-func NewServer(store db.Store, config util.Config, taskDistributor worker.TaskDistributor) (*Server, error) {
+func NewServer(store db.Store, config util.Config, taskDistributor worker.TaskDistributor, linkedinClient client.LinkedinAPIClient) (*Server, error) {
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, err
 	}
 
-	linkedinClient := client.NewLinkedInClient(config.LinkedInClientID, config.LinkedInClientSecret)
 	openaiClient := client.NewOpenAIClient(config.OpenAIApiKey)
 
 	server := &Server{store: store, tokenMaker: tokenMaker, config: config, linkedinClient: linkedinClient, openaiClient: openaiClient, taskDistributor: taskDistributor}
@@ -73,9 +72,10 @@ func (server *Server) setupRouter() {
 
 	// authenticatedRouter.POST("/drafts", server.CreateDraft)
 	// authenticatedRouter.GET("/drafts/:id", server.GetDraft)
-	authenticatedRouter.PUT("/posts/:id", server.UpdatePost)
-	authenticatedRouter.DELETE("/posts/:id", server.DeletePost)
-	authenticatedRouter.GET("/drafts", server.ListPostsByUserID)
+	authenticatedRouter.PUT("/v1/posts/:id", server.UpdatePost)
+	authenticatedRouter.DELETE("/v1/posts/:id", server.DeletePost)
+	authenticatedRouter.GET("/v1/posts", server.ListPostsByUserID)
+	authenticatedRouter.POST("/v1/posts/publish/linkedin", server.PublishOnLinkedIn)
 
 	authenticatedRouter.POST("/v1/prompts", server.CreatePrompt)
 	authenticatedRouter.GET("/v1/prompts/:id", server.GetPrompt)

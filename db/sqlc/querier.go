@@ -23,7 +23,7 @@ type Querier interface {
 	DeletePrompt(ctx context.Context, id pgtype.UUID) (Prompt, error)
 	DeleteSchedule(ctx context.Context, id pgtype.UUID) (PostSchedule, error)
 	DeleteSocialAccount(ctx context.Context, id pgtype.UUID) (SocialAccount, error)
-	GetPostByID(ctx context.Context, id pgtype.UUID) (GetPostByIDRow, error)
+	GetPostByID(ctx context.Context, id pgtype.UUID) (Post, error)
 	GetPostScheduleByID(ctx context.Context, id pgtype.UUID) (GetPostScheduleByIDRow, error)
 	GetPostSuggestionByID(ctx context.Context, id pgtype.UUID) (GetPostSuggestionByIDRow, error)
 	GetPromptByID(ctx context.Context, id pgtype.UUID) (Prompt, error)

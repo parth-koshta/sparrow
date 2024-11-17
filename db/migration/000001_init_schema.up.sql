@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS social_accounts (
     id_token TEXT NOT NULL,
     token_expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    linkedin_sub VARCHAR(255)
 );
 
 -- Create prompts table

@@ -7,7 +7,7 @@ INSERT INTO posts (
 RETURNING *;
 
 -- name: GetPostByID :one
-SELECT id, user_id, suggestion_id, text, created_at, updated_at
+SELECT id, user_id, suggestion_id, text, status, created_at, updated_at
 FROM posts
 WHERE id = $1;
 

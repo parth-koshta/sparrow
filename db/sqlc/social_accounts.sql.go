@@ -13,11 +13,11 @@ import (
 
 const createSocialAccount = `-- name: CreateSocialAccount :one
 INSERT INTO social_accounts (
-  user_id, platform, account_name, account_email, access_token, id_token, token_expires_at
+  user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, linkedin_sub
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6, $7, $8
 )
-RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at
+RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at, linkedin_sub
 `
 
 type CreateSocialAccountParams struct {
@@ -28,6 +28,7 @@ type CreateSocialAccountParams struct {
 	AccessToken    string           `json:"access_token"`
 	IDToken        string           `json:"id_token"`
 	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
+	LinkedinSub    pgtype.Text      `json:"linkedin_sub"`
 }
 
 func (q *Queries) CreateSocialAccount(ctx context.Context, arg CreateSocialAccountParams) (SocialAccount, error) {
@@ -39,6 +40,7 @@ func (q *Queries) CreateSocialAccount(ctx context.Context, arg CreateSocialAccou
 		arg.AccessToken,
 		arg.IDToken,
 		arg.TokenExpiresAt,
+		arg.LinkedinSub,
 	)
 	var i SocialAccount
 	err := row.Scan(
@@ -52,6 +54,7 @@ func (q *Queries) CreateSocialAccount(ctx context.Context, arg CreateSocialAccou
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LinkedinSub,
 	)
 	return i, err
 }
@@ -59,7 +62,7 @@ func (q *Queries) CreateSocialAccount(ctx context.Context, arg CreateSocialAccou
 const deleteSocialAccount = `-- name: DeleteSocialAccount :one
 DELETE FROM social_accounts
 WHERE id = $1
-RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at
+RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at, linkedin_sub
 `
 
 func (q *Queries) DeleteSocialAccount(ctx context.Context, id pgtype.UUID) (SocialAccount, error) {
@@ -76,12 +79,13 @@ func (q *Queries) DeleteSocialAccount(ctx context.Context, id pgtype.UUID) (Soci
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LinkedinSub,
 	)
 	return i, err
 }
 
 const getSocialAccountByID = `-- name: GetSocialAccountByID :one
-SELECT platform, user_id, account_name, access_token, token_expires_at, updated_at
+SELECT platform, user_id, account_name, access_token, linkedin_sub, token_expires_at, updated_at
 FROM social_accounts
 WHERE id = $1
 `
@@ -91,6 +95,7 @@ type GetSocialAccountByIDRow struct {
 	UserID         pgtype.UUID      `json:"user_id"`
 	AccountName    string           `json:"account_name"`
 	AccessToken    string           `json:"access_token"`
+	LinkedinSub    pgtype.Text      `json:"linkedin_sub"`
 	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
 	UpdatedAt      pgtype.Timestamp `json:"updated_at"`
 }
@@ -103,6 +108,7 @@ func (q *Queries) GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (Get
 		&i.UserID,
 		&i.AccountName,
 		&i.AccessToken,
+		&i.LinkedinSub,
 		&i.TokenExpiresAt,
 		&i.UpdatedAt,
 	)
@@ -168,7 +174,7 @@ SET platform = $2,
     access_token = $4,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at
+RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at, linkedin_sub
 `
 
 type UpdateSocialAccountParams struct {
@@ -197,6 +203,7 @@ func (q *Queries) UpdateSocialAccount(ctx context.Context, arg UpdateSocialAccou
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LinkedinSub,
 	)
 	return i, err
 }
@@ -208,7 +215,7 @@ SET access_token = $2,
     token_expires_at = $4,
     updated_at = NOW()
 WHERE user_id = $1
-RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at
+RETURNING id, user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, created_at, updated_at, linkedin_sub
 `
 
 type UpdateSocialAccountTokenParams struct {
@@ -237,6 +244,7 @@ func (q *Queries) UpdateSocialAccountToken(ctx context.Context, arg UpdateSocial
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LinkedinSub,
 	)
 	return i, err
 }

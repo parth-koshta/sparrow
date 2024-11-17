@@ -6,6 +6,8 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/hibiken/asynq"
+
+	"github.com/parth-koshta/sparrow/client"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/mail"
 	"github.com/parth-koshta/sparrow/util"
@@ -21,18 +23,18 @@ type TaskProcessor interface {
 	Shutdown()
 	ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error
 	ProcessTaskEnqueueScheduledPosts(ctx context.Context, task *asynq.Task) error
-	// ProcessTaskPublishPost(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
-	server      *asynq.Server
-	store       db.Store
-	mailer      mail.EmailSender
-	config      util.Config
-	distributor TaskDistributor
+	server         *asynq.Server
+	store          db.Store
+	mailer         mail.EmailSender
+	config         util.Config
+	distributor    TaskDistributor
+	linkedinClient client.LinkedinAPIClient
 }
 
-func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, mailer mail.EmailSender, config util.Config, distributor TaskDistributor) TaskProcessor {
+func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, mailer mail.EmailSender, config util.Config, distributor TaskDistributor, linkedinClient client.LinkedinAPIClient) TaskProcessor {
 	server := asynq.NewServer(redisOptions, asynq.Config{
 		Queues: map[string]int{
 			QueueCritical: 10,
@@ -45,11 +47,12 @@ func NewRedisTaskProcessor(redisOptions asynq.RedisClientOpt, store db.Store, ma
 	})
 
 	return &RedisTaskProcessor{
-		server:      server,
-		store:       store,
-		mailer:      mailer,
-		config:      config,
-		distributor: distributor,
+		server:         server,
+		store:          store,
+		mailer:         mailer,
+		config:         config,
+		distributor:    distributor,
+		linkedinClient: linkedinClient,
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/parth-koshta/sparrow/api"
+	"github.com/parth-koshta/sparrow/client"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/mail"
 	"github.com/parth-koshta/sparrow/util"
@@ -56,18 +57,20 @@ func main() {
 
 	waitGroup, ctx := errgroup.WithContext(ctx)
 
-	runTaskProcessor(ctx, waitGroup, redisOptions, store, config, taskDistributor)
+	linkedinClient := client.NewLinkedInClient(config.LinkedInClientID, config.LinkedInClientSecret)
+
+	runTaskProcessor(ctx, waitGroup, redisOptions, store, config, taskDistributor, linkedinClient)
 	runTaskScheduler(ctx, waitGroup, redisOptions)
-	runServer(ctx, waitGroup, store, config, taskDistributor)
+	runServer(ctx, waitGroup, store, config, taskDistributor, linkedinClient)
 
 	if err := waitGroup.Wait(); err != nil {
 		log.Error().Err(err).Msg("error from server or task processor")
 	}
 }
 
-func runTaskProcessor(ctx context.Context, waitGroup *errgroup.Group, redisOptions asynq.RedisClientOpt, store db.Store, config util.Config, distributor worker.TaskDistributor) {
+func runTaskProcessor(ctx context.Context, waitGroup *errgroup.Group, redisOptions asynq.RedisClientOpt, store db.Store, config util.Config, distributor worker.TaskDistributor, linkedinClient client.LinkedinAPIClient) {
 	mailer := mail.NewGmailSender(config.EmailSenderName, config.EmailSenderAddress, config.EmailSenderPassword)
-	taskProcessor := worker.NewRedisTaskProcessor(redisOptions, store, mailer, config, distributor)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOptions, store, mailer, config, distributor, linkedinClient)
 
 	if err := taskProcessor.Start(); err != nil {
 		log.Error().Err(err).Msg("cannot start task processor")
@@ -101,8 +104,8 @@ func runTaskScheduler(ctx context.Context, waitGroup *errgroup.Group, redisOptio
 	})
 }
 
-func runServer(ctx context.Context, waitGroup *errgroup.Group, store db.Store, config util.Config, taskDistributor worker.TaskDistributor) {
-	server, err := api.NewServer(store, config, taskDistributor)
+func runServer(ctx context.Context, waitGroup *errgroup.Group, store db.Store, config util.Config, taskDistributor worker.TaskDistributor, linkedinClient client.LinkedinAPIClient) {
+	server, err := api.NewServer(store, config, taskDistributor, linkedinClient)
 	if err != nil {
 		log.Error().Err(err).Msg("cannot create server")
 		return

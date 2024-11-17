@@ -74,7 +74,8 @@ SELECT p.id,
        p.created_at, 
        p.updated_at, 
        ps.scheduled_time,
-       ps.id AS schedule_id
+       ps.id AS schedule_id,
+       ps.social_account_id AS social_account_id
 FROM posts p
 JOIN post_schedules ps ON p.id = ps.post_id
 WHERE p.status = 'scheduled'
@@ -89,15 +90,16 @@ type GetScheduledPostsWithinTimeframeParams struct {
 }
 
 type GetScheduledPostsWithinTimeframeRow struct {
-	ID            pgtype.UUID      `json:"id"`
-	UserID        pgtype.UUID      `json:"user_id"`
-	SuggestionID  pgtype.UUID      `json:"suggestion_id"`
-	Text          string           `json:"text"`
-	Status        string           `json:"status"`
-	CreatedAt     pgtype.Timestamp `json:"created_at"`
-	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
-	ScheduledTime pgtype.Timestamp `json:"scheduled_time"`
-	ScheduleID    pgtype.UUID      `json:"schedule_id"`
+	ID              pgtype.UUID      `json:"id"`
+	UserID          pgtype.UUID      `json:"user_id"`
+	SuggestionID    pgtype.UUID      `json:"suggestion_id"`
+	Text            string           `json:"text"`
+	Status          string           `json:"status"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	ScheduledTime   pgtype.Timestamp `json:"scheduled_time"`
+	ScheduleID      pgtype.UUID      `json:"schedule_id"`
+	SocialAccountID pgtype.UUID      `json:"social_account_id"`
 }
 
 func (q *Queries) GetScheduledPostsWithinTimeframe(ctx context.Context, arg GetScheduledPostsWithinTimeframeParams) ([]GetScheduledPostsWithinTimeframeRow, error) {
@@ -119,6 +121,7 @@ func (q *Queries) GetScheduledPostsWithinTimeframe(ctx context.Context, arg GetS
 			&i.UpdatedAt,
 			&i.ScheduledTime,
 			&i.ScheduleID,
+			&i.SocialAccountID,
 		); err != nil {
 			return nil, err
 		}

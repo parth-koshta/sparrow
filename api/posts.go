@@ -6,7 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/parth-koshta/sparrow/client"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
+	dbtypes "github.com/parth-koshta/sparrow/db/types"
+	"github.com/rs/zerolog/log"
 )
 
 type CreatePostRequest struct {
@@ -191,4 +194,85 @@ func (server *Server) DeletePost(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusNoContent, nil)
+}
+
+type PublishOnLinkedInRequest struct {
+	PostID          string `json:"post_id" binding:"required,uuid"`
+	SocialAccountID string `json:"social_account_id" binding:"required,uuid"`
+}
+
+type PublishOnLinkedInResponse struct {
+	PostID          string `json:"post_id"`
+	SocialAccountID string `json:"social_account_id"`
+	Success         bool   `json:"success"`
+}
+
+func (server *Server) PublishOnLinkedIn(ctx *gin.Context) {
+	log.Info().Msg("PublishOnLinkedIn called")
+	var req PublishOnLinkedInRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	postID, err := uuid.Parse(req.PostID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	socialAccountID, err := uuid.Parse(req.SocialAccountID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	userID, err := GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	log.Info().Msg("PublishOnLinkedIn called userID: " + userID.String())
+
+	socialAccount, err := server.store.GetSocialAccountByID(ctx, pgtype.UUID{Bytes: socialAccountID, Valid: true})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if socialAccount.UserID.Bytes != userID {
+		ctx.JSON(http.StatusForbidden, errorResponse(err))
+		return
+	}
+
+	post, err := server.store.GetPostByID(ctx, pgtype.UUID{Bytes: postID, Valid: true})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = server.linkedinClient.PublishPost(socialAccount.AccessToken, socialAccount.LinkedinSub.String, client.PayloadPublishPost{
+		PostID: post.ID,
+		Text:   post.Text,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	updatePostStatusArgs := db.UpdatePostStatusParams{
+		ID:     post.ID,
+		Status: string(dbtypes.PostStatusPublished),
+	}
+	_, err = server.store.UpdatePostStatus(ctx, updatePostStatusArgs)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, PublishOnLinkedInResponse{
+		PostID:          req.PostID,
+		SocialAccountID: req.SocialAccountID,
+		Success:         true,
+	})
 }

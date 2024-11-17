@@ -69,28 +69,20 @@ func (q *Queries) DeletePost(ctx context.Context, id pgtype.UUID) (Post, error) 
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT id, user_id, suggestion_id, text, created_at, updated_at
+SELECT id, user_id, suggestion_id, text, status, created_at, updated_at
 FROM posts
 WHERE id = $1
 `
 
-type GetPostByIDRow struct {
-	ID           pgtype.UUID      `json:"id"`
-	UserID       pgtype.UUID      `json:"user_id"`
-	SuggestionID pgtype.UUID      `json:"suggestion_id"`
-	Text         string           `json:"text"`
-	CreatedAt    pgtype.Timestamp `json:"created_at"`
-	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
-}
-
-func (q *Queries) GetPostByID(ctx context.Context, id pgtype.UUID) (GetPostByIDRow, error) {
+func (q *Queries) GetPostByID(ctx context.Context, id pgtype.UUID) (Post, error) {
 	row := q.db.QueryRow(ctx, getPostByID, id)
-	var i GetPostByIDRow
+	var i Post
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.SuggestionID,
 		&i.Text,
+		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

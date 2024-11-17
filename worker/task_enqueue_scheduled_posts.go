@@ -41,10 +41,11 @@ func (p *RedisTaskProcessor) ProcessTaskEnqueueScheduledPosts(ctx context.Contex
 	for _, post := range posts {
 		log.Info().Msgf("enqueuing task: publish post %s (%s) -> %s", uuid.UUID(post.ID.Bytes).String(), post.Status, post.Text)
 		publishPostArgs := &PayloadPublishPost{
-			PostID:        post.ID,
-			Text:          post.Text,
-			ScheduledTime: post.ScheduledTime,
-			ScheduleID:    post.ScheduleID,
+			PostID:          post.ID,
+			Text:            post.Text,
+			ScheduledTime:   post.ScheduledTime,
+			ScheduleID:      post.ScheduleID,
+			SocialAccountID: post.SocialAccountID,
 		}
 		err := p.distributor.DistributeTaskPublishPost(ctx, publishPostArgs)
 		if err != nil && err != asynq.ErrTaskIDConflict {

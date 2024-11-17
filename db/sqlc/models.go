@@ -58,6 +58,7 @@ type SocialAccount struct {
 	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
 	CreatedAt      pgtype.Timestamp `json:"created_at"`
 	UpdatedAt      pgtype.Timestamp `json:"updated_at"`
+	LinkedinSub    pgtype.Text      `json:"linkedin_sub"`
 }
 
 type User struct {

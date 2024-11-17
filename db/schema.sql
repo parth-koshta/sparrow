@@ -117,7 +117,8 @@ CREATE TABLE public.social_accounts (
     id_token text NOT NULL,
     token_expires_at timestamp without time zone NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
-    updated_at timestamp without time zone DEFAULT now() NOT NULL
+    updated_at timestamp without time zone DEFAULT now() NOT NULL,
+    linkedin_sub character varying(255)
 );
 
 

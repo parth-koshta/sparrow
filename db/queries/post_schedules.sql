@@ -40,7 +40,8 @@ SELECT p.id,
        p.created_at, 
        p.updated_at, 
        ps.scheduled_time,
-       ps.id AS schedule_id
+       ps.id AS schedule_id,
+       ps.social_account_id AS social_account_id
 FROM posts p
 JOIN post_schedules ps ON p.id = ps.post_id
 WHERE p.status = 'scheduled'

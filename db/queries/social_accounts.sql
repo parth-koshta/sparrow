@@ -1,13 +1,13 @@
 -- name: CreateSocialAccount :one
 INSERT INTO social_accounts (
-  user_id, platform, account_name, account_email, access_token, id_token, token_expires_at
+  user_id, platform, account_name, account_email, access_token, id_token, token_expires_at, linkedin_sub
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6, $7, $8
 )
 RETURNING *;
 
 -- name: GetSocialAccountByID :one
-SELECT platform, user_id, account_name, access_token, token_expires_at, updated_at
+SELECT platform, user_id, account_name, access_token, linkedin_sub, token_expires_at, updated_at
 FROM social_accounts
 WHERE id = $1;
 
