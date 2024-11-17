@@ -62,8 +62,8 @@ func (p *RedisTaskProcessor) ProcessTaskPublishPost(ctx context.Context, task *a
 		return fmt.Errorf("ProcessTaskPublishPost: could not get post by id: %w", err)
 	}
 
-	if post.Status != string(dbtypes.PostStatusScheduled) {
-		return fmt.Errorf("ProcessTaskPublishPost: post status is not scheduled")
+	if post.Status == string(dbtypes.PostStatusPublished) {
+		return fmt.Errorf("ProcessTaskPublishPost: post already published")
 	}
 
 	socialAccount, err := p.store.GetSocialAccountByID(ctx, payload.SocialAccountID)
