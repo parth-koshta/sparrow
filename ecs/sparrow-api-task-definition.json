@@ -1,54 +1,70 @@
 {
-  "family": "sparrow-api-task-definition",
-  "networkMode": "awsvpc",
-  "containerDefinitions": [
-    {
-      "name": "sparrow-api",
-      "image": "050752639725.dkr.ecr.ap-south-1.amazonaws.com/core/sparrow:latest",
-      "cpu": 0,
-      "memory": 512,
-      "essential": true,
-      "portMappings": [
+    "family": "sparrow-api-task-definition",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
         {
-          "containerPort": 8080,
-          "hostPort": 8080,
-          "protocol": "tcp",
-          "name": "sparrow-api-8080-tcp",
-          "appProtocol": "http"
+            "name": "sparrow-api",
+            "image": "050752639725.dkr.ecr.ap-south-1.amazonaws.com/core/sparrow:latest",
+            "cpu": 0,
+            "memory": 512,
+            "essential": true,
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp",
+                    "name": "sparrow-api-8080-tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/sparrow-api-task-definition",
+                    "awslogs-region": "ap-south-1",
+                    "awslogs-stream-prefix": "ecs",
+                    "awslogs-create-group": "true",
+                    "mode": "non-blocking",
+                    "max-buffer-size": "25m"
+                }
+            }
+        },
+        {
+            "name": "grafana-alloy",
+            "image": "grafana/alloy:latest",
+            "cpu": 0,
+            "memory": 256,
+            "essential": false,
+            "environment": [
+                {
+                    "name": "LOKI_URL",
+                    "value": "http://13.233.66.122:3100/loki/api/v1/push"
+                }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/grafana-alloy",
+                    "awslogs-region": "ap-south-1",
+                    "awslogs-stream-prefix": "alloy",
+                    "awslogs-create-group": "true",
+                    "mode": "non-blocking",
+                    "max-buffer-size": "25m"
+                }
+            }
         }
-      ],
-      "logConfiguration": {
-        "logDriver": "awsfirelens",
-        "options": {
-          "Name": "grafana-loki",
-          "Host": "13.233.66.122",
-          "Port": "3100",
-          "Labels": "task,container",
-          "LineFormat": "json"
+    ],
+    "executionRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "512",
+    "memory": "768",
+    "tags": [
+        {
+            "key": "Environment",
+            "value": "Production"
         }
-      }
-    },
-    {
-      "name": "log-router",
-      "image": "amazon/aws-for-fluent-bit:latest",
-      "essential": true,
-      "firelensConfiguration": {
-        "type": "fluentbit",
-        "options": {
-          "enable-ecs-log-metadata": "true"
-        }
-      }
-    }
-  ],
-  "executionRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
-  "requiresCompatibilities": ["FARGATE"],
-  "cpu": "256",
-  "memory": "512",
-  "tags": [
-    {
-      "key": "Environment",
-      "value": "Production"
-    }
-  ]
+    ]
 }
