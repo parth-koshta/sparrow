@@ -28,30 +28,6 @@
                     "max-buffer-size": "25m"
                 }
             }
-        },
-        {
-            "name": "grafana-alloy",
-            "image": "grafana/alloy:latest",
-            "cpu": 0,
-            "memory": 256,
-            "essential": false,
-            "environment": [
-                {
-                    "name": "LOKI_URL",
-                    "value": "http://13.233.66.122:3100/loki/api/v1/push"
-                }
-            ],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/grafana-alloy",
-                    "awslogs-region": "ap-south-1",
-                    "awslogs-stream-prefix": "alloy",
-                    "awslogs-create-group": "true",
-                    "mode": "non-blocking",
-                    "max-buffer-size": "25m"
-                }
-            }
         }
     ],
     "executionRoleArn": "arn:aws:iam::050752639725:role/ecsTaskExecutionRole",
@@ -59,8 +35,8 @@
     "requiresCompatibilities": [
         "FARGATE"
     ],
-    "cpu": "512",
-    "memory": "1024",
+    "cpu": "256",
+    "memory": "512",
     "tags": [
         {
             "key": "Environment",
