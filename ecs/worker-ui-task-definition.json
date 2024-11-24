@@ -8,7 +8,7 @@
       "name": "worker-ui",
       "image": "050752639725.dkr.ecr.ap-south-1.amazonaws.com/tool/worker-ui:latest",
       "cpu": 0,
-      "memory": 1024,
+      "memory": 512,
       "essential": true,
       "portMappings": [
         {
@@ -40,8 +40,8 @@
     }
   ],
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "512",
-  "memory": "1024",
+  "cpu": "256",
+  "memory": "512",
   "ephemeralStorage": {
     "sizeInGiB": 21
   },

@@ -16,7 +16,7 @@ const TaskEnqueueScheduledPosts = "task:enqueue-scheduled-posts"
 func (s *RedisTaskScheduler) ScheduleTaskEnqueueScheduledPosts(ctx context.Context, opts ...asynq.Option) error {
 	task := asynq.NewTask(TaskEnqueueScheduledPosts, nil, opts...)
 	// _, err := s.scheduler.Register("* * * * *", task)
-	_, err := s.scheduler.Register("0 * * * *", task)
+	_, err := s.scheduler.Register("0,30 * * * *", task)
 	if err != nil {
 		return fmt.Errorf("could not schedule task: %w", err)
 	}
