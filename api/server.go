@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 
@@ -59,6 +60,13 @@ func (server *Server) setupRouter() {
 	router := gin.Default()
 	router.Use(sentrygin.New(sentrygin.Options{Repanic: true}))
 	router.Use(LoggerMiddleware)
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:5174"}, // Frontend origin
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},        // Allowed HTTP methods
+		AllowHeaders:     []string{"Content-Type", "Authorization"},                  // Allowed headers
+		ExposeHeaders:    []string{"Content-Length"},                                 // Headers exposed to the client
+		AllowCredentials: true,                                                       // Allow credentials like cookies
+	}))
 
 	router.GET("/", server.HealthCheck)
 

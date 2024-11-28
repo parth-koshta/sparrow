@@ -55,9 +55,9 @@ func main() {
 	redisOptions := asynq.RedisClientOpt{Addr: config.RedisAddress}
 	taskDistributor := worker.NewRedisTaskDistributor(redisOptions)
 
-	waitGroup, ctx := errgroup.WithContext(ctx)
-
 	linkedinClient := client.NewLinkedInClient(config.LinkedInClientID, config.LinkedInClientSecret)
+
+	waitGroup, ctx := errgroup.WithContext(ctx)
 
 	runTaskProcessor(ctx, waitGroup, redisOptions, store, config, taskDistributor, linkedinClient)
 	runTaskScheduler(ctx, waitGroup, redisOptions)
