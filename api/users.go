@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	db "github.com/parth-koshta/sparrow/db/sqlc"
 	"github.com/parth-koshta/sparrow/util"
@@ -65,6 +66,10 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 
 	txResult, err := server.store.CreateUserTx(ctx, arg)
 	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
+			ctx.JSON(http.StatusConflict, customErrorResponse(err, "Email already exists. Please use a different email."))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -165,25 +170,22 @@ func (server *Server) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	// Get the user from the database
 	user, err := server.store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			ctx.JSON(http.StatusNotFound, customErrorResponse(err, "Please re-check your email and password"))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	// Check if the password is correct
 	err = util.CheckPassword(user.PasswordHash.String, req.Password)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, customErrorResponse(err, "Please re-check your email and password"))
 		return
 	}
 
-	// Generate a new access token
 	userUUID, err := user.ID.UUIDValue()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))

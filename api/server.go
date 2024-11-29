@@ -78,8 +78,6 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.GET("/v1/users", server.ListUsers)
 	authenticatedRouter.GET("/v1/users/:id", server.GetUser)
 
-	// authenticatedRouter.POST("/drafts", server.CreateDraft)
-	// authenticatedRouter.GET("/drafts/:id", server.GetDraft)
 	authenticatedRouter.PUT("/v1/posts/:id", server.UpdatePost)
 	authenticatedRouter.DELETE("/v1/posts/:id", server.DeletePost)
 	authenticatedRouter.GET("/v1/posts", server.ListPostsByUserID)
@@ -136,7 +134,11 @@ func (server *Server) Stop(ctx context.Context) error {
 }
 
 func errorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
+	return gin.H{"message": err.Error()}
+}
+
+func customErrorResponse(err error, message string) gin.H {
+	return gin.H{"message": message, "error": err.Error()}
 }
 
 func (server *Server) initializeSentry() error {
