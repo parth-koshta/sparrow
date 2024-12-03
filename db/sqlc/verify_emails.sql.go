@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createVerifyEmail = `-- name: CreateVerifyEmail :one
@@ -25,6 +27,58 @@ type CreateVerifyEmailParams struct {
 
 func (q *Queries) CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error) {
 	row := q.db.QueryRow(ctx, createVerifyEmail, arg.Email, arg.SecretCode)
+	var i VerifyEmail
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.SecretCode,
+		&i.IsUsed,
+		&i.CreatedAt,
+		&i.ExpiredAt,
+	)
+	return i, err
+}
+
+const getVerifyEmail = `-- name: GetVerifyEmail :one
+SELECT id, email, secret_code, expired_at, is_used, created_at
+FROM verify_emails
+WHERE email = $1
+`
+
+type GetVerifyEmailRow struct {
+	ID         int64            `json:"id"`
+	Email      string           `json:"email"`
+	SecretCode string           `json:"secret_code"`
+	ExpiredAt  pgtype.Timestamp `json:"expired_at"`
+	IsUsed     bool             `json:"is_used"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+}
+
+func (q *Queries) GetVerifyEmail(ctx context.Context, email string) (GetVerifyEmailRow, error) {
+	row := q.db.QueryRow(ctx, getVerifyEmail, email)
+	var i GetVerifyEmailRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.SecretCode,
+		&i.ExpiredAt,
+		&i.IsUsed,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const invalidateVerifyEmail = `-- name: InvalidateVerifyEmail :one
+UPDATE verify_emails
+SET
+    expired_at = now() - interval '1 second'
+WHERE
+    id = $1
+RETURNING id, email, secret_code, is_used, created_at, expired_at
+`
+
+func (q *Queries) InvalidateVerifyEmail(ctx context.Context, id int64) (VerifyEmail, error) {
+	row := q.db.QueryRow(ctx, invalidateVerifyEmail, id)
 	var i VerifyEmail
 	err := row.Scan(
 		&i.ID,

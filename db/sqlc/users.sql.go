@@ -41,18 +41,19 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, email, password_hash, created_at, updated_at 
+SELECT id, username, email, password_hash, created_at, updated_at, is_email_verified 
 FROM users 
 WHERE email = $1
 `
 
 type GetUserByEmailRow struct {
-	ID           pgtype.UUID      `json:"id"`
-	Username     pgtype.Text      `json:"username"`
-	Email        string           `json:"email"`
-	PasswordHash pgtype.Text      `json:"password_hash"`
-	CreatedAt    pgtype.Timestamp `json:"created_at"`
-	UpdatedAt    pgtype.Timestamp `json:"updated_at"`
+	ID              pgtype.UUID      `json:"id"`
+	Username        pgtype.Text      `json:"username"`
+	Email           string           `json:"email"`
+	PasswordHash    pgtype.Text      `json:"password_hash"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	IsEmailVerified bool             `json:"is_email_verified"`
 }
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
@@ -65,6 +66,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 		&i.PasswordHash,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }

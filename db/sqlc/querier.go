@@ -32,6 +32,8 @@ type Querier interface {
 	GetSocialAccountByID(ctx context.Context, id pgtype.UUID) (GetSocialAccountByIDRow, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error)
+	GetVerifyEmail(ctx context.Context, email string) (GetVerifyEmailRow, error)
+	InvalidateVerifyEmail(ctx context.Context, id int64) (VerifyEmail, error)
 	ListPostSchedulesByUserID(ctx context.Context, arg ListPostSchedulesByUserIDParams) ([]ListPostSchedulesByUserIDRow, error)
 	ListPostSuggestionsByPromptID(ctx context.Context, arg ListPostSuggestionsByPromptIDParams) ([]ListPostSuggestionsByPromptIDRow, error)
 	ListPostsByUserID(ctx context.Context, arg ListPostsByUserIDParams) ([]ListPostsByUserIDRow, error)

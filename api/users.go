@@ -23,11 +23,12 @@ type CreateUserRequest struct {
 }
 
 type UserResponse struct {
-	ID        pgtype.UUID
-	Username  pgtype.Text
-	Email     string
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+	ID              pgtype.UUID      `json:"id"`
+	Username        pgtype.Text      `json:"username"`
+	Email           string           `json:"email"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	IsEmailVerified pgtype.Bool      `json:"is_email_verified"`
 }
 
 func (server *Server) CreateUser(ctx *gin.Context) {
@@ -75,11 +76,12 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 	}
 
 	userResponse := &UserResponse{
-		ID:        txResult.User.ID,
-		Username:  txResult.User.Username,
-		Email:     txResult.User.Email,
-		CreatedAt: txResult.User.CreatedAt,
-		UpdatedAt: txResult.User.UpdatedAt,
+		ID:              txResult.User.ID,
+		Username:        txResult.User.Username,
+		Email:           txResult.User.Email,
+		CreatedAt:       txResult.User.CreatedAt,
+		UpdatedAt:       txResult.User.UpdatedAt,
+		IsEmailVerified: pgtype.Bool{Bool: false, Valid: true},
 	}
 	ctx.JSON(http.StatusOK, userResponse)
 }
@@ -200,11 +202,12 @@ func (server *Server) LoginUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &LoginUserResponse{
 		Token: accessToken,
 		User: UserResponse{
-			ID:        user.ID,
-			Username:  user.Username,
-			Email:     user.Email,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
+			ID:              user.ID,
+			Username:        user.Username,
+			Email:           user.Email,
+			CreatedAt:       user.CreatedAt,
+			UpdatedAt:       user.UpdatedAt,
+			IsEmailVerified: pgtype.Bool{Bool: user.IsEmailVerified, Valid: true},
 		},
 	})
 }
@@ -241,4 +244,103 @@ func (server *Server) VerifyUserEmail(ctx *gin.Context) {
 		IsVerified: txResult.User.IsEmailVerified,
 	}
 	ctx.JSON(http.StatusOK, rsp)
+}
+
+type ResendVerifyEmailRequest struct {
+	Email string `json:"email" binding:"required,min=6"`
+}
+type ResendVerifyEmailResponse struct {
+	Message string `json:"message"`
+}
+
+func (server *Server) ResendVerifyEmail(ctx *gin.Context) {
+	var req ResendVerifyEmailRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, customErrorResponse(err, "User does not exist"))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if user.IsEmailVerified {
+		ctx.JSON(http.StatusBadRequest, customErrorResponse(nil, "Email is already verified"))
+		return
+	}
+
+	verifyEmail, err := server.store.GetVerifyEmail(ctx, user.Email)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, customErrorResponse(err, "Verify email record not found"))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if time.Since(verifyEmail.CreatedAt.Time) < 30*time.Second {
+		ctx.JSON(http.StatusBadRequest, customErrorResponse(err, "Please wait for 30 seconds before resending the verification email"))
+		return
+	}
+
+	_, err = server.store.InvalidateVerifyEmail(ctx, verifyEmail.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	taskPayload := &worker.PayloadSendVerifyEmail{
+		Email: req.Email,
+	}
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(10 * time.Second),
+		asynq.Queue(worker.QueueCritical),
+	}
+	err = server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &ResendVerifyEmailResponse{
+		Message: "Verification email sent successfully",
+	})
+}
+
+// api to check if email is verified
+type IsEmailVerifiedRequest struct {
+	Email string `json:"email" binding:"required,min=6"`
+}
+type IsEmailVerifiedResponse struct {
+	IsVerified bool `json:"is_email_verified"`
+}
+
+func (server *Server) IsEmailVerified(ctx *gin.Context) {
+	var req IsEmailVerifiedRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, customErrorResponse(err, "User does not exist"))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &IsEmailVerifiedResponse{
+		IsVerified: user.IsEmailVerified,
+	})
 }

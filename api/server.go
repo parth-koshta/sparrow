@@ -73,6 +73,8 @@ func (server *Server) setupRouter() {
 	router.POST("/v1/users/login", server.LoginUser)
 	router.POST("/v1/users", server.CreateUser)
 	router.GET("/v1/users/verify/email", server.VerifyUserEmail)
+	router.POST("/v1/users/email/resend", server.ResendVerifyEmail)
+	router.POST("v1/users/email/verified", server.IsEmailVerified)
 
 	authenticatedRouter := router.Group("/").Use(AuthMiddleware(server.tokenMaker))
 	authenticatedRouter.GET("/v1/users", server.ListUsers)
@@ -138,6 +140,9 @@ func errorResponse(err error) gin.H {
 }
 
 func customErrorResponse(err error, message string) gin.H {
+	if err == nil {
+		return gin.H{"message": message}
+	}
 	return gin.H{"message": message, "error": err.Error()}
 }
 
