@@ -33,7 +33,7 @@ func TestGetUserApi(t *testing.T) {
 	// Create an expected response
 	expectedUserRow := db.GetUserByIDRow{
 		ID: testPgxUUID,
-		Username: pgtype.Text{
+		Name: pgtype.Text{
 			String: "testuser",
 			Valid:  true,
 		},

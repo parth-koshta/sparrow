@@ -128,7 +128,7 @@ CREATE TABLE public.social_accounts (
 
 CREATE TABLE public.users (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    username character varying(255),
+    name character varying(255),
     email character varying(255) NOT NULL,
     password_hash character varying(255),
     is_email_verified boolean DEFAULT false NOT NULL,
@@ -242,19 +242,19 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: users users_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_name_key UNIQUE (name);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
-
-
---
--- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_username_key UNIQUE (username);
 
 
 --
@@ -371,10 +371,10 @@ CREATE INDEX idx_users_email ON public.users USING btree (email);
 
 
 --
--- Name: idx_users_username; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_users_name; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_users_username ON public.users USING btree (username);
+CREATE INDEX idx_users_name ON public.users USING btree (name);
 
 
 --

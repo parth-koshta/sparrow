@@ -44,7 +44,7 @@ DROP INDEX IF EXISTS idx_social_accounts_user_id;
 DROP TABLE IF EXISTS social_accounts;
 
 -- Drop indexes for users table
-DROP INDEX IF EXISTS idx_users_username;
+DROP INDEX IF EXISTS idx_users_name;
 DROP INDEX IF EXISTS idx_users_email;
 
 -- Drop users table

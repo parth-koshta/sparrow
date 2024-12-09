@@ -63,7 +63,7 @@ type SocialAccount struct {
 
 type User struct {
 	ID              pgtype.UUID      `json:"id"`
-	Username        pgtype.Text      `json:"username"`
+	Name            pgtype.Text      `json:"name"`
 	Email           string           `json:"email"`
 	PasswordHash    pgtype.Text      `json:"password_hash"`
 	IsEmailVerified bool             `json:"is_email_verified"`

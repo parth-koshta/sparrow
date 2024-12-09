@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username VARCHAR(255) UNIQUE,
+    name VARCHAR(255) UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255),
     is_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS verify_emails (
 
 -- Create indexes for users table
 CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
-CREATE INDEX IF NOT EXISTS idx_users_username ON users (username);
+CREATE INDEX IF NOT EXISTS idx_users_name ON users (name);
 
 -- Create indexes for social_accounts table
 CREATE INDEX IF NOT EXISTS idx_social_accounts_user_id ON social_accounts (user_id);

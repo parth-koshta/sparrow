@@ -18,13 +18,14 @@ import (
 )
 
 type CreateUserRequest struct {
+	Name     string `json:"name" binding:"required,min=3"`
 	Email    string `json:"email" binding:"required,min=6"`
 	Password string `json:"password" binding:"required"`
 }
 
 type UserResponse struct {
 	ID              pgtype.UUID      `json:"id"`
-	Username        pgtype.Text      `json:"username"`
+	Name            pgtype.Text      `json:"name"`
 	Email           string           `json:"email"`
 	CreatedAt       pgtype.Timestamp `json:"created_at"`
 	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
@@ -46,6 +47,10 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 
 	arg := db.CreateUserTxParams{
 		CreateUserParams: db.CreateUserParams{
+			Name: pgtype.Text{
+				String: req.Name,
+				Valid:  true,
+			},
 			Email: req.Email,
 			PasswordHash: pgtype.Text{
 				String: hashedPassword,
@@ -77,7 +82,7 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 
 	userResponse := &UserResponse{
 		ID:              txResult.User.ID,
-		Username:        txResult.User.Username,
+		Name:            txResult.User.Name,
 		Email:           txResult.User.Email,
 		CreatedAt:       txResult.User.CreatedAt,
 		UpdatedAt:       txResult.User.UpdatedAt,
@@ -203,7 +208,7 @@ func (server *Server) LoginUser(ctx *gin.Context) {
 		Token: accessToken,
 		User: UserResponse{
 			ID:              user.ID,
-			Username:        user.Username,
+			Name:            user.Name,
 			Email:           user.Email,
 			CreatedAt:       user.CreatedAt,
 			UpdatedAt:       user.UpdatedAt,
