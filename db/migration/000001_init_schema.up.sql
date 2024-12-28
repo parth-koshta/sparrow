@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) UNIQUE,
+    name VARCHAR(255),
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255),
     is_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
@@ -17,8 +17,8 @@ CREATE TABLE IF NOT EXISTS social_accounts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     platform VARCHAR(255) NOT NULL,
-    account_name VARCHAR(255) NOT NULL,
-    account_email VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
     access_token TEXT NOT NULL,
     id_token TEXT NOT NULL,
     token_expires_at TIMESTAMP NOT NULL,

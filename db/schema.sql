@@ -111,8 +111,8 @@ CREATE TABLE public.social_accounts (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     platform character varying(255) NOT NULL,
-    account_name character varying(255) NOT NULL,
-    account_email character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    email character varying(255) NOT NULL,
     access_token text NOT NULL,
     id_token text NOT NULL,
     token_expires_at timestamp without time zone NOT NULL,
@@ -239,14 +239,6 @@ ALTER TABLE ONLY public.posts
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_email_key UNIQUE (email);
-
-
---
--- Name: users users_name_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_name_key UNIQUE (name);
 
 
 --

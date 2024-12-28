@@ -75,13 +75,13 @@ jobs:
         
         aws ecs register-task-definition --cli-input-json file://sparrow-api-task-def.json
 
-    - name: Update ECS service
-      run: |
-        aws ecs update-service \
-          --cluster sparrow-cluster \
-          --service sparrow-api-service \
-          --force-new-deployment \
-          --task-definition sparrow-api-task-definition
+    # - name: Update ECS service
+    #   run: |
+    #     aws ecs update-service \
+    #       --cluster sparrow-cluster \
+    #       --service sparrow-api-service \
+    #       --force-new-deployment \
+    #       --task-definition sparrow-api-task-definition
 
     # - name: Update kubectl configuration
     #   run: aws eks update-kubeconfig --name sparrow --region ap-south-1

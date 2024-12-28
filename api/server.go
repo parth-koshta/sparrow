@@ -79,6 +79,7 @@ func (server *Server) setupRouter() {
 	authenticatedRouter := router.Group("/").Use(AuthMiddleware(server.tokenMaker))
 	authenticatedRouter.GET("/v1/users", server.ListUsers)
 	authenticatedRouter.GET("/v1/users/:id", server.GetUser)
+	authenticatedRouter.GET("/v1/users/me", server.GetMe)
 
 	authenticatedRouter.PUT("/v1/posts/:id", server.UpdatePost)
 	authenticatedRouter.DELETE("/v1/posts/:id", server.DeletePost)
@@ -98,7 +99,8 @@ func (server *Server) setupRouter() {
 	authenticatedRouter.POST("/v1/suggestions/accept", server.AcceptPostSuggestion)
 	authenticatedRouter.POST("/v1/suggestions/reject", server.RejectPostSuggestion)
 
-	authenticatedRouter.GET("/v1/social_accounts/:id", server.GetSocialAccount)
+	authenticatedRouter.GET("v1/social_accounts", server.GetSocialAccounts)
+	authenticatedRouter.GET("/v1/social_accounts/:id", server.GetSocialAccountByID)
 	authenticatedRouter.DELETE("/v1/social_accounts/:id", server.DeleteSocialAccount)
 	authenticatedRouter.GET("/v1/social_accounts/user/:id", server.ListSocialAccountsByUserID)
 	authenticatedRouter.POST("/v1/social_accounts/linkedin", server.AddLinkedInAccount)

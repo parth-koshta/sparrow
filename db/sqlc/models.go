@@ -51,8 +51,8 @@ type SocialAccount struct {
 	ID             pgtype.UUID      `json:"id"`
 	UserID         pgtype.UUID      `json:"user_id"`
 	Platform       string           `json:"platform"`
-	AccountName    string           `json:"account_name"`
-	AccountEmail   string           `json:"account_email"`
+	Name           string           `json:"name"`
+	Email          string           `json:"email"`
 	AccessToken    string           `json:"access_token"`
 	IDToken        string           `json:"id_token"`
 	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`

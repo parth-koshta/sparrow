@@ -7,7 +7,7 @@ INSERT INTO users (
 RETURNING *;
 
 -- name: GetUserByID :one
-SELECT id, name, email, created_at, updated_at 
+SELECT id, name, email, created_at, updated_at, is_email_verified
 FROM users 
 WHERE id = $1;
 

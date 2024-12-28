@@ -38,7 +38,6 @@ func (server *Server) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
 	hashedPassword, err := util.HashPassword(req.Password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -129,7 +128,14 @@ func (server *Server) GetUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, &UserResponse{
+		ID:              user.ID,
+		Name:            user.Name,
+		Email:           user.Email,
+		CreatedAt:       user.CreatedAt,
+		UpdatedAt:       user.UpdatedAt,
+		IsEmailVerified: pgtype.Bool{Bool: user.IsEmailVerified, Valid: true},
+	})
 }
 
 type ListUsersRequest struct {
@@ -347,5 +353,32 @@ func (server *Server) IsEmailVerified(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, &IsEmailVerifiedResponse{
 		IsVerified: user.IsEmailVerified,
+	})
+}
+
+func (server *Server) GetMe(ctx *gin.Context) {
+	userUUID, err := GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	userID := pgtype.UUID{
+		Valid: true,
+		Bytes: userUUID,
+	}
+	user, err := server.store.GetUserByID(ctx, userID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &UserResponse{
+		ID:              user.ID,
+		Name:            user.Name,
+		Email:           user.Email,
+		CreatedAt:       user.CreatedAt,
+		UpdatedAt:       user.UpdatedAt,
+		IsEmailVerified: pgtype.Bool{Bool: user.IsEmailVerified, Valid: true},
 	})
 }

@@ -13,10 +13,11 @@ import (
 )
 
 type SocialAccountResponse struct {
-	Platform       string
-	AccountName    string
-	TokenExpiresAt pgtype.Timestamp
-	UpdatedAt      pgtype.Timestamp
+	Platform       string           `json:"platform"`
+	Name           string           `json:"name"`
+	Email          string           `json:"email"`
+	TokenExpiresAt pgtype.Timestamp `json:"token_expires_at"`
+	UpdatedAt      pgtype.Timestamp `json:"updated_at"`
 }
 
 type AddLinkedInAccountRequest struct {
@@ -61,8 +62,8 @@ func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
 	arg := db.CreateSocialAccountParams{
 		UserID:         pgtype.UUID{Bytes: userID, Valid: true},
 		Platform:       dbtypes.SocialPlatformLinkedIn.String(),
-		AccountName:    userInfo.Name,
-		AccountEmail:   userInfo.Email,
+		Name:           userInfo.Name,
+		Email:          userInfo.Email,
 		AccessToken:    accessToken,
 		IDToken:        idToken,
 		TokenExpiresAt: tokenExpiresAtPg,
@@ -77,7 +78,8 @@ func (server *Server) AddLinkedInAccount(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, SocialAccountResponse{
 		Platform:       socialAccount.Platform,
-		AccountName:    socialAccount.AccountName,
+		Name:           socialAccount.Name,
+		Email:          socialAccount.Email,
 		TokenExpiresAt: socialAccount.TokenExpiresAt,
 		UpdatedAt:      socialAccount.UpdatedAt,
 	})
@@ -127,7 +129,7 @@ func (server *Server) UpdateLinkedInAccessToken(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, SocialAccountResponse{
 		Platform:       socialAccount.Platform,
-		AccountName:    socialAccount.AccountName,
+		Name:           socialAccount.Name,
 		TokenExpiresAt: socialAccount.TokenExpiresAt,
 		UpdatedAt:      socialAccount.UpdatedAt,
 	})
@@ -137,7 +139,7 @@ type GetSocialAccountRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
-func (server *Server) GetSocialAccount(ctx *gin.Context) {
+func (server *Server) GetSocialAccountByID(ctx *gin.Context) {
 	var req GetSocialAccountRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -158,7 +160,7 @@ func (server *Server) GetSocialAccount(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, SocialAccountResponse{
 		Platform:       socialAccount.Platform,
-		AccountName:    socialAccount.AccountName,
+		Name:           socialAccount.Name,
 		TokenExpiresAt: socialAccount.TokenExpiresAt,
 		UpdatedAt:      socialAccount.UpdatedAt,
 	})
@@ -201,7 +203,7 @@ func (server *Server) ListSocialAccountsByUserID(ctx *gin.Context) {
 	for _, acc := range socialAccounts {
 		responses = append(responses, SocialAccountResponse{
 			Platform:       acc.Platform,
-			AccountName:    acc.AccountName,
+			Name:           acc.Name,
 			TokenExpiresAt: acc.TokenExpiresAt,
 			UpdatedAt:      acc.UpdatedAt,
 		})
@@ -234,4 +236,36 @@ func (server *Server) DeleteSocialAccount(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusNoContent, nil)
+}
+
+func (server *Server) GetSocialAccounts(ctx *gin.Context) {
+	userID, err := GetUserIDFromContext(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	socialAccounts, err := server.store.ListSocialAccountsByUserID(ctx, db.ListSocialAccountsByUserIDParams{
+		UserID: pgtype.UUID{Bytes: userID, Valid: true},
+		Limit:  100,
+		Offset: 0,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	var responses []SocialAccountResponse
+	for _, acc := range socialAccounts {
+		responses = append(responses, SocialAccountResponse{
+			Platform:       acc.Platform,
+			Name:           acc.Name,
+			Email:          acc.Email,
+			TokenExpiresAt: acc.TokenExpiresAt,
+			UpdatedAt:      acc.UpdatedAt,
+		})
+	}
+
+	ctx.JSON(http.StatusOK, responses)
 }

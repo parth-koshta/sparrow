@@ -17,9 +17,9 @@ func TestCreateSocialAccount(t *testing.T) {
 		arg := CreateSocialAccountParams{
 			UserID:         user.ID,
 			Platform:       "twitter",
-			AccountName:    "example_account",
+			Name:           "example_account",
 			AccessToken:    "sample_access_token",
-			AccountEmail:   "test@gmail.com",
+			Email:          "test@gmail.com",
 			IDToken:        "sample_id_token",
 			TokenExpiresAt: pgtype.Timestamp{Time: time.Now().Add(24 * time.Hour).UTC(), Valid: true},
 		}
@@ -29,9 +29,9 @@ func TestCreateSocialAccount(t *testing.T) {
 
 		require.Equal(t, arg.UserID, socialAccount.UserID)
 		require.Equal(t, arg.Platform, socialAccount.Platform)
-		require.Equal(t, arg.AccountName, socialAccount.AccountName)
+		require.Equal(t, arg.Name, socialAccount.Name)
 		require.Equal(t, arg.AccessToken, socialAccount.AccessToken)
-		require.Equal(t, arg.AccountEmail, socialAccount.AccountEmail)
+		require.Equal(t, arg.Email, socialAccount.Email)
 		require.Equal(t, arg.IDToken, socialAccount.IDToken)
 		require.Equal(t, arg.TokenExpiresAt.Time.Truncate(time.Second), socialAccount.TokenExpiresAt.Time.Truncate(time.Second))
 		require.NotZero(t, socialAccount.CreatedAt)

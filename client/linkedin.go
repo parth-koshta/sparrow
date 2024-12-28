@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	REDIRECT_URI      = "https://oauth.pstmn.io/v1/callback"
+	REDIRECT_URI      = "http://localhost:5173/callback/linkedin"
 	GET_TOKEN_URL     = "https://www.linkedin.com/oauth/v2/accessToken"
 	GET_USER_INFO_URL = "https://api.linkedin.com/v2/userinfo"
 	PUBLISH_POST_URL  = "https://api.linkedin.com/v2/ugcPosts"

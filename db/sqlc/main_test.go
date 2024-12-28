@@ -163,9 +163,9 @@ func createRandomSocialAccount(t *testing.T, testQueries *Queries, userID pgtype
 	arg := CreateSocialAccountParams{
 		UserID:         userID,
 		Platform:       "ExamplePlatform",
-		AccountName:    "ExampleAccountName",
+		Name:           "ExampleAccountName",
 		AccessToken:    "ExampleAccessToken",
-		AccountEmail:   "example@gmail.com",
+		Email:          "example@gmail.com",
 		IDToken:        "ExampleIDToken",
 		TokenExpiresAt: pgtype.Timestamp{Time: time.Now().Add(24 * time.Hour), Valid: true},
 	}
@@ -178,9 +178,9 @@ func createSocialAccountByUserID(t *testing.T, testQueries *Queries, userID pgty
 	arg := CreateSocialAccountParams{
 		UserID:         userID,
 		Platform:       "ExamplePlatform",
-		AccountName:    "ExampleAccountName",
+		Name:           "ExampleAccountName",
 		AccessToken:    "ExampleAccessToken",
-		AccountEmail:   "test@gmail.com",
+		Email:          "test@gmail.com",
 		IDToken:        "ExampleIDToken",
 		TokenExpiresAt: pgtype.Timestamp{Time: time.Now().Add(24 * time.Hour), Valid: true},
 	}

@@ -73,17 +73,18 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, name, email, created_at, updated_at 
+SELECT id, name, email, created_at, updated_at, is_email_verified
 FROM users 
 WHERE id = $1
 `
 
 type GetUserByIDRow struct {
-	ID        pgtype.UUID      `json:"id"`
-	Name      pgtype.Text      `json:"name"`
-	Email     string           `json:"email"`
-	CreatedAt pgtype.Timestamp `json:"created_at"`
-	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+	ID              pgtype.UUID      `json:"id"`
+	Name            pgtype.Text      `json:"name"`
+	Email           string           `json:"email"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	IsEmailVerified bool             `json:"is_email_verified"`
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error) {
@@ -95,6 +96,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDR
 		&i.Email,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
